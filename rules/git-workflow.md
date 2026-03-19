@@ -8,4 +8,4 @@ Rules for consistent, clean git commit history across all projects.
 - Write commit messages in English, concise and descriptive
 - Use conventional commit prefixes: feat, fix, chore, refactor, docs
 - NEVER use `git add -f` or `git add --force`. If a file is gitignored, it is gitignored for a reason. Do not force-stage it under any circumstances
-- NEVER commit files from `design-docs/` directory. It is gitignored (globally) and must stay out of version control
+- NEVER commit files from `design-docs/` or `researches/` directories. They are gitignored (globally) and must stay out of version control
