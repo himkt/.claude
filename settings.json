@@ -5,17 +5,6 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_EFFORT_LEVEL": "high"
   },
-  "extraKnownMarketplaces": {
-    "himkt-external-skills": {
-      "source": {
-        "source": "github",
-        "repo": "himkt/himkt-marketplace"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "external-skills@himkt-marketplace": true
-  },
   "attribution": {
     "commit": ""
   },
@@ -90,6 +79,17 @@
   "statusLine": {
     "type": "command",
     "command": "~/.claude/bin/status.py"
+  },
+  "enabledPlugins": {
+    "external-skills@himkt-marketplace": true
+  },
+  "extraKnownMarketplaces": {
+    "himkt-external-skills": {
+      "source": {
+        "source": "github",
+        "repo": "himkt/himkt-marketplace"
+      }
+    }
   },
   "language": "Use Japanese for chat conversations, English for writing files",
   "alwaysThinkingEnabled": true,
