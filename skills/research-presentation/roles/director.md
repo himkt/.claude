@@ -66,7 +66,7 @@ The Director owns the Slidev dev server lifecycle. The Visual Reviewer does not 
 
 | Aspect | Detail |
 |--------|--------|
-| Start command | `script -qf /dev/null -c "npx @slidev/cli --open false {folder}/slide.md"` |
+| Start command | macOS: `script -q /dev/null bun run slidev --open false {folder}/slide.md` / Linux: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null` |
 | Execution | Bash tool with `run_in_background: true` |
 | Default URL | `http://localhost:3030` |
 | Readiness check | `mcp__playwright__browser_navigate` to the URL, retry up to 3 times with 3-second waits |
