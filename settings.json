@@ -10,6 +10,7 @@
   },
   "permissions": {
     "allow": [
+      "Read(/settings.json)",
       "Read(/skills/**)",
       "Read(/plugins/**)",
       "Bash(gh api repos/*/*/pulls/*/comments)",
@@ -84,7 +85,7 @@
     "external-skills@himkt-marketplace": true
   },
   "extraKnownMarketplaces": {
-    "himkt-external-skills": {
+    "himkt-marketplace": {
       "source": {
         "source": "github",
         "repo": "himkt/himkt-marketplace"
