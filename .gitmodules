@@ -1,3 +1,0 @@
-[submodule "vendor/slidev"]
-	path = vendor/slidev
-	url = https://github.com/slidevjs/slidev.git
