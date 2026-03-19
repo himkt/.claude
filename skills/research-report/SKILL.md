@@ -35,6 +35,29 @@ User
 
 ## Process
 
+### Step 0: Base Directory Selection (Director)
+
+Before creating the team, determine where output files will be saved.
+
+1. Use `AskUserQuestion` with the base directory options:
+   - Question: `"Select the base directory for output files:"`
+   - Options (apply context-dependent recommended label based on CWD):
+
+   | Option | Label when CWD = `~/.claude` | Label when CWD ≠ `~/.claude` |
+   |--------|------------------------------|------------------------------|
+   | 1 | `{cwd}/` | `{cwd}/ (recommended)` |
+   | 2 | `/tmp/claude-code/ (recommended)` | `/tmp/claude-code/` |
+   | 3 | `Other` | `Other` |
+
+   Option 3 ("Other") uses `AskUserQuestion`'s built-in free-text input — the user types a custom path directly in the same prompt. No second `AskUserQuestion` call is needed.
+2. Resolve the selected base to an absolute path:
+   - Option 1: `base = {cwd}` (resolved to absolute path)
+   - Option 2: `base = /tmp/claude-code`
+   - Option 3 (free text): `base = user's input` (resolved to absolute path; if relative, resolve against CWD)
+3. Compute: `output_dir = {base}/researches/{topic-slug}/`
+4. Create the output directory.
+5. Pass `output_dir` as the resolved absolute path to the Manager and all Researchers in their spawn prompts.
+
 ### Step 1: Create Team & Launch Manager (Director)
 
 You (Claude, the lead agent) create an agent team and spawn a Manager teammate. You do NOT decompose topics yourself — that is the Manager's operational decision.
@@ -48,7 +71,7 @@ Create the team and spawn the Manager with a prompt covering:
 5. How to request Researchers: send the Director a message specifying sub-topics, scope, angles, and assigned file paths. Director spawns them as `web-researcher` agent teammates. Manager coordinates via messaging.
 6. Handle researcher failures: re-split topics and request new Researchers from Director
 7. Report format specification (copy template rules from template.md)
-8. **Output folder path**: `researches/{topic-slug}/` — this path is relative to the Director's current working directory. Director MUST resolve this to a full path based on the current working directory and pass the resolved path to all teammates. The Manager writes the compiled report to `{resolved-path}/report.md`. Researchers write to `{resolved-path}/NN-{subtopic}.md`.
+8. **Output folder path**: Pass `output_dir` (the resolved absolute path from Step 0) to the Manager. The Manager writes the compiled report to `{output_dir}/report.md`. Researchers write to `{output_dir}/NN-{subtopic}.md`.
 9. User's language preference (if specified)
 10. Mandate: "Your first draft will be reviewed critically. Aim for highest quality on first attempt."
 ### Step 1b: Spawn Researchers (Director)
@@ -91,8 +114,8 @@ After the Director approves the report internally, present it to the user:
 
 1. **Summary of findings** — key insights from the report (2-3 sentences)
 2. **File paths** — list deliverable files:
-   - Report: `researches/{topic-slug}/report.md`
-   - Researcher files: `researches/{topic-slug}/01-*.md`, `02-*.md`, etc. (raw research data for reference)
+   - Report: `{output_dir}/report.md`
+   - Researcher files: `{output_dir}/01-*.md`, `02-*.md`, etc. (raw research data for reference)
 3. **Limitations** — any caveats, known gaps, or areas where sources were limited
 4. **Request for feedback** — explicitly ask the user to review and provide feedback or approve
 
@@ -119,12 +142,12 @@ AskUserQuestion:
     - "No, report only"
 ```
 
-- **If yes:** Proceed to Step 8 (shut down all research agents and clean up the team), then invoke `/research-presentation researches/{topic-slug}` via the Skill tool. A new team is created by `/research-presentation` with its own lifecycle.
+- **If yes:** Proceed to Step 8 (shut down all research agents and clean up the team), then invoke `/research-presentation {output_dir}` via the Skill tool. Since `output_dir` is an absolute path, `/research-presentation` skips its own base directory prompt. A new team is created by `/research-presentation` with its own lifecycle.
 - **If no:** Proceed directly to Step 8.
 
 ### Step 8: Finalize & Clean Up (Director)
 
-1. Confirm all final deliverables are saved to `researches/{topic-slug}/`
+1. Confirm all final deliverables are saved to `{output_dir}/`
 2. **Shutdown sequence:**
    1. Send shutdown requests to: all Researchers
    2. Send shutdown request to: Manager
