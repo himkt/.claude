@@ -36,9 +36,32 @@ User
 
 ## Process
 
-### Step 0: Resume Detection (Director)
+### Step 0: Path Resolution & Resume Detection (Director)
 
-`$ARGUMENTS` is the full file path (e.g., `design-docs/xxx/design-doc.md`). Check file existence directly — no normalization needed.
+**Path resolution** (before resume detection):
+
+1. If `$ARGUMENTS` starts with `/` → absolute path. Set `doc_path = $ARGUMENTS`.
+2. If `$ARGUMENTS` is relative → use `AskUserQuestion` with the base directory options:
+   - Question: `"Select the base directory for output files:"`
+   - Options (apply context-dependent recommended label based on CWD):
+
+   | Option | Label when CWD = `~/.claude` | Label when CWD ≠ `~/.claude` |
+   |--------|------------------------------|------------------------------|
+   | 1 | `{cwd}/` | `{cwd}/ (recommended)` |
+   | 2 | `/tmp/claude-code/ (recommended)` | `/tmp/claude-code/` |
+   | 3 | `Other` | `Other` |
+
+   Option 3 ("Other") uses `AskUserQuestion`'s built-in free-text input — the user types a custom path directly in the same prompt. No second `AskUserQuestion` call is needed.
+
+   Resolve the selected base:
+   - Option 1: `base = {cwd}` (resolved to absolute path)
+   - Option 2: `base = /tmp/claude-code`
+   - Option 3 (free text): `base = user's input` (resolved to absolute path; if relative, resolve against CWD)
+
+   Set `doc_path = {base}/{$ARGUMENTS}`. Resolve to absolute path.
+3. Pass `doc_path` to the Drafter as OUTPUT PATH in the spawn prompt.
+
+**Resume detection** (using resolved `doc_path`):
 
 1. **File does not exist** → Fresh creation (proceed to Step 1 as normal).
 2. **File exists** → Check for COMMENT markers:
@@ -63,7 +86,7 @@ Read your role definition at: roles/drafter.md
 IMPORTANT: You MUST ask clarifying questions BEFORE writing any design document file.
 Send your questions to the Director who will relay them to the user.
 
-OUTPUT PATH: [INSERT $ARGUMENTS HERE]
+OUTPUT PATH: [INSERT doc_path HERE]
 
 The user's request: [INSERT USER'S ORIGINAL REQUEST HERE]
 
@@ -81,7 +104,7 @@ You are the Drafter in a design document creation team (RESUME MODE).
 Load the design-doc skill using: Skill(design-doc)
 Read your role definition at: roles/drafter.md
 
-DESIGN DOCUMENT: [INSERT DOC PATH]
+DESIGN DOCUMENT: [INSERT doc_path HERE]
 
 This is a RESUME session. The document contains COMMENT markers from a previous
 interview. Follow the Resume Mode instructions in your role definition.
