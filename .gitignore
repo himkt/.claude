@@ -1,13 +1,13 @@
 *
 
 # files
-!.gitattributes
-!.gitignore
-!.gitmodules
-!.mcp.json
-!README.md
-!settings.json
-!CLAUDE.md
+!/.gitattributes
+!/.gitignore
+!/.gitmodules
+!/.mcp.json
+!/README.md
+!/settings.json
+!/CLAUDE.md
 
 # folders
 !agents
@@ -17,6 +17,7 @@
 !bin
 !bin/**
 !.claude
+!.claude/skills/**
 !.claude/CLAUDE.md
 !rules
 !rules/**
