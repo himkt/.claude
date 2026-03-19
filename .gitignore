@@ -1,0 +1,21 @@
+*
+
+# files
+!.gitattributes
+!.gitignore
+!.gitmodules
+!README.md
+!settings.json
+!CLAUDE.md
+
+# folders
+!agents
+!agents/**
+!skills
+!skills/**
+!bin
+!bin/**
+!.claude
+!.claude/CLAUDE.md
+!rules
+!rules/**
