@@ -4,6 +4,7 @@
 !.gitattributes
 !.gitignore
 !.gitmodules
+!.mcp.json
 !README.md
 !settings.json
 !CLAUDE.md
