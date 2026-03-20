@@ -157,11 +157,9 @@ After the content revision loop completes and the Director is satisfied with sli
    Platform-dependent (run_in_background):
    - **macOS**: `script -q /dev/null bun run slidev --open false {folder}/slide.md`
    - **Linux**: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null`
-2. Director confirms readiness via `mcp__playwright__browser_navigate` to `http://localhost:3030`
-   (retry up to 3 times with 3-second waits)
-3. Director spawns the Visual Reviewer, passing `http://localhost:3030` as SERVER URL
-4. Visual Reviewer captures screenshots and accessibility snapshots for all slides
-5. Visual Reviewer sends a structured review report to the Director
+2. Director spawns the Visual Reviewer, passing `http://localhost:3030` as SERVER URL. **Director MUST NOT use any `mcp__playwright__*` tools** — all Playwright usage is exclusively for the Visual Reviewer teammate.
+3. Visual Reviewer confirms server readiness via `browser_navigate` (retry up to 3 times with 3-second waits), then captures screenshots and accessibility snapshots for all slides
+4. Visual Reviewer sends a structured review report to the Director
 
 **Phase 2 — Fix (if issues found):**
 

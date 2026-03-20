@@ -59,7 +59,11 @@
       "WebSearch",
       "Write",
       "Write(//tmp/claude-code/**)",
-      "mcp__pathfinder-python__definition"
+      "mcp__pathfinder-python__definition",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_wait_for"
     ],
     "deny": [
       "Bash(awk *)",
@@ -84,6 +88,10 @@
     "type": "command",
     "command": "~/.claude/bin/status.py"
   },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "playwright"
+  ],
   "enabledPlugins": {
     "external-skills@himkt-marketplace": true
   },
