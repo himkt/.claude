@@ -10,9 +10,6 @@
   },
   "permissions": {
     "allow": [
-      "Read(/settings.json)",
-      "Read(/skills/**)",
-      "Read(/plugins/**)",
       "Bash(gh api repos/*/*/pulls/*/comments)",
       "Bash(gh api repos/*/*/pulls/*/comments *)",
       "Bash(gh api repos/*/*/pulls/*/reviews)",
@@ -32,12 +29,17 @@
       "Bash(git ls-files *)",
       "Bash(git branch *)",
       "Bash(git status)",
-      "Bash(script -qf /dev/null -c 'npx @slidev/cli --open false */slide.md')",
+      "Bash(script -q /dev/null bun run slidev --open false */slide.md)",
+      "Bash(script -qfc 'bun run slidev --open false */slide.md' /dev/null)",
       "Bash(tmux ls *)",
       "Bash(uv sync *)",
       "Bash(uv run pytest *)",
       "Bash(uv run ruff check *)",
       "Bash(uv run ruff format *)",
+      "Read(/settings.json)",
+      "Read(/skills/**)",
+      "Read(/plugins/**)",
+      "Read(//tmp/claude-code/**)",
       "Skill(design-doc)",
       "Skill(github-cli)",
       "Skill(design-doc-create)",
@@ -56,7 +58,12 @@
       "WebFetch",
       "WebSearch",
       "Write",
-      "mcp__pathfinder-python__definition"
+      "Write(//tmp/claude-code/**)",
+      "mcp__pathfinder-python__definition",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_wait_for"
     ],
     "deny": [
       "Bash(awk *)",
@@ -81,6 +88,10 @@
     "type": "command",
     "command": "~/.claude/bin/status.py"
   },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "playwright"
+  ],
   "enabledPlugins": {
     "external-skills@himkt-marketplace": true
   },
@@ -94,5 +105,6 @@
   },
   "language": "Use Japanese for chat conversations, English for writing files",
   "alwaysThinkingEnabled": true,
+  "autoMemoryEnabled": false,
   "teammateMode": "tmux"
 }

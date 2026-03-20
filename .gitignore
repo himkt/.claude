@@ -8,6 +8,8 @@
 !/README.md
 !/settings.json
 !/CLAUDE.md
+!/bun.lock
+!/package.json
 
 # folders
 !agents

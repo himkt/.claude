@@ -1,6 +1,6 @@
 ---
 name: research-presentation
-description: Create a Slidev presentation and reading transcript from an existing research report folder. Reads report.md and researcher files for context, creates slides using /my-slidev skill and a reading transcript. Takes folder path as argument (e.g., design-docs/topic-name). Do NOT use for research — use /research-report for that.
+description: Create a Slidev presentation and reading transcript from an existing research report folder. Reads report.md and researcher files for context, creates slides using /my-slidev skill and a reading transcript. Takes folder path as argument (e.g., researches/topic-name). Do NOT use for research — use /research-report for that.
 allowed-tools: Read, Write, Edit, Glob, Grep, Agent
 ---
 
@@ -29,7 +29,7 @@ User (or chained from /research-report)
 
 | Condition | Behavior |
 |-----------|----------|
-| Folder path argument omitted | Error: "Usage: `/research-presentation design-docs/{folder-name}`. Specify the folder containing report.md." |
+| Folder path argument omitted | Error: "Usage: `/research-presentation researches/{folder-name}`. Specify the folder containing report.md." |
 | `report.md` not found in folder | Error: "No report.md found in `{folder}`. Run `/research-report` first to generate a report." |
 | `report.md` exists | Proceed normally |
 
@@ -37,7 +37,28 @@ User (or chained from /research-report)
 
 ### Step 0: Validate Input (Director)
 
-Verify the folder path argument is provided and `{folder}/report.md` exists. If not, error with the appropriate message from the Validation Rules above.
+1. If `$ARGUMENTS` is absent → error: "Usage: `/research-presentation researches/{folder-name}`. Specify the folder containing report.md."
+2. If `$ARGUMENTS` starts with `/` → absolute path. Set `folder = $ARGUMENTS`.
+3. If `$ARGUMENTS` is relative → use `AskUserQuestion` with the base directory options:
+   - Question: `"Select the base directory for output files:"`
+   - Options (apply context-dependent recommended label based on CWD):
+
+   | Option | Label when CWD = `~/.claude` | Label when CWD ≠ `~/.claude` |
+   |--------|------------------------------|------------------------------|
+   | 1 | `{cwd}/` | `{cwd}/ (recommended)` |
+   | 2 | `/tmp/claude-code/ (recommended)` | `/tmp/claude-code/` |
+   | 3 | `Other` | `Other` |
+
+   Option 3 ("Other") uses `AskUserQuestion`'s built-in free-text input — the user types a custom path directly in the same prompt. No second `AskUserQuestion` call is needed.
+
+   Resolve the selected base:
+   - Option 1: `base = {cwd}` (resolved to absolute path)
+   - Option 2: `base = /tmp/claude-code`
+   - Option 3 (free text): `base = user's input` (resolved to absolute path; if relative, resolve against CWD)
+
+   Set `folder = {base}/{$ARGUMENTS}`. Resolve to absolute path.
+4. Check that `{folder}/report.md` exists. If not, error: "No report.md found in `{folder}`. Run `/research-report` first to generate a report."
+5. Pass `folder` as the resolved absolute path to all teammates in spawn prompts.
 
 ### Step 1: Create Team & Spawn Agents (Director)
 
@@ -133,12 +154,12 @@ After the content revision loop completes and the Director is satisfied with sli
 **Phase 1 — Server Startup & Review:**
 
 1. Director starts the Slidev dev server:
-   `script -qf /dev/null -c "npx @slidev/cli --open false {folder}/slide.md"` (run_in_background)
-2. Director confirms readiness via `mcp__playwright__browser_navigate` to `http://localhost:3030`
-   (retry up to 3 times with 3-second waits)
-3. Director spawns the Visual Reviewer, passing `http://localhost:3030` as SERVER URL
-4. Visual Reviewer captures screenshots and accessibility snapshots for all slides
-5. Visual Reviewer sends a structured review report to the Director
+   Platform-dependent (run_in_background):
+   - **macOS**: `script -q /dev/null bun run slidev --open false {folder}/slide.md`
+   - **Linux**: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null`
+2. Director spawns the Visual Reviewer, passing `http://localhost:3030` as SERVER URL. **Director MUST NOT use any `mcp__playwright__*` tools** — all Playwright usage is exclusively for the Visual Reviewer teammate.
+3. Visual Reviewer confirms server readiness via `browser_navigate` (retry up to 3 times with 3-second waits), then captures screenshots and accessibility snapshots for all slides
+4. Visual Reviewer sends a structured review report to the Director
 
 **Phase 2 — Fix (if issues found):**
 
@@ -157,7 +178,7 @@ After the Director approves all deliverables internally, present them to the use
 1. **File paths** — list deliverable files:
    - Slides: `{folder}/slide.md`
    - Transcript: `{folder}/transcript.md`
-2. **Slide preview command**: `npx @slidev/cli {folder}/slide.md`
+2. **Slide preview command**: `bun run slidev {folder}/slide.md`
 3. **Request for feedback** — explicitly ask the user to review and provide feedback or approve
 
 ### Step 6: User Revision Loop (Director)
