@@ -10,6 +10,8 @@
   },
   "permissions": {
     "allow": [
+      "Edit",
+      "Bash(bun install)",
       "Bash(gh api repos/*/*/pulls/*/comments)",
       "Bash(gh api repos/*/*/pulls/*/comments *)",
       "Bash(gh api repos/*/*/pulls/*/reviews)",
@@ -37,6 +39,7 @@
       "Bash(uv run pytest *)",
       "Bash(uv run ruff check *)",
       "Bash(uv run ruff format *)",
+      "NotebookEdit",
       "Read(/settings.json)",
       "Read(/skills/**)",
       "Read(/plugins/**)",
@@ -54,8 +57,6 @@
       "Skill(my-slidev)",
       "Skill(review-claude-config)",
       "Skill(nixos-boot-troubleshoot)",
-      "Edit",
-      "NotebookEdit",
       "WebFetch",
       "WebSearch",
       "Write",
