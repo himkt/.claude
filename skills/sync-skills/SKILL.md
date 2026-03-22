@@ -17,17 +17,15 @@ Sync skill lists in CLAUDE.md files with the actual skill definitions on disk.
 
 Run `pwd` via Bash. Store the result as `$CWD`. All subsequent paths are derived from `$CWD`. Do NOT use relative paths like `./` — always construct absolute paths from `$CWD`.
 
-### Step 1: Plugin guard
+### Step 1: Ask user about plugin skills
 
-You MUST call the AskUserQuestion tool here. Do NOT skip this step. Do NOT decide on behalf of the user.
+**This step is a BLOCKING PREREQUISITE for Step 4.** You cannot know the answer without asking.
 
-Call AskUserQuestion with:
-- **Question**: "Include plugin skills?"
-- **Options** (2 options, the first one is recommended):
-  - If `$CWD` equals `$HOME/.claude`: first="Include", second="Exclude"
-  - Otherwise: first="Exclude", second="Include"
+Use the AskUserQuestion tool now:
+- question: "Include plugin skills?"
+- options: If `$CWD` equals `$HOME/.claude` → ["Include", "Exclude"]. Otherwise → ["Exclude", "Include"].
 
-Wait for the user's response. Store their choice for Step 4.
+Do not proceed to Step 2 until you have received the user's answer. Store it for Step 4.
 
 ### Step 2: Process Project target
 
