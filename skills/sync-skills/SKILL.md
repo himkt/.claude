@@ -2,7 +2,7 @@
 name: sync-skills
 description: Read all skills from skills/ directory and update the Skills section in CLAUDE.md to stay in sync. Run this after adding, removing, or modifying skills.
 context: fork
-allowed-tools: Read, Edit, Write, Glob, Grep, Bash(find -L *)
+allowed-tools: Read, Edit, Write, Glob, Grep, Bash(find -L *), AskUserQuestion
 ---
 
 # Sync Skills
