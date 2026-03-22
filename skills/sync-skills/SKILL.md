@@ -19,14 +19,15 @@ Run `pwd` via Bash. Store the result as `$CWD`. All subsequent paths are derived
 
 ### Step 1: Plugin guard
 
-Before processing any targets, ask the user via AskUserQuestion whether to include plugin skills:
+You MUST call the AskUserQuestion tool here. Do NOT skip this step. Do NOT decide on behalf of the user.
 
+Call AskUserQuestion with:
 - **Question**: "Include plugin skills?"
-- **Options**:
-  - If `$CWD` equals `$HOME/.claude`: "Include (Recommended)" / "Exclude"
-  - Otherwise: "Include" / "Exclude (Recommended)"
+- **Options** (2 options, the first one is recommended):
+  - If `$CWD` equals `$HOME/.claude`: first="Include", second="Exclude"
+  - Otherwise: first="Exclude", second="Include"
 
-Store the user's choice for Step 4.
+Wait for the user's response. Store their choice for Step 4.
 
 ### Step 2: Process Project target
 
