@@ -128,7 +128,7 @@ If the draft meets all quality standards, signal: "APPROVED - Ready for user rev
 
 **Resume mode**: Skip this step entirely. In resume mode, the COMMENT markers serve as the clarification — the Drafter already has all the information needed. Proceed directly to Step 3 after the Drafter reports its changes.
 
-1. Wait for the Drafter's clarifying questions. Relay to the user via AskUserQuestion, then relay answers back.
+1. Wait for the Drafter's clarifying questions. Relay to the user via AskUserQuestion, then relay answers back. If the number of questions exceeds the per-call limit of AskUserQuestion, split them into multiple sequential calls to relay all questions without omission.
 2. **Gate check**: If the Drafter produces a draft without prior questions, reject it and instruct them to ask first. A focused confirmation round counts as valid clarification.
 
 ### Step 3: Internal Quality Loop (Director)
