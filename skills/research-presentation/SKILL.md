@@ -153,8 +153,9 @@ After the content revision loop completes and the Director is satisfied with sli
 
 **Phase 1 — Server Startup & Review:**
 
-1. Director starts the Slidev dev server:
-   Platform-dependent (run_in_background):
+1. Director installs dependencies and starts the Slidev dev server:
+   First, run `bun install` to ensure Slidev and its dependencies are available.
+   Then start the server (platform-dependent, run_in_background):
    - **macOS**: `script -q /dev/null bun run slidev --open false {folder}/slide.md`
    - **Linux**: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null`
 2. Director spawns the Visual Reviewer, passing `http://localhost:3030` as SERVER URL. **Director MUST NOT use any `mcp__playwright__*` tools** — all Playwright usage is exclusively for the Visual Reviewer teammate.
