@@ -16,6 +16,7 @@
       "Bash(gh api repos/*/*/pulls/*/comments *)",
       "Bash(gh api repos/*/*/pulls/*/reviews)",
       "Bash(gh api repos/*/*/pulls/*/reviews *)",
+      "Bash(gh issue list *)",
       "Bash(gh issue view *)",
       "Bash(gh pr checks *)",
       "Bash(gh pr diff *)",
@@ -83,9 +84,11 @@
       "Bash(tail *)",
       "Bash(touch *)",
       "Bash(tree)",
-      "Bash(tree *)"
+      "Bash(tree *)",
+      "Bash(git -C *)"
     ]
   },
+  "model": "opus[1m]",
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "playwright"
@@ -121,6 +124,5 @@
   "language": "Use Japanese for chat conversations, English for writing files",
   "alwaysThinkingEnabled": true,
   "autoMemoryEnabled": false,
-  "teammateMode": "tmux",
-  "model": "opus[1m]"
+  "teammateMode": "tmux"
 }
