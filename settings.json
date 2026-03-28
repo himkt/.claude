@@ -85,7 +85,9 @@
       "Bash(touch *)",
       "Bash(tree)",
       "Bash(tree *)",
-      "Bash(git -C *)"
+      "Bash(git -C *)",
+      "Bash(python *)",
+      "Bash(python3 *)"
     ]
   },
   "model": "opus[1m]",
