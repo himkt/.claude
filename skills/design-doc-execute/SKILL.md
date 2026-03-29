@@ -34,7 +34,7 @@ User
 
 ## Process
 
-### Step 0: Resolve Design Document Path (Director)
+### Step 1: Resolve Design Document Path (Director)
 
 Before validation, resolve `$ARGUMENTS` into a concrete `design-doc.md` path using a three-tier detection strategy, evaluated in order:
 
@@ -120,7 +120,7 @@ Then abort.
 
 After resolution, the resolved path is used as the design document path for all subsequent steps.
 
-### Step 0.5: Validate Design Document & Create Branch (Director)
+### Step 2: Validate Design Document & Create Branch (Director)
 
 Before creating any team:
 
@@ -130,7 +130,7 @@ Before creating any team:
 4. Determine the step order and total number of steps.
 5. **Create a feature branch if on the default branch.** Get the default branch with `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'` and the current branch with `git branch --show-current`. If they match, use `AskUserQuestion` to propose the branch name `feat/<design-doc-slug>` and ask the user to approve before creating it. The user will create the branch themselves or approve the proposed name. If already on a non-default branch, skip this step.
 
-### Step 1: Create Team & Spawn Teammates (Director)
+### Step 3: Create Team & Spawn Teammates (Director)
 
 Create an agent team and spawn the teammates needed for this project. Analyze the implementation tasks to decide which roles to spawn (see [roles/director.md](roles/director.md) for team composition guidelines).
 
@@ -189,7 +189,7 @@ Then wait for the Director to assign your first verification task.
 
 See [roles/director.md](roles/director.md) for commit message conventions.
 
-### Step 2: Execute Steps with Per-Step TDD Cycle (Director)
+### Step 4: Execute Steps with Per-Step TDD Cycle (Director)
 
 For each step in the design document:
 
@@ -228,7 +228,7 @@ Repeat from Phase A for the next step. Always include the design document in the
 
 ### Phase D: Verification (Director) — conditional
 
-**Skip this phase entirely if the Verifier was not spawned.** Proceed directly to Step 3 (User Approval).
+**Skip this phase entirely if the Verifier was not spawned.** Proceed directly to Step 5 (User Approval).
 
 If the Verifier was spawned, assign verification:
 
@@ -237,7 +237,7 @@ If the Verifier was spawned, assign verification:
 3. **Route failures**: Implementation bugs → Programmer, test gaps → Tester, spec issues → user.
 4. Re-verify after fixes. Proceed to User Approval when all verifiable criteria pass.
 
-### Step 3: User Approval (Director)
+### Step 5: User Approval (Director)
 
 After all TDD steps complete but before finalization, present the implementation to the user for approval.
 
@@ -252,7 +252,7 @@ Use `AskUserQuestion`:
 
 | Option | Label | Description | Behavior |
 |:--|:--|:--|:--|
-| 1 | **Approve** | Proceed with the current result | Proceed to finalization (Step 4) |
+| 1 | **Approve** | Proceed with the current result | Proceed to finalization (Step 6) |
 | 2 | **Scan for COMMENT markers** | Add `COMMENT(name): feedback` markers to the changed source files, then select this option to process them | Scan and process markers (see Revision Loop below) |
 | 3 | *(Other — built-in)* | *(Free text input)* | Interpret user intent (see Revision Loop below) |
 
@@ -272,7 +272,7 @@ No round limit — the loop continues until the user approves or aborts.
 2. Commit (separate commands): `git add <design-doc>` then `git commit -m "docs: mark design doc as aborted"`
 3. Shut down teammates and clean up the team.
 
-### Step 4: Finalize & Clean Up (Director)
+### Step 6: Finalize & Clean Up (Director)
 
 1. Update design document Status to "Complete" and add final Changelog entry.
 2. Commit (separate commands): `git add <design-doc>` then `git commit -m "docs: mark design doc as complete"`
