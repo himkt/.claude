@@ -3,7 +3,7 @@
 ```markdown
 # [Title]
 
-**Status**: Draft | In Progress | Complete
+**Status**: Draft | Approved | In Progress | Complete
 **Progress**: 0/N tasks complete
 **Last Updated**: YYYY-MM-DD
 

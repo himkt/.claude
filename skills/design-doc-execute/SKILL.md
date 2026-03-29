@@ -34,7 +34,93 @@ User
 
 ## Process
 
-### Step 0: Validate Design Document & Create Branch (Director)
+### Step 1: Resolve Design Document Path (Director)
+
+Before validation, resolve `$ARGUMENTS` into a concrete `design-doc.md` path using a three-tier detection strategy, evaluated in order:
+
+| Tier | Condition | Action |
+|:--|:--|:--|
+| 1 — Direct file path | `$ARGUMENTS` ends with `design-doc.md` | Use as-is (current behavior) |
+| 2 — Slug directory | `$ARGUMENTS` is a directory that contains `design-doc.md` directly | Append `/design-doc.md` and use as direct path |
+| 3 — Base directory | `$ARGUMENTS` is a directory containing `*/design-doc.md` (one level deep) | Enter discovery flow (see below) |
+
+**Tier evaluation is sequential and short-circuits**: once a tier matches, later tiers are not evaluated.
+
+#### Discovery Flow (Tier 3)
+
+When the base directory tier matches:
+
+1. **Discover**: Use Glob to find all `*/design-doc.md` files one level deep under the base directory.
+2. **Read Status**: For each discovered file, read the `**Status**:` field from the document header.
+3. **Filter**: Keep only documents with `Status: Approved`. Documents with any other status (`Draft`, `In Progress`, `Complete`) are excluded.
+4. **Branch by count**:
+
+| Count | Behavior |
+|:--|:--|
+| 0 | Error and abort (see Error: Zero Approved below) |
+| 1 | Auto-select: proceed with this document directly |
+| 2–4 | Present options via `AskUserQuestion` (see Selection UI below) |
+| 5+ | Present options via paginated `AskUserQuestion` (see Pagination below) |
+
+#### Selection UI (2–4 Approved Docs)
+
+Use `AskUserQuestion` with one question. Each option label is the slug name (directory name) of the design doc. The built-in "Other" option is always available for the user to type a direct path or cancel.
+
+Example with 3 approved docs:
+
+```
+Question: "Which design document would you like to implement?"
+Options:
+  1: "feature-auth"
+  2: "refactor-db-layer"
+  3: "add-cli-export"
+  (Other is added automatically)
+```
+
+#### Pagination (5+ Approved Docs)
+
+When there are more than 4 approved docs, `AskUserQuestion`'s option limit (max 4) is exceeded. Use pagination with all options sorted alphabetically by slug:
+
+- **Non-last page**: Show 3 options + a 4th option labeled `"More..."`.
+- **Last page rule**: If remaining items after the current page would be ≤ 4, show all remaining items directly (no `"More..."` needed). This avoids a last page with only 1 option, which would violate `AskUserQuestion`'s minimum of 2 options per question.
+- Continue until the user selects a document or uses "Other".
+
+Example with 7 approved docs: page 1 shows 3 + "More..." (4 remain), page 2 shows all 4. Example with 5: page 1 shows 3 + "More..." (2 remain), page 2 shows both 2.
+
+#### Error: Zero Approved Docs
+
+When design docs exist but none have `Status: Approved`, display a message listing all found docs with their current statuses so the user understands why none qualified. Format:
+
+```
+No approved design documents found in <base-directory>.
+
+Found documents:
+  - <slug-1>/design-doc.md — Status: Draft
+  - <slug-2>/design-doc.md — Status: In Progress
+  - <slug-3>/design-doc.md — Status: Complete
+
+Only documents with Status: Approved can be executed. Update the status or specify a direct path.
+```
+
+Then abort (do not proceed to team creation or execution).
+
+#### Error: Invalid Path
+
+When `$ARGUMENTS` does not match any of the three tiers (not a file path ending in `design-doc.md`, not a directory containing `design-doc.md`, and no `*/design-doc.md` found underneath), display:
+
+```
+Invalid argument: <$ARGUMENTS>
+Expected one of:
+  - Path to a design-doc.md file (e.g., design-docs/my-feature/design-doc.md)
+  - Slug directory containing design-doc.md (e.g., design-docs/my-feature/)
+  - Base directory containing */design-doc.md (e.g., design-docs/)
+```
+
+Then abort.
+
+After resolution, the resolved path is used as the design document path for all subsequent steps.
+
+### Step 2: Validate Design Document & Create Branch (Director)
 
 Before creating any team:
 
@@ -44,7 +130,7 @@ Before creating any team:
 4. Determine the step order and total number of steps.
 5. **Create a feature branch if on the default branch.** Get the default branch with `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'` and the current branch with `git branch --show-current`. If they match, use `AskUserQuestion` to propose the branch name `feat/<design-doc-slug>` and ask the user to approve before creating it. The user will create the branch themselves or approve the proposed name. If already on a non-default branch, skip this step.
 
-### Step 1: Create Team & Spawn Teammates (Director)
+### Step 3: Create Team & Spawn Teammates (Director)
 
 Create an agent team and spawn the teammates needed for this project. Analyze the implementation tasks to decide which roles to spawn (see [roles/director.md](roles/director.md) for team composition guidelines).
 
@@ -103,7 +189,7 @@ Then wait for the Director to assign your first verification task.
 
 See [roles/director.md](roles/director.md) for commit message conventions.
 
-### Step 2: Execute Steps with Per-Step TDD Cycle (Director)
+### Step 4: Execute Steps with Per-Step TDD Cycle (Director)
 
 For each step in the design document:
 
@@ -142,7 +228,7 @@ Repeat from Phase A for the next step. Always include the design document in the
 
 ### Phase D: Verification (Director) — conditional
 
-**Skip this phase entirely if the Verifier was not spawned.** Proceed directly to Step 3 (User Approval).
+**Skip this phase entirely if the Verifier was not spawned.** Proceed directly to Step 5 (User Approval).
 
 If the Verifier was spawned, assign verification:
 
@@ -151,7 +237,7 @@ If the Verifier was spawned, assign verification:
 3. **Route failures**: Implementation bugs → Programmer, test gaps → Tester, spec issues → user.
 4. Re-verify after fixes. Proceed to User Approval when all verifiable criteria pass.
 
-### Step 3: User Approval (Director)
+### Step 5: User Approval (Director)
 
 After all TDD steps complete but before finalization, present the implementation to the user for approval.
 
@@ -166,7 +252,7 @@ Use `AskUserQuestion`:
 
 | Option | Label | Description | Behavior |
 |:--|:--|:--|:--|
-| 1 | **Approve** | Proceed with the current result | Proceed to finalization (Step 4) |
+| 1 | **Approve** | Proceed with the current result | Proceed to finalization (Step 6) |
 | 2 | **Scan for COMMENT markers** | Add `COMMENT(name): feedback` markers to the changed source files, then select this option to process them | Scan and process markers (see Revision Loop below) |
 | 3 | *(Other — built-in)* | *(Free text input)* | Interpret user intent (see Revision Loop below) |
 
@@ -186,7 +272,7 @@ No round limit — the loop continues until the user approves or aborts.
 2. Commit (separate commands): `git add <design-doc>` then `git commit -m "docs: mark design doc as aborted"`
 3. Shut down teammates and clean up the team.
 
-### Step 4: Finalize & Clean Up (Director)
+### Step 6: Finalize & Clean Up (Director)
 
 1. Update design document Status to "Complete" and add final Changelog entry.
 2. Commit (separate commands): `git add <design-doc>` then `git commit -m "docs: mark design doc as complete"`
