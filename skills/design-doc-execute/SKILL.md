@@ -241,6 +241,17 @@ If the Verifier was spawned, assign verification:
 
 After all TDD steps complete but before finalization, present the implementation to the user for approval.
 
+#### Success Criteria Verification
+
+**Before presenting to the user**, verify the design document's Success Criteria section:
+
+1. Read the `## Success Criteria` section from the design document.
+2. For each criterion, verify it is satisfied by inspecting the implementation (grep, read files, run tests as needed).
+3. Check off all satisfied criteria in the design document (`- [ ]` → `- [x]`).
+4. If any criterion is NOT satisfied, resolve it before proceeding to user approval — route to Programmer or Tester as needed.
+
+This step is **mandatory** and must not be skipped.
+
 #### Change Presentation
 
 1. **Git diff command** for the user to inspect (e.g., `git diff main...HEAD`).
