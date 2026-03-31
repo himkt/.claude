@@ -86,6 +86,8 @@
       "Bash(tree)",
       "Bash(tree *)",
       "Bash(git -C *)",
+      "Bash(git push)",
+      "Bash(git push *)",
       "Bash(python *)",
       "Bash(python3 *)"
     ]
