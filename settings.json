@@ -128,5 +128,6 @@
   "language": "Use Japanese for chat conversations, English for writing files",
   "alwaysThinkingEnabled": true,
   "autoMemoryEnabled": false,
-  "teammateMode": "tmux"
+  "teammateMode": "tmux",
+  "autoInstallIdeExtension": false
 }
