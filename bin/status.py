@@ -18,9 +18,8 @@ GRADIENT_STOPS = [
     (1.0, (255, 70, 70)),    # red
 ]
 
-# Nerd Font icons
-ICON_FOLDER = "\uf07c"
-ICON_DOLLAR = "\uf155"
+ICON_FOLDER = "\U0001F4C2"
+ICON_DOLLAR = "\U0000FF04"
 
 _ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
