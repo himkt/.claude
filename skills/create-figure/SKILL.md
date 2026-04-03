@@ -8,7 +8,21 @@ description: >
 
 # Create Figure
 
-Generate matplotlib-based charts and figures. Write a Python script on the project side, execute it via `uv run` from `~/.claude`, and produce static PNG output.
+Generate matplotlib-based charts and figures. Write a Python script in the user's project directory, execute it via `uv run` from `~/.claude`, and produce static PNG output in the project directory.
+
+## CRITICAL: File Locations
+
+**All generated files (scripts AND output PNGs) MUST be in the user's current working directory (the project), NEVER in `~/.claude`.**
+
+- **Script**: Use the Write tool to create the `.py` file in the project directory (e.g., `/path/to/my-project/sales_chart.py`)
+- **Output**: The PNG is saved next to the script automatically because the script uses `__file__`-based paths
+- **Why `cd ~/.claude`?**: Only to access the `uv`-managed Python environment (`pyproject.toml` with matplotlib). It does NOT affect where files are written — the script's `__file__` resolves to its actual location in the project directory
+
+Example: if the user is working in `/home/user/my-project/`:
+1. Write script to `/home/user/my-project/chart.py` (using Write tool)
+2. `cd ~/.claude` (Bash call — only for uv environment)
+3. `uv run /home/user/my-project/chart.py` (Bash call — runs with absolute path)
+4. Output appears at `/home/user/my-project/chart.png` (because `__file__` → project dir)
 
 ## Execution Flow
 
