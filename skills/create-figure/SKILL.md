@@ -8,41 +8,17 @@ description: >
 
 # Create Figure
 
-Generate matplotlib-based charts and figures. Write a Python script in the user's project directory, execute it via `uv run` from `~/.claude`, and produce static PNG output in the project directory.
+Generate matplotlib charts. Scripts and outputs go in the project directory.
+Only the execution borrows the uv environment from `~/.claude`.
 
-## CRITICAL: File Locations
+## Procedure
 
-**All generated files (scripts AND output PNGs) MUST be in the user's current working directory (the project), NEVER in `~/.claude`.**
+### 1. Create the script in the project directory
 
-- **Script**: Use the Write tool to create the `.py` file in the project directory (e.g., `/path/to/my-project/sales_chart.py`)
-- **Output**: The PNG is saved next to the script automatically because the script uses `__file__`-based paths
-- **Why `cd ~/.claude`?**: Only to access the `uv`-managed Python environment (`pyproject.toml` with matplotlib). It does NOT affect where files are written — the script's `__file__` resolves to its actual location in the project directory
+Use the Write tool to create a `.py` file in the user's working directory (the project).
+Never create scripts in `~/.claude`.
 
-Example: if the user is working in `/home/user/my-project/`:
-1. Write script to `/home/user/my-project/chart.py` (using Write tool)
-2. `cd ~/.claude` (Bash call — only for uv environment)
-3. `uv run /home/user/my-project/chart.py` (Bash call — runs with absolute path)
-4. Output appears at `/home/user/my-project/chart.png` (because `__file__` → project dir)
-
-## Execution Flow
-
-```
-User request (e.g., "plot sales.csv as a bar chart")
-  │
-  ├─ 1. Write Python script to PROJECT directory
-  │     e.g., /path/to/project/sales_chart.py
-  │
-  ├─ 2. cd ~/.claude
-  │
-  ├─ 3. uv run /path/to/project/sales_chart.py
-  │
-  └─ 4. PNG output appears in PROJECT directory
-        e.g., /path/to/project/sales_chart.png
-```
-
-## Script Template Pattern
-
-Every generated script MUST follow this pattern:
+The script must follow this pattern:
 
 ```python
 import pathlib
@@ -50,13 +26,14 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# __file__-based path resolution
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 
 # Data input (relative to script location)
 data_path = SCRIPT_DIR / "data.csv"
 
-# ... chart creation logic ...
+# Create the figure
+fig, ax = plt.subplots()
+# ... plotting logic ...
 
 # Output (relative to script location)
 output_path = SCRIPT_DIR / "chart.png"
@@ -65,64 +42,58 @@ plt.close()
 print(f"Saved: {output_path}")
 ```
 
-## Key Rules
+Key points:
+- `matplotlib.use("Agg")` must come before importing `pyplot`
+- All paths use `pathlib.Path(__file__).resolve().parent`. This ensures inputs and outputs stay in the project directory regardless of where the script is executed from
+- Never call `plt.show()`. Save to PNG with `plt.savefig()`
+- Always call `plt.close()` after saving
+- Default output: PNG, `dpi=150`, `bbox_inches="tight"`
+- For multiple charts, combine into one script using `plt.figure()` or `plt.subplots()`
 
-| Rule | Detail |
-|------|--------|
-| Backend | Always set `matplotlib.use("Agg")` before importing `pyplot` (headless rendering) |
-| Path resolution | All file paths (input data, output images) use `pathlib.Path(__file__).resolve().parent` |
-| Output format | PNG only, with `dpi=150` and `bbox_inches="tight"` as defaults |
-| No interactive display | Never call `plt.show()` — always use `plt.savefig()` |
-| Resource cleanup | Always call `plt.close()` after saving |
-| Multiple charts | Combine into a single script; use `plt.figure()` or `plt.subplots()` for each |
-| Script location | Always on the PROJECT side (user's working directory), never in `~/.claude` |
-| Execution | `cd ~/.claude` then `uv run <absolute-path-to-script>` as separate Bash calls |
-| Data sources | CSV/JSON files in the project directory, or inline data from web search / user input |
-| Script naming | Descriptive name based on content (e.g., `monthly_revenue_chart.py`), no fixed convention |
+### 2. Execute the script
 
-## Data Handling Patterns
+`~/.claude` has a `pyproject.toml` that manages matplotlib via uv.
+Run two **separate** Bash calls to use this environment (`&&` chaining is forbidden):
 
-### CSV files
-
-```python
-import csv
-
-data_path = SCRIPT_DIR / "sales.csv"
-with open(data_path) as f:
-    reader = csv.DictReader(f)
-    rows = list(reader)
+```
+cd ~/.claude
 ```
 
-### JSON files
+```
+uv run /absolute/path/to/project/script.py
+```
 
+The absolute path ensures output is written to the project directory.
+
+### 3. Verify the result
+
+Use the Read tool to load the output PNG and show it to the user.
+
+## Data handling
+
+CSV:
+```python
+import csv
+with open(SCRIPT_DIR / "sales.csv") as f:
+    rows = list(csv.DictReader(f))
+```
+
+JSON:
 ```python
 import json
-
-data_path = SCRIPT_DIR / "metrics.json"
-with open(data_path) as f:
+with open(SCRIPT_DIR / "metrics.json") as f:
     data = json.load(f)
 ```
 
-### Inline data (from web search or user input)
-
+Inline data (from web search or user input):
 ```python
-# Data gathered by Claude, embedded directly
 categories = ["Q1", "Q2", "Q3", "Q4"]
 values = [120, 185, 240, 310]
 ```
 
-## Execution Pattern
-
-IMPORTANT: Execute the script as two separate Bash calls. Do NOT chain with `&&`.
-
-1. `cd ~/.claude`
-2. `uv run /absolute/path/to/project/script.py`
-
-The first call changes directory to `~/.claude` where `pyproject.toml` and the `uv`-managed environment live. The second call runs the script using its absolute path so the output lands in the project directory.
-
-## Out of Scope
+## Out of scope
 
 - Libraries beyond matplotlib (no seaborn, plotly, etc.)
-- Interactive charts or `plt.show()`
+- Interactive display via `plt.show()`
 - GUI or web-based visualization
-- Automated data analysis / statistical inference
+- Automated data analysis or statistical inference
