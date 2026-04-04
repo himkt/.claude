@@ -36,15 +36,24 @@ User
 
 ### Step 1: Resolve Design Document Path (Director)
 
-Before validation, resolve `$ARGUMENTS` into a concrete `design-doc.md` path using a three-tier detection strategy, evaluated in order:
+Before validation, resolve `$ARGUMENTS` into a concrete `design-doc.md` path.
+
+#### Phase 1: Base Directory Resolution
+
+1. If `$ARGUMENTS` starts with `/` → absolute path (inference succeeds). Set `resolved_args = $ARGUMENTS`. Skip to Phase 2.
+2. If `$ARGUMENTS` is relative → load `Skill(base-dir)` and follow its procedure to resolve the base directory. Set `resolved_args = {base}/{$ARGUMENTS}`. Resolve to absolute path.
+
+#### Phase 2: Three-Tier Detection
+
+Using `resolved_args`, apply a three-tier detection strategy, evaluated in order:
 
 | Tier | Condition | Action |
 |:--|:--|:--|
-| 1 — Direct file path | `$ARGUMENTS` ends with `design-doc.md` | Use as-is (current behavior) |
-| 2 — Slug directory | `$ARGUMENTS` is a directory that contains `design-doc.md` directly | Append `/design-doc.md` and use as direct path |
-| 3 — Base directory | `$ARGUMENTS` is a directory containing `*/design-doc.md` (one level deep) | Enter discovery flow (see below) |
+| 1 — Direct file path | `resolved_args` ends with `design-doc.md` | Use as-is |
+| 2 — Slug directory | `resolved_args` is a directory that contains `design-doc.md` directly | Append `/design-doc.md` |
+| 3 — Base directory | `resolved_args` is a directory containing `*/design-doc.md` (one level deep) | Enter discovery flow |
 
-**Tier evaluation is sequential and short-circuits**: once a tier matches, later tiers are not evaluated.
+Tier evaluation is sequential and short-circuits.
 
 #### Discovery Flow (Tier 3)
 
@@ -106,10 +115,10 @@ Then abort (do not proceed to team creation or execution).
 
 #### Error: Invalid Path
 
-When `$ARGUMENTS` does not match any of the three tiers (not a file path ending in `design-doc.md`, not a directory containing `design-doc.md`, and no `*/design-doc.md` found underneath), display:
+When `resolved_args` does not match any of the three tiers (not a file path ending in `design-doc.md`, not a directory containing `design-doc.md`, and no `*/design-doc.md` found underneath), display:
 
 ```
-Invalid argument: <$ARGUMENTS>
+Invalid argument: <resolved_args>
 Expected one of:
   - Path to a design-doc.md file (e.g., design-docs/my-feature/design-doc.md)
   - Slug directory containing design-doc.md (e.g., design-docs/my-feature/)
