@@ -119,7 +119,7 @@ Then abort (do not proceed to team creation or execution).
 When `${RESOLVED_ARGS}` does not match any of the three tiers (not a file path ending in `design-doc.md`, not a directory containing `design-doc.md`, and no `*/design-doc.md` found underneath), display:
 
 ```
-Invalid argument: ${RESOLVED_ARGS}
+Invalid argument: `${RESOLVED_ARGS}`
 Expected one of:
   - Path to a design-doc.md file (e.g., design-docs/my-feature/design-doc.md)
   - Slug directory containing design-doc.md (e.g., design-docs/my-feature/)

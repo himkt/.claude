@@ -18,7 +18,7 @@ Consuming skills load this via `Skill(base-dir)`.
 Try to determine the base directory without user interaction, in order:
 
 1. If the consuming skill's argument is an absolute path (starts with `/`) → **skip this entire procedure**. The consuming skill already has a fully-qualified path and does not need a base directory.
-2. If `${CWD}` ≠ `~/.claude` → set `${BASE} = ${CWD}`. Done — skip to the consuming skill's next step.
+2. If `${CWD}` is not `~/.claude` and not inside `~/.claude` → set `${BASE} = ${CWD}`. Done — skip to the consuming skill's next step.
 
 If neither condition is met, proceed to Step 2.
 
