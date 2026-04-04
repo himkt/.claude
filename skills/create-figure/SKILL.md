@@ -60,17 +60,13 @@ Key points:
 ### 2. Execute the script
 
 `~/.claude` has a `pyproject.toml` that manages matplotlib via uv.
-Run two **separate** Bash calls to use this environment (`&&` chaining is forbidden):
+Run a single Bash call with `--project` to use this environment without changing CWD:
 
 ```
-cd ~/.claude
+uv run --project ~/.claude /absolute/path/to/project/script.py
 ```
 
-```
-uv run /absolute/path/to/project/script.py
-```
-
-The absolute path ensures output is written to the output directory.
+`--project ~/.claude` tells uv to use `~/.claude/pyproject.toml` and `~/.claude/.venv` without changing CWD. The absolute path ensures output is written to the output directory.
 
 ### 3. Verify the result
 
