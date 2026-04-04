@@ -97,26 +97,6 @@
       "Bash(python3 *)"
     ]
   },
-  "sandbox": {
-    "enabled": true,
-    "allowUnsandboxedCommands": false,
-    "filesystem": {
-      "allowRead": [
-        "~/.claude",
-        "~/.cache",
-        "~/.bun",
-        "~/.config",
-        "~/.gitconfig",
-        "/tmp/claude-code"
-      ],
-      "allowWrite": [
-        "~/.cache/uv",
-        "~/.claude/.venv",
-        "~/.bun",
-        "/tmp/claude-code"
-      ]
-    }
-  },
   "model": "opus[1m]",
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
