@@ -81,14 +81,14 @@ Use the Read tool to load the output PNG from `${OUTPUT_DIR}` and show it to the
 CSV:
 ```python
 import csv
-with open(SCRIPT_DIR / "sales.csv") as f:
+with open(DATA_DIR / "sales.csv") as f:
     rows = list(csv.DictReader(f))
 ```
 
 JSON:
 ```python
 import json
-with open(SCRIPT_DIR / "metrics.json") as f:
+with open(DATA_DIR / "metrics.json") as f:
     data = json.load(f)
 ```
 
