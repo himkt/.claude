@@ -12,6 +12,7 @@ Generate comprehensive research reports using a multi-layer agent hierarchy: Dir
 |:--|:--|:--|:--|:--|
 | **Director** | Main Claude | Spawn all teammates, review all deliverables, demand revisions | Write the report, decompose topics, conduct research | [roles/director.md](roles/director.md) |
 | **Manager** | `general-purpose` | Light web search for topic decomposition, request researcher spawning, coordinate researchers, compile report, revise | Conduct deep investigation — all substantive research MUST be delegated to Researchers | [roles/manager.md](roles/manager.md) |
+| **Scout** | `web-researcher` | Landscape mapping — broad discovery to expand knowledge before decomposition | Collect facts for the report, write report sections | [roles/scout.md](roles/scout.md) |
 | **Researcher** | `web-researcher` | Search exhaustively, collect facts with sources, filter misinformation, write findings to assigned file | Synthesize or write report sections | [roles/researcher.md](roles/researcher.md) |
 
 ## Additional resources
@@ -52,15 +53,48 @@ Create the team and spawn the Manager with a prompt covering:
 
 1. The user's original request in full
 2. **Today's date** (e.g., "Current date: 2026-02-20"). This anchors what "recent" means for all research.
-3. Instruction to read `roles/manager.md` for role definition
+3. Instruction to read `roles/manager.md` for role definition and `roles/scout.md` for Scout role definition
 4. Instruction to tell Researchers to read `roles/researcher.md`
-5. How to request Researchers: send the Director a message specifying sub-topics, scope, angles, and assigned file paths. Director spawns them as `web-researcher` agent teammates. Manager coordinates via messaging.
-6. Handle researcher failures: re-split topics and request new Researchers from Director
-7. Report format specification (copy template rules from template.md)
-8. **Output folder path**: Pass `${OUTPUT_DIR}` (the resolved absolute path from Step 0) to the Manager. The Manager writes the compiled report to `${OUTPUT_DIR}/report.md`. Researchers write to `${OUTPUT_DIR}/NN-{subtopic}.md`.
-9. User's language preference (if specified)
-10. Mandate: "Your first draft will be reviewed critically. Aim for highest quality on first attempt."
-### Step 1b: Spawn Researchers (Director)
+5. **Knowledge Bootstrapping (Scout Phase)**: Before decomposing the topic, the Manager may request Scout(s) from the Director for landscape mapping. To request Scouts, send the Director a message specifying: scope of landscape to map, search angles, and output file paths (`${OUTPUT_DIR}/00-scout-{topic}.md`). The Director spawns each Scout as a `web-researcher` teammate. The Manager reviews Scout findings, may request follow-up scouting or new Scouts, with a maximum of 3 Scout-Manager iterations. The Manager's own searches have no query limit — search as needed for orientation.
+6. How to request Researchers: send the Director a message specifying sub-topics, scope, angles, and assigned file paths. Director spawns them as `web-researcher` agent teammates. Manager coordinates via messaging.
+7. Handle researcher failures: re-split topics and request new Researchers from Director
+8. Report format specification (copy template rules from template.md)
+9. **Output folder path**: Pass `${OUTPUT_DIR}` (the resolved absolute path from Step 0) to the Manager. The Manager writes the compiled report to `${OUTPUT_DIR}/report.md`. Researchers write to `${OUTPUT_DIR}/NN-{subtopic}.md`.
+10. User's language preference (if specified)
+11. Mandate: "Your first draft will be reviewed critically. Aim for highest quality on first attempt."
+### Step 2: Knowledge Bootstrapping — Scout Phase (Director)
+
+After the Manager assesses the topic, the Manager may request Scout(s) from the Director for landscape mapping before topic decomposition.
+
+**Scout spawn prompt template:**
+
+```
+You are a Scout Researcher and a teammate in a research team.
+
+Read your role definition at: roles/scout.md
+
+CURRENT DATE: {today's date}
+YOUR ASSIGNMENT: [landscape scope and what areas to map]
+OUTPUT FILE: {resolved-path}/00-scout-{topic}.md
+
+Write findings to the output file, then message the Manager when complete.
+```
+
+**Scout-Manager loop:**
+
+1. Manager assesses the topic and decides which aspects need landscape scouting
+2. Manager sends Director a spawn request specifying Scout(s) — topic scope, search angles, output file paths (`00-scout-{topic}.md`)
+3. Director spawns Scout(s) as `web-researcher` teammates
+4. Scout(s) investigate and write findings to their output files, then message Manager
+5. Manager reads Scout output files, identifies knowledge gaps or promising leads
+6. **Loop**: Manager may send Scout(s) back for targeted follow-up, or request new Scout(s) from Director for uncovered areas
+7. **Termination**: Manager judges that sufficient landscape knowledge has been gathered to decompose the topic effectively
+
+**Safety cap**: Maximum 3 Scout-Manager iterations (request → investigate → review constitutes one iteration). After 3 iterations, the Manager must proceed to topic decomposition with the knowledge gathered so far.
+
+**Transition**: Once the Manager signals that scouting is complete and sends a Researcher spawn request, the Director proceeds to Step 3 (Spawn Researchers).
+
+### Step 3: Spawn Researchers (Director)
 
 After the Manager decomposes the topic and sends a spawn request, the Director spawns each Researcher as a teammate.
 
@@ -80,21 +114,21 @@ Write findings to the output file, then message the Manager when complete.
 
 The Director repeats this step whenever the Manager requests additional Researchers (e.g., for coverage gaps, failed investigations, or revision-driven re-research).
 
-### Step 2: Critical Review (Director)
+### Step 4: Critical Review (Director)
 
 When the Manager finishes and sends you the completed report (messages are delivered automatically via the team mailbox), read the report file and review it critically against the checklist in [roles/director.md](roles/director.md).
 
-### Step 3: Revision Loop (Director ↔ Manager)
+### Step 5: Revision Loop (Director ↔ Manager)
 
 **This is where report quality is forged.** The first draft is raw material. The revision loop transforms it into a polished deliverable.
 
 When issues are found, message the Manager teammate with specific, categorized, tagged feedback. See [roles/director.md](roles/director.md) for feedback tags and severity definitions.
 
-### Step 4: Iterate Until Quality Is Met (Director)
+### Step 6: Iterate Until Quality Is Met (Director)
 
-Re-review per [roles/director.md](roles/director.md) quality criteria. Once approved, proceed to Step 5.
+Re-review per [roles/director.md](roles/director.md) quality criteria. Once approved, proceed to Step 7.
 
-### Step 5: Present Deliverables to User (Director)
+### Step 7: Present Deliverables to User (Director)
 
 After the Director approves the report internally, present it to the user:
 
@@ -105,17 +139,17 @@ After the Director approves the report internally, present it to the user:
 3. **Limitations** — any caveats, known gaps, or areas where sources were limited
 4. **Request for feedback** — explicitly ask the user to review and provide feedback or approve
 
-### Step 6: User Revision Loop (Director)
+### Step 8: User Revision Loop (Director)
 
 When the user provides feedback after reviewing the report:
 
 1. **Route feedback to the Manager** using the same tag-based format (may trigger re-research via Researchers)
 2. **Manager revises** the report and sends the updated version back to you
-3. **Re-review** the changes, then re-present to the user (return to Step 5)
+3. **Re-review** the changes, then re-present to the user (return to Step 7)
 
 This loop repeats until the user explicitly approves the report.
 
-### Step 7: Offer Presentation Chaining (Director)
+### Step 9: Offer Presentation Chaining (Director)
 
 After the user approves the report, offer to create a presentation:
 
@@ -128,10 +162,10 @@ AskUserQuestion:
     - "No, report only"
 ```
 
-- **If yes:** Proceed to Step 8 (shut down all research agents and clean up the team), then invoke `/research-presentation ${OUTPUT_DIR}` via the Skill tool. Since `${OUTPUT_DIR}` is an absolute path, `/research-presentation` skips its own base directory prompt. A new team is created by `/research-presentation` with its own lifecycle.
-- **If no:** Proceed directly to Step 8.
+- **If yes:** Proceed to Step 10 (shut down all research agents and clean up the team), then invoke `/research-presentation ${OUTPUT_DIR}` via the Skill tool. Since `${OUTPUT_DIR}` is an absolute path, `/research-presentation` skips its own base directory prompt. A new team is created by `/research-presentation` with its own lifecycle.
+- **If no:** Proceed directly to Step 10.
 
-### Step 8: Finalize & Clean Up (Director)
+### Step 10: Finalize & Clean Up (Director)
 
 1. Confirm all final deliverables are saved to `${OUTPUT_DIR}/`
 2. **Shutdown sequence:**
