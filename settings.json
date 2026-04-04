@@ -9,6 +9,9 @@
     "commit": ""
   },
   "permissions": {
+    "additionalDirectories": [
+      "~/.claude"
+    ],
     "allow": [
       "Edit",
       "Bash(bun install)",
@@ -45,6 +48,7 @@
       "Read(/skills/**)",
       "Read(/plugins/**)",
       "Read(//tmp/claude-code/**)",
+      "Skill(create-figure)",
       "Skill(design-doc)",
       "Skill(github-cli)",
       "Skill(design-doc-create)",
