@@ -13,7 +13,7 @@ Only the execution borrows the uv environment from `~/.claude`.
 
 ## Procedure
 
-### 0. Resolve output directory
+### 0. Resolve directories
 
 Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies).
 If the resolved `${BASE}` is `~/.claude`, override to `${BASE} = /tmp/claude-code`.
@@ -21,6 +21,7 @@ Set `${SRC_DIR} = ${BASE}/figures/src`.
 Set `${OUTPUT_DIR} = ${BASE}/figures/output`.
 Set `${DATA_DIR} = ${BASE}/figures/data`.
 
+Create the directories if they do not exist.
 All subsequent steps use `${SRC_DIR}`, `${OUTPUT_DIR}`, and `${DATA_DIR}` instead of CWD for file creation. Never create scripts or outputs in `~/.claude`.
 
 ### 1. Create the script
@@ -46,7 +47,8 @@ fig, ax = plt.subplots()
 # ... plotting logic ...
 
 # Output — filename matches script name
-output_path = OUTPUT_DIR / "chart.png"
+script_stem = pathlib.Path(__file__).stem
+output_path = OUTPUT_DIR / f"{script_stem}.png"
 plt.savefig(output_path, dpi=150, bbox_inches="tight")
 plt.close()
 print(f"Saved: {output_path}")
