@@ -13,10 +13,18 @@ Only the execution borrows the uv environment from `~/.claude`.
 
 ## Procedure
 
-### 1. Create the script in the project directory
+### 0. Resolve output directory
 
-Use the Write tool to create a `.py` file in the user's working directory (the project).
-Never create scripts in `~/.claude`.
+Determine where to create the script and output files:
+
+1. If CWD ≠ `~/.claude` → `output_dir = CWD` (inference succeeds; current project is the output target).
+2. If CWD = `~/.claude` → load `Skill(base-dir)` and follow its procedure to resolve the base directory. Set `output_dir = base`.
+
+All subsequent steps use `output_dir` instead of CWD for file creation.
+
+### 1. Create the script in the output directory
+
+Use the Write tool to create a `.py` file in `output_dir`.
 
 The script must follow this pattern:
 
