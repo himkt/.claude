@@ -38,7 +38,7 @@ fonts:
 ## Content Structuring Rules
 
 1. **One topic per slide** — each slide conveys a single idea or concept
-2. **Max 5 bullets per slide** — if more points are needed, split into multiple slides
+2. **Max 7 bullets per slide** — if more points are needed, split into multiple slides
 3. **Bullet text: max ~15 words** — keep bullets concise; use sub-bullets sparingly
 4. **First slide is always `cover`** — with presentation title and author
 5. **Default to `bullets` layout** — use `blank` for tables, diagrams, or free-form content
