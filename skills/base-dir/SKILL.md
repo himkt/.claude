@@ -9,40 +9,37 @@ description: >
 # Base Directory Resolution
 
 Canonical procedure for determining the base directory for output files.
-
-## When to Skip This Procedure
-
-Each consuming skill defines its own **inference rules** for when the base
-directory can be reliably determined without user interaction. Common cases:
-
-- The skill's argument is an absolute path (starts with `/`)
-- The context unambiguously determines the base (e.g., no path argument
-  and CWD is a project directory, not `~/.claude`)
-
-When inference succeeds, the consuming skill skips this procedure entirely.
-When inference fails, the consuming skill follows the procedure below.
+Consuming skills load this via `Skill(base-dir)`.
 
 ## Procedure
 
-### Step 1: Interactive Selection
+### Step 1: Inference
+
+Try to determine the base directory without user interaction, in order:
+
+1. If the consuming skill's argument is an absolute path (starts with `/`) → **skip this entire procedure**. The consuming skill already has a fully-qualified path and does not need a base directory.
+2. If CWD ≠ `~/.claude` → set `base = CWD`. Done — skip to the consuming skill's next step.
+
+If neither condition is met, proceed to Step 2.
+
+### Step 2: Interactive Selection
 
 Use `AskUserQuestion` with the following configuration:
 
 **Question**: `"Select the base directory for output files:"`
 
-**Options** (apply context-dependent recommended label based on CWD):
+**Options**:
 
-| Option | Label when CWD = `~/.claude` | Label when CWD ≠ `~/.claude` |
-|--------|------------------------------|------------------------------|
-| 1 | `{cwd}/` | `{cwd}/ (recommended)` |
-| 2 | `/tmp/claude-code/ (recommended)` | `/tmp/claude-code/` |
-| 3 | `Other` | `Other` |
+| Option | Label |
+|--------|-------|
+| 1 | `{cwd}/` |
+| 2 | `/tmp/claude-code/ (recommended)` |
 
 Option 3 ("Other") uses `AskUserQuestion`'s built-in free-text input — the
 user types a custom path directly in the same prompt. No second
 `AskUserQuestion` call is needed.
 
-### Step 2: Resolution
+### Step 3: Resolution
 
 Resolve the selected option to an absolute base path:
 

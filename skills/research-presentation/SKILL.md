@@ -38,10 +38,11 @@ User (or chained from /research-report)
 ### Step 0: Validate Input (Director)
 
 1. If `$ARGUMENTS` is absent → error: "Usage: `/research-presentation researches/{folder-name}`. Specify the folder containing report.md."
-2. If `$ARGUMENTS` starts with `/` → absolute path (inference succeeds). Set `folder = $ARGUMENTS`.
-3. If `$ARGUMENTS` is relative → load `Skill(base-dir)` and follow its procedure to resolve the base directory. Set `folder = {base}/{$ARGUMENTS}`. Resolve to absolute path.
-4. Check that `{folder}/report.md` exists. If not, error: "No report.md found in `{folder}`. Run `/research-report` first to generate a report."
-5. Pass `folder` as the resolved absolute path to all teammates in spawn prompts.
+2. Load `Skill(base-dir)` and follow its procedure with `$ARGUMENTS` as the argument.
+   - If skipped (absolute path): set `folder = $ARGUMENTS`.
+   - If base resolved: set `folder = {base}/{$ARGUMENTS}`. Resolve to absolute path.
+3. Check that `{folder}/report.md` exists. If not, error: "No report.md found in `{folder}`. Run `/research-report` first to generate a report."
+4. Pass `folder` as the resolved absolute path to all teammates in spawn prompts.
 
 ### Step 1: Create Team & Spawn Agents (Director)
 

@@ -40,8 +40,9 @@ Before validation, resolve `$ARGUMENTS` into a concrete `design-doc.md` path.
 
 #### Phase 1: Base Directory Resolution
 
-1. If `$ARGUMENTS` starts with `/` → absolute path (inference succeeds). Set `resolved_args = $ARGUMENTS`. Skip to Phase 2.
-2. If `$ARGUMENTS` is relative → load `Skill(base-dir)` and follow its procedure to resolve the base directory. Set `resolved_args = {base}/{$ARGUMENTS}`. Resolve to absolute path.
+Load `Skill(base-dir)` and follow its procedure with `$ARGUMENTS` as the argument.
+- If skipped (absolute path): set `resolved_args = $ARGUMENTS`.
+- If base resolved: set `resolved_args = {base}/{$ARGUMENTS}`. Resolve to absolute path.
 
 #### Phase 2: Three-Tier Detection
 

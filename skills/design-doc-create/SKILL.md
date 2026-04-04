@@ -40,9 +40,11 @@ User
 
 **Path resolution** (before resume detection):
 
-1. If `$ARGUMENTS` starts with `/` → absolute path (inference succeeds). Set `doc_path = $ARGUMENTS`.
-2. If `$ARGUMENTS` is relative → load `Skill(base-dir)` and follow its procedure to resolve the base directory. Set `doc_path = {base}/{$ARGUMENTS}`. Resolve to absolute path.
-3. Pass `doc_path` to the Drafter as OUTPUT PATH in the spawn prompt.
+Load `Skill(base-dir)` and follow its procedure with `$ARGUMENTS` as the argument.
+- If skipped (absolute path): set `doc_path = $ARGUMENTS`.
+- If base resolved: set `doc_path = {base}/{$ARGUMENTS}`. Resolve to absolute path.
+
+Pass `doc_path` to the Drafter as OUTPUT PATH in the spawn prompt.
 
 **Resume detection** (using resolved `doc_path`):
 

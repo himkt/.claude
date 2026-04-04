@@ -39,7 +39,7 @@ User
 
 Before creating the team, determine where output files will be saved.
 
-1. Load `Skill(base-dir)` and follow its procedure to resolve the base directory. (No inference applies — the topic argument is not a path.)
+1. Load `Skill(base-dir)` and follow its procedure. (The topic argument is not a path, so inference Step 1.1 does not apply.)
 2. Compute: `output_dir = {base}/researches/{topic-slug}/`
 3. Create the output directory.
 4. Pass `output_dir` as the resolved absolute path to the Manager and all Researchers in their spawn prompts.

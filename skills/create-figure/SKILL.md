@@ -15,10 +15,8 @@ Only the execution borrows the uv environment from `~/.claude`.
 
 ### 0. Resolve output directory
 
-Determine where to create the script and output files:
-
-1. If CWD ≠ `~/.claude` → `output_dir = CWD` (inference succeeds; current project is the output target).
-2. If CWD = `~/.claude` → load `Skill(base-dir)` and follow its procedure to resolve the base directory. Set `output_dir = base`.
+Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies).
+Set `output_dir = base`.
 
 All subsequent steps use `output_dir` instead of CWD for file creation.
 
