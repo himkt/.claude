@@ -2,7 +2,6 @@
 
 When a task matches a skill below, you MUST invoke it via the Skill tool BEFORE taking any other action. Pay attention to override instructions (what NOT to do) in each entry.
 
-- `/base-dir` — Resolve the base directory for output files. Loaded by consuming skills via Skill(base-dir) when they need to determine where to write output. Do NOT invoke this skill directly — consuming skills load it automatically.
 - `/create-figure` — Create data visualizations and charts using matplotlib. Triggered when user asks to create a chart, plot, graph, or visualize data. Also invokable via /create-figure. Do NOT use plt.show() — always save to PNG files.
 - `/design-doc` — Standardized design document format with template and guidelines. Load this skill when writing or editing a design document to ensure correct structure. Teammates in agent teams must always load this skill using Skill(design-doc). Do NOT write design documents in a freeform format — always use this skill's template.
 - `/design-doc-create` — Create a new design document using the design-doc-creator agent. Use when user wants to create a specification, implementation plan, or technical document. Teammates must always load skills using the Skill tool, not by reading skill files directly. Do NOT use EnterPlanMode — always invoke this skill instead.

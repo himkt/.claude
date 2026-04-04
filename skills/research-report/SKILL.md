@@ -39,10 +39,10 @@ User
 
 Before creating the team, determine where output files will be saved.
 
-1. Load `Skill(base-dir)` and follow its procedure. (The topic argument is not a path, so inference Step 1.1 does not apply.)
-2. Compute: `output_dir = {base}/researches/{topic-slug}/`
+1. Load `Skill(base-dir)` and follow its procedure. (The topic argument is not a path, so the absolute-path skip rule does not apply.)
+2. Compute: `${OUTPUT_DIR} = ${BASE}/researches/{topic-slug}/`
 3. Create the output directory.
-4. Pass `output_dir` as the resolved absolute path to the Manager and all Researchers in their spawn prompts.
+4. Pass `${OUTPUT_DIR}` as the resolved absolute path to the Manager and all Researchers in their spawn prompts.
 
 ### Step 1: Create Team & Launch Manager (Director)
 
@@ -57,7 +57,7 @@ Create the team and spawn the Manager with a prompt covering:
 5. How to request Researchers: send the Director a message specifying sub-topics, scope, angles, and assigned file paths. Director spawns them as `web-researcher` agent teammates. Manager coordinates via messaging.
 6. Handle researcher failures: re-split topics and request new Researchers from Director
 7. Report format specification (copy template rules from template.md)
-8. **Output folder path**: Pass `output_dir` (the resolved absolute path from Step 0) to the Manager. The Manager writes the compiled report to `{output_dir}/report.md`. Researchers write to `{output_dir}/NN-{subtopic}.md`.
+8. **Output folder path**: Pass `${OUTPUT_DIR}` (the resolved absolute path from Step 0) to the Manager. The Manager writes the compiled report to `${OUTPUT_DIR}/report.md`. Researchers write to `${OUTPUT_DIR}/NN-{subtopic}.md`.
 9. User's language preference (if specified)
 10. Mandate: "Your first draft will be reviewed critically. Aim for highest quality on first attempt."
 ### Step 1b: Spawn Researchers (Director)
@@ -100,8 +100,8 @@ After the Director approves the report internally, present it to the user:
 
 1. **Summary of findings** — key insights from the report (2-3 sentences)
 2. **File paths** — list deliverable files:
-   - Report: `{output_dir}/report.md`
-   - Researcher files: `{output_dir}/01-*.md`, `02-*.md`, etc. (raw research data for reference)
+   - Report: `${OUTPUT_DIR}/report.md`
+   - Researcher files: `${OUTPUT_DIR}/01-*.md`, `02-*.md`, etc. (raw research data for reference)
 3. **Limitations** — any caveats, known gaps, or areas where sources were limited
 4. **Request for feedback** — explicitly ask the user to review and provide feedback or approve
 
@@ -128,12 +128,12 @@ AskUserQuestion:
     - "No, report only"
 ```
 
-- **If yes:** Proceed to Step 8 (shut down all research agents and clean up the team), then invoke `/research-presentation {output_dir}` via the Skill tool. Since `output_dir` is an absolute path, `/research-presentation` skips its own base directory prompt. A new team is created by `/research-presentation` with its own lifecycle.
+- **If yes:** Proceed to Step 8 (shut down all research agents and clean up the team), then invoke `/research-presentation ${OUTPUT_DIR}` via the Skill tool. Since `${OUTPUT_DIR}` is an absolute path, `/research-presentation` skips its own base directory prompt. A new team is created by `/research-presentation` with its own lifecycle.
 - **If no:** Proceed directly to Step 8.
 
 ### Step 8: Finalize & Clean Up (Director)
 
-1. Confirm all final deliverables are saved to `{output_dir}/`
+1. Confirm all final deliverables are saved to `${OUTPUT_DIR}/`
 2. **Shutdown sequence:**
    1. Send shutdown requests to: all Researchers
    2. Send shutdown request to: Manager

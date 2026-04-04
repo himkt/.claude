@@ -16,13 +16,14 @@ Only the execution borrows the uv environment from `~/.claude`.
 ### 0. Resolve output directory
 
 Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies).
-Set `output_dir = base`.
+If the resolved `${BASE}` is `~/.claude`, override to `${BASE} = /tmp/claude-code`.
+Set `${OUTPUT_DIR} = ${BASE}`.
 
-All subsequent steps use `output_dir` instead of CWD for file creation.
+All subsequent steps use `${OUTPUT_DIR}` instead of CWD for file creation. Never create scripts or outputs in `~/.claude`.
 
 ### 1. Create the script in the output directory
 
-Use the Write tool to create a `.py` file in `output_dir`.
+Use the Write tool to create a `.py` file in `${OUTPUT_DIR}`.
 
 The script must follow this pattern:
 

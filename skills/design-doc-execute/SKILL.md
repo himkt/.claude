@@ -41,18 +41,18 @@ Before validation, resolve `$ARGUMENTS` into a concrete `design-doc.md` path.
 #### Phase 1: Base Directory Resolution
 
 Load `Skill(base-dir)` and follow its procedure with `$ARGUMENTS` as the argument.
-- If skipped (absolute path): set `resolved_args = $ARGUMENTS`.
-- If base resolved: set `resolved_args = {base}/{$ARGUMENTS}`. Resolve to absolute path.
+- If skipped (absolute path): set `${RESOLVED_ARGS} = $ARGUMENTS`.
+- If base resolved: set `${RESOLVED_ARGS} = ${BASE}/$ARGUMENTS`. Resolve to absolute path.
 
 #### Phase 2: Three-Tier Detection
 
-Using `resolved_args`, apply a three-tier detection strategy, evaluated in order:
+Using `${RESOLVED_ARGS}`, apply a three-tier detection strategy, evaluated in order:
 
 | Tier | Condition | Action |
 |:--|:--|:--|
-| 1 — Direct file path | `resolved_args` ends with `design-doc.md` | Use as-is |
-| 2 — Slug directory | `resolved_args` is a directory that contains `design-doc.md` directly | Append `/design-doc.md` |
-| 3 — Base directory | `resolved_args` is a directory containing `*/design-doc.md` (one level deep) | Enter discovery flow |
+| 1 — Direct file path | `${RESOLVED_ARGS}` ends with `design-doc.md` | Use as-is |
+| 2 — Slug directory | `${RESOLVED_ARGS}` is a directory that contains `design-doc.md` directly | Append `/design-doc.md` |
+| 3 — Base directory | `${RESOLVED_ARGS}` is a directory containing `*/design-doc.md` (one level deep) | Enter discovery flow |
 
 Tier evaluation is sequential and short-circuits.
 
@@ -116,10 +116,10 @@ Then abort (do not proceed to team creation or execution).
 
 #### Error: Invalid Path
 
-When `resolved_args` does not match any of the three tiers (not a file path ending in `design-doc.md`, not a directory containing `design-doc.md`, and no `*/design-doc.md` found underneath), display:
+When `${RESOLVED_ARGS}` does not match any of the three tiers (not a file path ending in `design-doc.md`, not a directory containing `design-doc.md`, and no `*/design-doc.md` found underneath), display:
 
 ```
-Invalid argument: <resolved_args>
+Invalid argument: ${RESOLVED_ARGS}
 Expected one of:
   - Path to a design-doc.md file (e.g., design-docs/my-feature/design-doc.md)
   - Slug directory containing design-doc.md (e.g., design-docs/my-feature/)

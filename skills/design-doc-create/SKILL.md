@@ -41,12 +41,12 @@ User
 **Path resolution** (before resume detection):
 
 Load `Skill(base-dir)` and follow its procedure with `$ARGUMENTS` as the argument.
-- If skipped (absolute path): set `doc_path = $ARGUMENTS`.
-- If base resolved: set `doc_path = {base}/{$ARGUMENTS}`. Resolve to absolute path.
+- If skipped (absolute path): set `${DOC_PATH} = $ARGUMENTS`.
+- If base resolved: set `${DOC_PATH} = ${BASE}/$ARGUMENTS`. Resolve to absolute path.
 
-Pass `doc_path` to the Drafter as OUTPUT PATH in the spawn prompt.
+Pass `${DOC_PATH}` to the Drafter as OUTPUT PATH in the spawn prompt.
 
-**Resume detection** (using resolved `doc_path`):
+**Resume detection** (using resolved `${DOC_PATH}`):
 
 1. **File does not exist** → Fresh creation (proceed to Step 1 as normal).
 2. **File exists** → Check for COMMENT markers:
@@ -71,7 +71,7 @@ Read your role definition at: roles/drafter.md
 IMPORTANT: You MUST ask clarifying questions BEFORE writing any design document file.
 Send your questions to the Director who will relay them to the user.
 
-OUTPUT PATH: [INSERT doc_path HERE]
+OUTPUT PATH: [INSERT ${DOC_PATH} HERE]
 
 The user's request: [INSERT USER'S ORIGINAL REQUEST HERE]
 
@@ -89,7 +89,7 @@ You are the Drafter in a design document creation team (RESUME MODE).
 Load the design-doc skill using: Skill(design-doc)
 Read your role definition at: roles/drafter.md
 
-DESIGN DOCUMENT: [INSERT doc_path HERE]
+DESIGN DOCUMENT: [INSERT ${DOC_PATH} HERE]
 
 This is a RESUME session. The document contains COMMENT markers from a previous
 interview. Follow the Resume Mode instructions in your role definition.
