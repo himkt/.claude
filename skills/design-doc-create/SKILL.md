@@ -40,25 +40,8 @@ User
 
 **Path resolution** (before resume detection):
 
-1. If `$ARGUMENTS` starts with `/` → absolute path. Set `doc_path = $ARGUMENTS`.
-2. If `$ARGUMENTS` is relative → use `AskUserQuestion` with the base directory options:
-   - Question: `"Select the base directory for output files:"`
-   - Options (apply context-dependent recommended label based on CWD):
-
-   | Option | Label when CWD = `~/.claude` | Label when CWD ≠ `~/.claude` |
-   |--------|------------------------------|------------------------------|
-   | 1 | `{cwd}/` | `{cwd}/ (recommended)` |
-   | 2 | `/tmp/claude-code/ (recommended)` | `/tmp/claude-code/` |
-   | 3 | `Other` | `Other` |
-
-   Option 3 ("Other") uses `AskUserQuestion`'s built-in free-text input — the user types a custom path directly in the same prompt. No second `AskUserQuestion` call is needed.
-
-   Resolve the selected base:
-   - Option 1: `base = {cwd}` (resolved to absolute path)
-   - Option 2: `base = /tmp/claude-code`
-   - Option 3 (free text): `base = user's input` (resolved to absolute path; if relative, resolve against CWD)
-
-   Set `doc_path = {base}/{$ARGUMENTS}`. Resolve to absolute path.
+1. If `$ARGUMENTS` starts with `/` → absolute path (inference succeeds). Set `doc_path = $ARGUMENTS`.
+2. If `$ARGUMENTS` is relative → load `Skill(base-dir)` and follow its procedure to resolve the base directory. Set `doc_path = {base}/{$ARGUMENTS}`. Resolve to absolute path.
 3. Pass `doc_path` to the Drafter as OUTPUT PATH in the spawn prompt.
 
 **Resume detection** (using resolved `doc_path`):
