@@ -99,19 +99,20 @@
   },
   "sandbox": {
     "enabled": true,
-    "allowUnsandboxedCommands": false,
     "filesystem": {
       "allowRead": [
         "~/.claude",
         "~/.cache",
         "~/.bun",
         "~/.config",
-        "~/.gitconfig"
+        "~/.gitconfig",
+        "/tmp/claude-code"
       ],
       "allowWrite": [
         "~/.cache/uv",
         "~/.claude/.venv",
-        "~/.bun"
+        "~/.bun",
+        "/tmp/claude-code"
       ]
     }
   },

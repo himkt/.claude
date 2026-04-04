@@ -66,7 +66,7 @@ Run a single Bash call with `--frozen` and `--project` to use this environment w
 uv run --frozen --project ~/.claude /absolute/path/to/project/script.py
 ```
 
-`--frozen` prevents uv from updating the lockfile. `--project ~/.claude` tells uv to use `~/.claude/pyproject.toml` and `~/.claude/.venv` without changing CWD. The absolute path ensures output is written to the output directory.
+`--frozen` prevents uv from updating the lockfile. `--project ~/.claude` tells uv to use `~/.claude/pyproject.toml` and `~/.claude/.venv` without changing CWD. The absolute script path ensures the script can be located and executed without relying on CWD; output location is controlled by the script's use of `pathlib.Path(__file__).resolve().parent`.
 
 ### 3. Verify the result
 
