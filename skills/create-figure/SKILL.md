@@ -8,15 +8,22 @@ description: >
 
 # Create Figure
 
-Generate matplotlib charts. Scripts and outputs go in the project directory.
+Generate matplotlib charts. Scripts and outputs go in the output directory.
 Only the execution borrows the uv environment from `~/.claude`.
 
 ## Procedure
 
-### 1. Create the script in the project directory
+### 0. Resolve output directory
 
-Use the Write tool to create a `.py` file in the user's working directory (the project).
-Never create scripts in `~/.claude`.
+Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies).
+If the resolved `${BASE}` is `~/.claude`, override to `${BASE} = /tmp/claude-code`.
+Set `${OUTPUT_DIR} = ${BASE}`.
+
+All subsequent steps use `${OUTPUT_DIR}` instead of CWD for file creation. Never create scripts or outputs in `~/.claude`.
+
+### 1. Create the script in the output directory
+
+Use the Write tool to create a `.py` file in `${OUTPUT_DIR}`.
 
 The script must follow this pattern:
 
@@ -44,7 +51,7 @@ print(f"Saved: {output_path}")
 
 Key points:
 - `matplotlib.use("Agg")` must come before importing `pyplot`
-- All paths use `pathlib.Path(__file__).resolve().parent`. This ensures inputs and outputs stay in the project directory regardless of where the script is executed from
+- All paths use `pathlib.Path(__file__).resolve().parent`. This ensures inputs and outputs stay in the output directory regardless of where the script is executed from
 - Never call `plt.show()`. Save to PNG with `plt.savefig()`
 - Always call `plt.close()` after saving
 - Default output: PNG, `dpi=150`, `bbox_inches="tight"`
@@ -63,7 +70,7 @@ cd ~/.claude
 uv run /absolute/path/to/project/script.py
 ```
 
-The absolute path ensures output is written to the project directory.
+The absolute path ensures output is written to the output directory.
 
 ### 3. Verify the result
 
