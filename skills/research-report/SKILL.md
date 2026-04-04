@@ -21,18 +21,20 @@ Generate comprehensive research reports using a multi-layer agent hierarchy: Dir
 
 ## Architecture
 
-Only the lead (Director) can spawn teammates ([no nested teams](https://code.claude.com/docs/en/agent-teams#limitations)). Therefore, the Director spawns both the Manager and all Researchers as teammates. The Manager coordinates Researchers via direct messaging but requests the Director to spawn new ones when needed.
+Only the lead (Director) can spawn teammates ([no nested teams](https://code.claude.com/docs/en/agent-teams#limitations)). Therefore, the Director spawns the Manager, all Scouts, and all Researchers as teammates. The Manager coordinates Scouts and Researchers via direct messaging but requests the Director to spawn new ones when needed.
 
 ```
 User
  └─ Director (main Claude, the lead — creates team, spawns all teammates, reviews all deliverables)
       ├─ Manager (teammate — orchestrates research, compiles report)
+      ├─ Scout 1..N (teammates — spawned by Director on Manager's request)
       └─ Researcher 1..N (teammates — spawned by Director on Manager's request)
 ```
 
 - **Director ↔ Manager**: team messaging (task instructions, review feedback, spawn requests)
+- **Manager ↔ Scouts**: team messaging (landscape requests, findings, follow-up)
 - **Manager ↔ Researchers**: team messaging (assignments, findings, follow-up questions)
-- **Manager → Director**: spawn requests when additional Researchers are needed
+- **Manager → Director**: spawn requests when additional Scouts or Researchers are needed
 
 ## Process
 
