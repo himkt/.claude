@@ -42,6 +42,7 @@
       "Bash(uv sync *)",
       "Bash(uv run pytest *)",
       "Bash(uv run ruff check *)",
+      "Bash(uv run --project ~/.claude *)",
       "Bash(uv run ruff format *)",
       "NotebookEdit",
       "Read(/settings.json)",
@@ -95,6 +96,24 @@
       "Bash(python *)",
       "Bash(python3 *)"
     ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "allowRead": [
+        "~/.claude",
+        "~/.cache",
+        "~/.bun",
+        "~/.config",
+        "~/.gitconfig"
+      ],
+      "allowWrite": [
+        "~/.cache/uv",
+        "~/.claude/.venv",
+        "~/.bun"
+      ]
+    }
   },
   "model": "opus[1m]",
   "enableAllProjectMcpServers": true,
