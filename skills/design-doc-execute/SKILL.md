@@ -52,7 +52,7 @@ Using `${RESOLVED_ARGS}`, apply a three-tier detection strategy, evaluated in or
 |:--|:--|:--|
 | 1 — Direct file path | `${RESOLVED_ARGS}` ends with `design-doc.md` | Use as-is |
 | 2 — Slug directory | `${RESOLVED_ARGS}` is a directory that contains `design-doc.md` directly | Append `/design-doc.md` |
-| 3 — Base directory | `${RESOLVED_ARGS}` is a directory containing `*/design-doc.md` (one level deep) | Enter discovery flow |
+| 3 — Base directory | `${RESOLVED_ARGS}` is a directory containing `**/design-doc.md` (one level deep) | Enter discovery flow |
 
 Tier evaluation is sequential and short-circuits.
 
@@ -60,7 +60,8 @@ Tier evaluation is sequential and short-circuits.
 
 When the base directory tier matches:
 
-1. **Discover**: Use Glob to find all `*/design-doc.md` files one level deep under the base directory.
+1. **Discover**: Use Glob to find all `**/design-doc.md` files under the base directory, then filter results to keep only those exactly one level deep (i.e., `<base>/<slug>/design-doc.md`). Discard any deeper matches.
+   <!-- FIXME(claude): Glob tool does not support `*/filename` patterns (e.g., `*/design-doc.md` returns nothing). Using `**/filename` with post-filter as workaround. Revert to `*/design-doc.md` once Glob supports single-level wildcard with path separator. -->
 2. **Read Status**: For each discovered file, read the `**Status**:` field from the document header.
 3. **Filter**: Keep only documents with `Status: Approved`. Documents with any other status (`Draft`, `In Progress`, `Complete`) are excluded.
 4. **Branch by count**:
@@ -116,7 +117,7 @@ Then abort (do not proceed to team creation or execution).
 
 #### Error: Invalid Path
 
-When `${RESOLVED_ARGS}` does not match any of the three tiers (not a file path ending in `design-doc.md`, not a directory containing `design-doc.md`, and no `*/design-doc.md` found underneath), display:
+When `${RESOLVED_ARGS}` does not match any of the three tiers (not a file path ending in `design-doc.md`, not a directory containing `design-doc.md`, and no `**/design-doc.md` found underneath), display:
 
 ```
 Invalid argument: `${RESOLVED_ARGS}`
