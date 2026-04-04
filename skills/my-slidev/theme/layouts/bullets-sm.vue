@@ -32,7 +32,7 @@ defineProps({
   border-left: 4px solid var(--c-primary);
   padding: 16px 48px 16px 44px;
   flex: 0 0 auto;
-  min-height: 14%;
+  min-height: 10%;
   display: flex;
   align-items: center;
 }
