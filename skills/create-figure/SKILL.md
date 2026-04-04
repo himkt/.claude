@@ -8,7 +8,7 @@ description: >
 
 # Create Figure
 
-Generate matplotlib charts. Scripts and outputs go in the output directory.
+Generate matplotlib charts. Scripts, outputs, and data go in separate subdirectories under `figures/`.
 Only the execution borrows the uv environment from `~/.claude`.
 
 ## Procedure
@@ -17,9 +17,11 @@ Only the execution borrows the uv environment from `~/.claude`.
 
 Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies).
 If the resolved `${BASE}` is `~/.claude`, override to `${BASE} = /tmp/claude-code`.
-Set `${OUTPUT_DIR} = ${BASE}/figures`.
+Set `${SRC_DIR} = ${BASE}/figures/src`.
+Set `${OUTPUT_DIR} = ${BASE}/figures/output`.
+Set `${DATA_DIR} = ${BASE}/figures/data`.
 
-All subsequent steps use `${OUTPUT_DIR}` instead of CWD for file creation. Never create scripts or outputs in `~/.claude`.
+All subsequent steps use `${SRC_DIR}`, `${OUTPUT_DIR}`, and `${DATA_DIR}` instead of CWD for file creation. Never create scripts or outputs in `~/.claude`.
 
 ### 1. Create the script in the output directory
 
