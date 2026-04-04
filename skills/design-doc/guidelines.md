@@ -29,7 +29,7 @@ Design documents use a directory-based structure:
 
 - Path: `design-docs/{slug}/design-doc.md`
 - The directory may contain related artifacts (e.g., `question.md` from interviews)
-- Design-doc commands that operate on a single document (e.g., `/design-doc-create`, `/design-doc-interview`, `/design-doc-execute`) accept the full file path `design-docs/{slug}/design-doc.md` as argument
+- Design-doc commands that operate on a single document (e.g., `/design-doc-create`, `/design-doc-interview`, `/design-doc-execute`) accept a slug name (e.g., `my-feature`) as argument. The `design-docs/` prefix is auto-prepended via `base-dir` integration
 
 ## What "Comprehensive" Means
 

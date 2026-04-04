@@ -50,8 +50,11 @@ Progress is tracked via `question.md` in the design document's directory (e.g., 
 
 ### Step 1: Load, Validate & Check Progress
 
-1. Set `doc_path = $ARGUMENTS` (e.g., `design-docs/xxx/design-doc.md`).
-2. Set `dir_path = dirname(doc_path)` (e.g., `design-docs/xxx`).
+1. Load `Skill(base-dir)` and follow its procedure with `$ARGUMENTS` as the argument.
+   - If skipped (absolute path): set `doc_path = $ARGUMENTS`.
+   - If base resolved: set `doc_path = ${BASE}/design-docs/$ARGUMENTS`. Resolve to absolute path.
+   - If `doc_path` does not end with `design-doc.md`, append `/design-doc.md`.
+2. Set `dir_path = dirname(doc_path)`.
 3. Read the design document at `doc_path`. If missing or empty, report the error and stop.
 4. Check if `{dir_path}/question.md` exists:
    a. If yes → parse `interview-progress` from `question.md`. If the marker is absent, the interview is already complete — report completion and stop. If the marker is present, proceed to Step 1.5 (resume mode).

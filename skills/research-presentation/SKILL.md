@@ -1,6 +1,6 @@
 ---
 name: research-presentation
-description: Create a Slidev presentation and reading transcript from an existing research report folder. Reads report.md and researcher files for context, creates slides using /my-slidev skill and a reading transcript. Takes folder path as argument (e.g., researches/topic-name). Do NOT use for research — use /research-report for that.
+description: Create a Slidev presentation and reading transcript from an existing research report folder. Reads report.md and researcher files for context, creates slides using /my-slidev skill and a reading transcript. Takes folder path as argument (e.g., topic-name). Do NOT use for research — use /research-report for that.
 allowed-tools: Read, Write, Edit, Glob, Grep, Agent
 ---
 
@@ -29,7 +29,7 @@ User (or chained from /research-report)
 
 | Condition | Behavior |
 |-----------|----------|
-| Folder path argument omitted | Error: "Usage: `/research-presentation researches/{folder-name}`. Specify the folder containing report.md." |
+| Folder path argument omitted | Error: "Usage: `/research-presentation {folder-name}`. Specify the folder containing report.md." |
 | `report.md` not found in folder | Error: "No report.md found in `{folder}`. Run `/research-report` first to generate a report." |
 | `report.md` exists | Proceed normally |
 
@@ -37,10 +37,10 @@ User (or chained from /research-report)
 
 ### Step 0: Validate Input (Director)
 
-1. If `$ARGUMENTS` is absent → error: "Usage: `/research-presentation researches/{folder-name}`. Specify the folder containing report.md."
+1. If `$ARGUMENTS` is absent → error: "Usage: `/research-presentation {folder-name}`. Specify the folder containing report.md."
 2. Load `Skill(base-dir)` and follow its procedure with `$ARGUMENTS` as the argument.
    - If skipped (absolute path): set `${FOLDER} = $ARGUMENTS`.
-   - If base resolved: set `${FOLDER} = ${BASE}/$ARGUMENTS`. Resolve to absolute path.
+   - If base resolved: set `${FOLDER} = ${BASE}/researches/$ARGUMENTS`. Resolve to absolute path.
 3. Check that `${FOLDER}/report.md` exists. If not, error: "No report.md found in `${FOLDER}`. Run `/research-report` first to generate a report."
 4. Pass `${FOLDER}` as the resolved absolute path to all teammates in spawn prompts.
 

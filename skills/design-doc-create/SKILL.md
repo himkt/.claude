@@ -42,7 +42,7 @@ User
 
 Load `Skill(base-dir)` and follow its procedure with `$ARGUMENTS` as the argument.
 - If skipped (absolute path): set `${DOC_PATH} = $ARGUMENTS`.
-- If base resolved: set `${DOC_PATH} = ${BASE}/$ARGUMENTS`. Resolve to absolute path.
+- If base resolved: set `${DOC_PATH} = ${BASE}/design-docs/$ARGUMENTS`. Resolve to absolute path.
 
 Pass `${DOC_PATH}` to the Drafter as OUTPUT PATH in the spawn prompt.
 

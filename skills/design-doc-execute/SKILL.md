@@ -42,7 +42,7 @@ Before validation, resolve `$ARGUMENTS` into a concrete `design-doc.md` path.
 
 Load `Skill(base-dir)` and follow its procedure with `$ARGUMENTS` as the argument.
 - If skipped (absolute path): set `${RESOLVED_ARGS} = $ARGUMENTS`.
-- If base resolved: set `${RESOLVED_ARGS} = ${BASE}/$ARGUMENTS`. Resolve to absolute path.
+- If base resolved: set `${RESOLVED_ARGS} = ${BASE}/design-docs/$ARGUMENTS`. Resolve to absolute path.
 
 #### Phase 2: Three-Tier Detection
 
@@ -121,9 +121,9 @@ When `${RESOLVED_ARGS}` does not match any of the three tiers (not a file path e
 ```
 Invalid argument: `${RESOLVED_ARGS}`
 Expected one of:
-  - Path to a design-doc.md file (e.g., design-docs/my-feature/design-doc.md)
-  - Slug directory containing design-doc.md (e.g., design-docs/my-feature/)
-  - Base directory containing */design-doc.md (e.g., design-docs/)
+  - Path to a design-doc.md file (e.g., my-feature/design-doc.md)
+  - Slug directory containing design-doc.md (e.g., my-feature/)
+  - No argument (discovers all design docs in ${BASE}/design-docs/)
 ```
 
 Then abort.

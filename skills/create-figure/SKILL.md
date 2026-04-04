@@ -17,7 +17,7 @@ Only the execution borrows the uv environment from `~/.claude`.
 
 Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies).
 If the resolved `${BASE}` is `~/.claude`, override to `${BASE} = /tmp/claude-code`.
-Set `${OUTPUT_DIR} = ${BASE}`.
+Set `${OUTPUT_DIR} = ${BASE}/figures`.
 
 All subsequent steps use `${OUTPUT_DIR}` instead of CWD for file creation. Never create scripts or outputs in `~/.claude`.
 
