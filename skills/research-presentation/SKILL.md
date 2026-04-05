@@ -110,14 +110,13 @@ Read your role definition at: skills/research-presentation/roles/visual-reviewer
 
 YOUR TASK: Visually verify the rendered Slidev presentation using playwright-mcp browser tools.
 SLIDE FILE: {folder}/slide.md
-SCREENSHOT DIR: {folder}/screenshots/
 SERVER URL: {server_url}
 
 PROCESS:
 1. Navigate to the provided SERVER URL to confirm connectivity
 2. For each slide: navigate to {server_url}/{slide_number},
-   take a screenshot (save to {folder}/screenshots/slide-{N}.png),
-   take an accessibility snapshot, check for visual issues
+   take a screenshot and accessibility snapshot, check for visual issues.
+   Screenshots are for in-session review only — do NOT copy, move, or persist them anywhere.
 
 VISUAL ISSUE CATEGORIES: [OVERFLOW], [BROKEN_LAYOUT], [MISSING_CONTENT], [OVERLAP], [EMPTY_SLIDE], [RENDER_ERROR], [TEXT_WRAPPING]
 
