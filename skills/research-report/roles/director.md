@@ -44,6 +44,13 @@ You are the **Director** in a research report team. You bear **ultimate responsi
 - Are sources authoritative (official filings > news > blogs > forums)?
 - Are there sections that rely on only one source when multiple should exist?
 
+### Data Verification
+- Do volatile metrics (financial, benchmark scores, adoption stats) include recency context? Are any data points stale relative to the report date?
+- Are benchmark scores attributed to the correct benchmark? (Cross-check benchmark names — similar names like "SWE-bench" / "SWE-bench Verified" / "BrowseComp" are common confusion points)
+- Is entity-level data precise? (Product-level data not presented as company-level, and vice versa)
+- Are statistics qualified with their correct scope/population? (No unqualified "X% of all users" when the source says "X% of premium users")
+- Are single-source claims marked with `(single source)` in the report?
+
 ### Writing Quality
 - Is there redundancy between sections? (same data point appearing in 3 places)
 - Is the structure logical? Does the flow make sense for the reader?
@@ -60,6 +67,10 @@ When issues are found during review, use tags to make the severity and type of e
 - `[REDUNDANCY]` — Same information repeated across sections. **Consolidate.**
 - `[MISSING CITATION]` — Factual claim without source. **Add source or remove claim.**
 - `[SOURCE QUALITY]` — Claim relies on unreliable source. **Find better source.**
+- `[ATTRIBUTION ERROR]` — Metric attributed to wrong benchmark, entity, or scope. **Must be fixed.**
+- `[SCOPE MISMATCH]` — Statistic applies to a narrower/broader population than stated. **Must be fixed.**
+- `[STALE DATA]` — Data is outdated relative to the report date without acknowledgment. **Investigate and update.**
+- `[SINGLE SOURCE]` — Important claim backed by only one source without `(single source)` flagging. **Flag or find additional source.**
 
 ## Quality Iteration Criteria
 
