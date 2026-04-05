@@ -22,7 +22,7 @@ User (or chained from /research-report)
  └── Director (main Claude — creates team, spawns agents, reviews deliverables)
        ├── Presentation Agent (general-purpose teammate — creates Slidev slides using /my-slidev)
        ├── Transcript Agent (general-purpose teammate — creates reading transcript)
-       └── Visual Reviewer (general-purpose teammate — spawned just-in-time at Step 3 after content review)
+       └── Visual Reviewer (general-purpose teammate — spawned just-in-time at Step 4 after content review)
 ```
 
 ## Validation Rules
@@ -44,9 +44,13 @@ User (or chained from /research-report)
 3. Check that `${FOLDER}/report.md` exists. If not, error: "No report.md found in `${FOLDER}`. Run `/research-report` first to generate a report."
 4. Pass `${FOLDER}` as the resolved absolute path to all teammates in spawn prompts.
 
-### Step 1: Create Team & Spawn Agents (Director)
+### Step 1: Start Progress Monitor (Director — MANDATORY)
 
-Create the team and spawn Presentation + Transcript agents in parallel. Both work from `report.md` independently. After the slide deck is finalized (Step 2), the Director sends the final slide structure to the Transcript Agent for realignment.
+Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE proceeding to any subsequent step. The loop checks `${FOLDER}` for expected files (slide.md, transcript.md) and nudges stalled teammates. Keep it running until Step 7.
+
+### Step 2: Create Team & Spawn Agents (Director)
+
+Create the team and spawn Presentation + Transcript agents in parallel. Both work from `report.md` independently. After the slide deck is finalized (Step 3), the Director sends the final slide structure to the Transcript Agent for realignment.
 
 **Presentation Agent spawn prompt:**
 
@@ -101,10 +105,6 @@ Save the transcript to: {folder}/transcript.md
 When complete, send the file path to the Director.
 ```
 
-### Step 2: Start Progress Monitor (Director — MANDATORY)
-
-Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE proceeding to any subsequent step. The loop checks `${FOLDER}` for expected files (slide.md, transcript.md) and nudges stalled teammates. Keep it running until Step 7.
-
 ### Step 3: Review & Revision Loop (Director)
 
 Read the output files and review using the tag criteria in [roles/director.md](roles/director.md). Send tagged feedback; agents revise and resubmit. See [roles/director.md](roles/director.md) for revision approach and iteration limits.
@@ -155,7 +155,7 @@ YOUR TASK: Visually verify the rendered Slidev presentation using playwright-mcp
 SLIDE FILE: {folder}/slide.md
 
 CHECK SLIDES {start} TO {end} ONLY.
-SERVER URL: http://localhost:3030
+SERVER URL: {server_url}
 
 PROCESS:
 1. Navigate to SERVER URL to confirm connectivity

@@ -47,7 +47,22 @@ Before creating the team, determine where output files will be saved.
 3. Create the output directory.
 4. Pass `${OUTPUT_DIR}` as the resolved absolute path to the Manager and all Researchers in their spawn prompts.
 
-### Step 1: Create Team & Launch Manager (Director)
+### Step 1: Start Progress Monitor (Director — MANDATORY)
+
+Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE proceeding to any subsequent step. The loop must check `${OUTPUT_DIR}` for these expected deliverables:
+
+- `report.md` — required final compiled report from the Manager
+- `00-scout-*.md` — Scout landscape/discovery notes (one or more files may exist)
+- `NN-research-*.md` — Researcher findings files for delegated sub-topics (`NN` is the assigned number; one or more files may exist)
+
+Use these rules so readiness/stall decisions are deterministic:
+
+- After Scouts/Researchers have been assigned, progress should be visible via creation of at least one `00-scout-*.md` or `NN-research-*.md` file.
+- Do not consider the workflow ready for Step 5 until `report.md` exists.
+- If no new matching files appear in `${OUTPUT_DIR}` for an extended interval, or expected intermediate files stop increasing while teammates are still assigned, nudge stalled teammates.
+- Keep the monitor running until Step 8.
+
+### Step 2: Create Team & Launch Manager (Director)
 
 You (Claude, the lead agent) create an agent team and spawn a Manager teammate. You do NOT decompose topics yourself — that is the Manager's operational decision.
 
@@ -64,7 +79,7 @@ Create the team and spawn the Manager with a prompt covering:
 9. **Output folder path**: Pass `${OUTPUT_DIR}` (the resolved absolute path from Step 0) to the Manager. The Manager writes the compiled report to `${OUTPUT_DIR}/report.md`. Researchers write to `${OUTPUT_DIR}/NN-research-{subtopic}.md`.
 10. User's language preference (if specified)
 11. Mandate: "Your first draft will be reviewed critically. Aim for highest quality on first attempt."
-### Step 2: Knowledge Bootstrapping — Scout Phase (Director)
+### Step 3: Knowledge Bootstrapping — Scout Phase (Director)
 
 After the Manager assesses the topic, the Manager may request Scout(s) from the Director for landscape mapping before topic decomposition.
 
@@ -94,9 +109,9 @@ Write findings to the output file, then message the Manager when complete.
 
 **Safety cap**: Maximum 3 Scout-Manager iterations (request → investigate → review constitutes one iteration). After 3 iterations, the Manager must proceed to topic decomposition with the knowledge gathered so far.
 
-**Transition**: Once the Manager signals that scouting is complete and sends a Researcher spawn request, the Director proceeds to Step 3 (Spawn Researchers).
+**Transition**: Once the Manager signals that scouting is complete and sends a Researcher spawn request, the Director proceeds to Step 4 (Spawn Researchers).
 
-### Step 3: Spawn Researchers (Director)
+### Step 4: Spawn Researchers (Director)
 
 After the Manager decomposes the topic and sends a spawn request, the Director spawns each Researcher as a teammate.
 
@@ -115,10 +130,6 @@ Write findings to the output file, then message the Manager when complete.
 ```
 
 The Director repeats this step whenever the Manager requests additional Researchers (e.g., for coverage gaps, failed investigations, or revision-driven re-research).
-
-### Step 4: Start Progress Monitor (Director — MANDATORY)
-
-Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE proceeding to any subsequent step. The loop checks `${OUTPUT_DIR}` for expected files and nudges stalled teammates. Keep it running until Step 8.
 
 ### Step 5: Review & Revision Loop (Director ↔ Manager)
 

@@ -1,7 +1,6 @@
 ---
 name: agent-team-supervision
 description: Mandatory supervision obligations for any agent acting as Director (team lead) in an agent team. Load this skill before spawning any teammates. Defines monitoring mandate, spawn protocol, and stall response.
-allowed-tools: Read
 ---
 
 # Agent Team Supervision
@@ -16,7 +15,7 @@ Teammates do not act autonomously. They respond to your messages. If you are not
 
 ## Monitoring Mandate
 
-Before spawning ANY teammate, set up a `/loop` monitor using `Skill(loop)` with a 3-minute interval. The loop prompt must:
+Before spawning ANY teammate, set up a `/loop` monitor using `Skill(loop)` or `/loop` with a 3-minute interval. The loop prompt must:
 
 1. Check the output directory for expected deliverable files
 2. Compare found files against the expected set
