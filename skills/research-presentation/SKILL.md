@@ -22,7 +22,7 @@ User (or chained from /research-report)
  └── Director (main Claude — creates team, spawns agents, reviews deliverables)
        ├── Presentation Agent (general-purpose teammate — creates Slidev slides using /my-slidev)
        ├── Transcript Agent (general-purpose teammate — creates reading transcript)
-       └── Visual Reviewer (general-purpose teammate — spawned just-in-time at Step 4 after content review)
+       └── Visual Reviewer (general-purpose teammate — spawned just-in-time at Step 3 after content review)
 ```
 
 ## Validation Rules
@@ -46,7 +46,7 @@ User (or chained from /research-report)
 
 ### Step 1: Create Team & Spawn Agents (Director)
 
-Create the team and spawn both agents in parallel:
+Create the team and spawn Presentation + Transcript agents in parallel. Both work from `report.md` independently. After the slide deck is finalized (Step 2), the Director sends the final slide structure to the Transcript Agent for realignment.
 
 **Presentation Agent spawn prompt:**
 
@@ -101,7 +101,50 @@ Save the transcript to: {folder}/transcript.md
 When complete, send the file path to the Director.
 ```
 
-**Visual Reviewer spawn prompt (spawned just-in-time at Step 4):**
+### Step 2: Start Progress Monitor (Director — MANDATORY)
+
+Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE proceeding to any subsequent step. The loop checks `${FOLDER}` for expected files (slide.md, transcript.md) and nudges stalled teammates. Keep it running until Step 7.
+
+### Step 3: Review & Revision Loop (Director)
+
+Read the output files and review using the tag criteria in [roles/director.md](roles/director.md). Send tagged feedback; agents revise and resubmit. See [roles/director.md](roles/director.md) for revision approach and iteration limits.
+
+### Step 4: Visual Review & Fix (Director)
+
+After the content revision loop completes, visually review the rendered presentation.
+
+**Server Startup (once):**
+
+**Working directory: project root** (the directory containing `node_modules/` and `skills/`). Do NOT cd to plugin source directories — they are source repos, not runnable installations.
+
+1. From the project root, run `bun install` to ensure dependencies
+2. Start Slidev dev server (`run_in_background: true`):
+   - **macOS**: `script -q /dev/null bun run slidev --open false {folder}/slide.md`
+   - **Linux**: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null`
+3. Director MUST NOT use any `mcp__playwright__*` tools — Playwright is exclusively for Visual Reviewers.
+
+**Batched Review Loop** (batch_size=10, fresh Visual Reviewer per batch to avoid context overflow):
+
+```
+total_slides = count slides in slide.md
+start = 1
+
+while start <= total_slides:
+    end = min(start + 9, total_slides)
+
+    spawn Visual Reviewer with slides [start..end]
+
+    for round in 1..2:                          # max 2 fix rounds per batch
+        wait for report
+        if no issues: break
+        route issues to Presentation Agent → fix → re-check affected slides
+
+    send "mcp__playwright__browser_close" to Visual Reviewer  # MUST close before shutdown
+    shutdown Visual Reviewer
+    start = end + 1
+```
+
+**Visual Reviewer spawn prompt** (per batch):
 
 ```
 You are a Visual Reviewer and a teammate in a research team.
@@ -110,133 +153,40 @@ Read your role definition at: skills/research-presentation/roles/visual-reviewer
 
 YOUR TASK: Visually verify the rendered Slidev presentation using playwright-mcp browser tools.
 SLIDE FILE: {folder}/slide.md
-SERVER URL: {server_url}
-
-PROCESS:
-1. Navigate to the provided SERVER URL to confirm connectivity
-2. For each slide: navigate to {server_url}/{slide_number},
-   take a screenshot and accessibility snapshot, check for visual issues.
-   Screenshots are for in-session review only — do NOT copy, move, or persist them anywhere.
-
-VISUAL ISSUE CATEGORIES: [OVERFLOW], [BROKEN_LAYOUT], [MISSING_CONTENT], [OVERLAP], [EMPTY_SLIDE], [RENDER_ERROR], [TEXT_WRAPPING]
-
-When complete, send your review report to the Director.
-```
-
-**Parallelism strategy:** Both agents start in parallel from the approved report. The Presentation Agent builds the slide deck; the Transcript Agent drafts a preliminary narration script based on the report's section structure. Because the slide deck may not be finalized when the Transcript Agent starts, the workflow has two phases:
-
-1. **Initial phase (parallel):** Both agents work independently from the report. The Transcript Agent uses the report's structure as a provisional slide outline.
-2. **Alignment phase (after Presentation review):** Once the Director has a finalized slide deck (after Step 2/3 review), the Director sends the finalized slide structure to the Transcript Agent. The Transcript Agent realigns its narration to match the actual slides — adjusting headings, ordering, and content to achieve exact 1:1 correspondence.
-
-### Step 2: Review Slides & Transcript (Director)
-
-Read the output files and review using the tag criteria in [roles/director.md](roles/director.md). See [roles/director.md](roles/director.md) for report modification policy.
-
-### Step 3: Revision Loop (Director)
-
-- Send tagged feedback to the Presentation and/or Transcript agents
-- Agents revise and resubmit
-- Re-review against the same criteria
-- See [roles/director.md](roles/director.md) for revision approach and iteration limits
-
-### Step 4: Visual Review & Fix (Director)
-
-After the content revision loop completes and the Director is satisfied with slide content, perform a visual review of the rendered presentation.
-
-**Constraint**: Playwright MCP supports only one browser session at a time. Visual Reviewers accumulate context quickly (snapshots per slide). To avoid context overflow, process slides in batches of up to 10, with a fresh Visual Reviewer per batch.
-
-**Server Startup (once):**
-
-1. Run `bun install` to ensure dependencies are available.
-2. Start the Slidev dev server (run_in_background):
-   - **macOS**: `script -q /dev/null bun run slidev --open false {folder}/slide.md`
-   - **Linux**: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null`
-3. **Director MUST NOT use any `mcp__playwright__*` tools** — all Playwright usage is exclusively for Visual Reviewer teammates.
-
-**Batched Review Loop:**
-
-```
-total_slides = count slides in slide.md
-batch_size = 10
-start = 1
-
-while start <= total_slides:
-    end = min(start + batch_size - 1, total_slides)
-
-    # 1. Spawn a fresh Visual Reviewer for this batch
-    spawn Visual Reviewer with slides [start..end]
-
-    # 2. Inner fix loop (max 2 rounds per batch)
-    for round in 1..2:
-        wait for Visual Reviewer report
-
-        if no issues:
-            break
-
-        # Route issues to Presentation Agent for fix
-        send tagged feedback to Presentation Agent
-        wait for Presentation Agent to fix
-
-        # Re-check only affected slides
-        send re-check request to Visual Reviewer
-
-    # 3. Close browser and shutdown this Visual Reviewer
-    #    MUST close browser BEFORE shutdown to release the Playwright session.
-    #    Otherwise the next batch's Visual Reviewer will fail with
-    #    "Browser is already in use" error.
-    send "close browser with mcp__playwright__browser_close" to Visual Reviewer
-    shutdown Visual Reviewer
-
-    # 4. Move to next batch
-    start = end + 1
-```
-
-**Visual Reviewer spawn prompt** (per batch):
-
-```
-You are a Visual Reviewer. Read: roles/visual-reviewer.md
 
 CHECK SLIDES {start} TO {end} ONLY.
 SERVER URL: http://localhost:3030
 
+PROCESS:
+1. Navigate to SERVER URL to confirm connectivity
+2. For each slide: navigate to {server_url}/{slide_number},
+   take a screenshot and accessibility snapshot, check for visual issues.
+   Screenshots are for in-session review only — do NOT persist them.
+
+VISUAL ISSUE CATEGORIES: [OVERFLOW], [BROKEN_LAYOUT], [MISSING_CONTENT], [OVERLAP], [EMPTY_SLIDE], [RENDER_ERROR], [TEXT_WRAPPING]
+
 Report ONLY slides with issues. If all pass, say "ALL PASS".
 ```
 
-**Why batched**: Each Visual Reviewer accumulates ~1MB+ of context per 10 slides (accessibility snapshots, screenshots). A single reviewer checking 40+ slides will hit context limits and stop responding. Fresh reviewers per batch avoid this.
+### Step 5: User Approval (Director)
 
-### Step 5: Present Deliverables to User (Director)
-
-After the Director approves all deliverables internally, present them to the user:
-
-1. **File paths** — list deliverable files:
-   - Slides: `{folder}/slide.md`
-   - Transcript: `{folder}/transcript.md`
-2. **Slide preview command**: `bun run slidev {folder}/slide.md`
-3. **Request for feedback** — explicitly ask the user to review and provide feedback or approve
+Present deliverables (slides, transcript, preview URL) and request approval via `AskUserQuestion`. Report any known visual issues. If user requests revision, route feedback to agents, re-review, and re-present. No round limit — loops until approved.
 
 ### Step 6: User Revision Loop (Director)
 
-When the user provides feedback after reviewing the deliverables:
-
-1. **Triage the feedback** — determine which agent(s) need to act:
-   - Slides feedback → Presentation Agent
-   - Transcript feedback → Transcript Agent
-2. **Route feedback** to the relevant agent(s) using the same tag-based format
-3. **Agents revise** and send updated deliverables back to you
-4. **Visual re-review (conditional):** If the Presentation Agent modified slides, spawn a fresh Visual Reviewer to check only the changed slides (same pattern as Step 4 but scoped to affected slide numbers only).
-5. **Re-review** the changes, then re-present to the user (return to Step 5)
-
-This loop repeats until the user explicitly approves all deliverables.
+1. Triage feedback — Slides → Presentation Agent, Transcript → Transcript Agent
+2. Route feedback using tag-based format, agents revise
+3. If slides changed, spawn fresh Visual Reviewer for affected slides only (same pattern as Step 4)
+4. Return to Step 5
 
 ### Step 7: Finalize & Clean Up (Director)
 
-1. Confirm all final deliverables are saved
-2. **Shutdown sequence:**
-   1. If a Visual Reviewer is still running, send "close browser with mcp__playwright__browser_close" BEFORE shutdown
-   2. Send shutdown requests to: Presentation Agent, Transcript Agent, Visual Reviewer
-   3. Kill the Slidev dev server background process if still running
-   4. Clean up the team
+**Only enter after user approves in Step 5.**
 
-**Cleanup notes**: Shut down all teammates before cleaning up the team. Kill the Slidev dev server background task if still running. Check `tmux ls` for teammate orphans (`teammateMode: "tmux"` runs each teammate in a tmux session — this check is unrelated to the Slidev server).
+1. Cancel the `/loop` monitor (`CronDelete`)
+2. If Visual Reviewer running: send `mcp__playwright__browser_close` BEFORE shutdown
+3. Send shutdown requests to all teammates
+4. Kill Slidev dev server if still running
+5. Clean up the team
 
 $ARGUMENTS

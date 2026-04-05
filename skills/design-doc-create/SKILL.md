@@ -56,9 +56,9 @@ Pass `${DOC_PATH}` to the Drafter as OUTPUT PATH in the spawn prompt.
      - **"Run quality review"**: Run the Reviewer on the existing document (spawn Reviewer, route the document for review, then enter the quality loop at Step 3).
      - **"Start fresh"**: Treat as new creation, ignoring the existing file (proceed to Step 1 as normal).
 
-### Step 1: Create Team & Spawn Teammates (Director)
+### Step 1: Create Team & Start Monitor (Director)
 
-Create an agent team and spawn both the Drafter and Reviewer.
+Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE spawning teammates. Then create an agent team and spawn both the Drafter and Reviewer.
 
 **Drafter spawn prompt:**
 

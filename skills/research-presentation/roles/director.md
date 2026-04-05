@@ -97,14 +97,4 @@ The Director owns the Slidev dev server lifecycle. The Visual Reviewer does not 
 
 ## Progress Monitoring
 
-Track team progress via idle notifications and messages. A teammate is stalled if they went idle without delivering expected output, without a meaningful progress update, or when a downstream task should have started but hasn't. Nudge stalled teammates with a specific message about what you expect next.
-
-### Skill-specific milestones
-
-| Phase | Expected event | Stall indicator | Director action |
-|:--|:--|:--|:--|
-| Slide creation | Presentation Agent produces slide deck | Agent goes idle without delivering slides | Message Presentation Agent: "Please complete the slide deck and send it for review." |
-| Transcript creation | Transcript Agent produces reading transcript | Agent goes idle without delivering transcript | Message Transcript Agent: "Please complete the reading transcript and send it for review." |
-| Revision | Agent revises based on Director feedback | Agent goes idle without sending revised deliverable | Message the agent: "Please address the feedback and send the revised version." |
-| Visual review | Visual Reviewer sends review report | Agent goes idle without delivering report | Message Visual Reviewer: "Please complete the visual review and send your report." |
-| Server startup | Dev server responds to Playwright navigate | Server fails to start after retries | Follow fallback chain: retry once, then ask user |
+Follow `Skill(agent-team-supervision)`. When you directly receive a teammate completion message, act on it immediately — do not wait for the next loop cycle.
