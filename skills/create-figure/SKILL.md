@@ -55,6 +55,7 @@ print(f"Saved: {output_path}")
 ```
 
 Key points:
+- **All text in figures must be in English** — titles, axis labels, legends, annotations, and tick labels. matplotlib's default fonts do not support CJK characters (Japanese, Chinese, Korean), causing them to render as □ (tofu). Even when the report or presentation is in a non-English language, all figure text must be English.
 - `matplotlib.use("Agg")` must come before importing `pyplot`
 - `OUTPUT_DIR` and `DATA_DIR` are hardcoded absolute paths embedded by the skill at script-generation time. Do not use `pathlib.Path(__file__).resolve().parent`
 - Output filenames must match the script name (e.g., `sales_chart.py` → `sales_chart.png`). For multiple outputs from one script, use a `_N` suffix (e.g., `sales_chart_1.png`, `sales_chart_2.png`)

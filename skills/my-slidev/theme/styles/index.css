@@ -113,3 +113,8 @@ a {
 .c-secondary { color: var(--c-text-secondary); }
 
 .bg-primary-light { background: var(--c-primary-light); padding: 12px 16px; border-radius: 8px; }
+
+/* ── Figure images (safety net for all layouts) ── */
+.slidev-layout img {
+  max-width: 100%;
+}

@@ -16,12 +16,22 @@ defineProps({
   padding: 48px;
   background: var(--c-bg);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .blank.v-center {
-  display: flex;
-  flex-direction: column;
   justify-content: center;
+}
+
+.blank :deep(img) {
+  max-width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  flex-shrink: 1;
 }
 
 .blank :deep(li) {
