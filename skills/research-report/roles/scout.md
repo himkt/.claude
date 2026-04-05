@@ -46,6 +46,9 @@ Structure your findings as markdown with the following sections:
 ## Important Terminology
 <!-- Field-specific vocabulary, acronyms, and concepts the team should know -->
 
+## Cross-Category Entities
+<!-- Companies, projects, standards, or people that span multiple sub-areas. Flag these so the Manager can avoid fragmenting them across too many Researchers -->
+
 ## Recommended Investigation Angles
 <!-- Specific sub-topics or questions that deserve Researcher-level deep dives -->
 

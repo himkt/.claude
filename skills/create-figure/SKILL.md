@@ -132,7 +132,7 @@ Pick the right visualization for the data. Do NOT default to bar charts for ever
 
 ### Allowed palette
 
-These correspond to the Slidev theme's CSS tokens in `skills/my-slidev/theme/styles/index.css`. When updating colors, change both.
+These approximate the Slidev theme's CSS tokens (defined in OKLCH in `skills/my-slidev/theme/styles/index.css`). When updating colors, keep both in sync.
 
 ```python
 # Primary (use for most bars/lines)

@@ -6,7 +6,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, Agent
 
 # Research Report (Agent Teams Edition)
 
-Generate comprehensive research reports using a multi-layer agent hierarchy: Director → Manager → Researchers. The defining characteristic of this system is that every member of the team carries serious accountability for the quality of the final deliverable, and the team iterates relentlessly until the report meets the highest standard. After the report is approved, the Director offers to chain into `/research-presentation` for slides and transcript.
+Generate comprehensive research reports using a multi-layer agent hierarchy: Director → Manager → Scouts/Researchers. The defining characteristic of this system is that every member of the team carries serious accountability for the quality of the final deliverable, and the team iterates relentlessly until the report meets the highest standard. After the report is approved, the Director offers to chain into `/research-presentation` for slides and transcript.
 
 | Role | Agent | Does | Does NOT | Role definition |
 |:--|:--|:--|:--|:--|
@@ -137,7 +137,8 @@ After the Director approves the report internally, present it to the user:
 1. **Summary of findings** — key insights from the report (2-3 sentences)
 2. **File paths** — list deliverable files:
    - Report: `${OUTPUT_DIR}/report.md`
-   - Researcher files: `${OUTPUT_DIR}/01-*.md`, `02-*.md`, etc. (raw research data for reference)
+   - Scout files: `${OUTPUT_DIR}/00-scout-*.md` (landscape mapping data)
+   - Researcher files: `${OUTPUT_DIR}/NN-research-*.md` (raw research data for reference)
 3. **Limitations** — any caveats, known gaps, or areas where sources were limited
 4. **Request for feedback** — explicitly ask the user to review and provide feedback or approve
 
