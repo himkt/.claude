@@ -109,6 +109,8 @@ values = [120, 185, 240, 310]
 
 ### Allowed palette
 
+These correspond to the Slidev theme's CSS tokens in `skills/my-slidev/theme/styles/index.css`. When updating colors, change both.
+
 ```python
 # Primary (use for most bars/lines)
 C_BAR = '#3B82F6'         # blue-500
