@@ -296,9 +296,10 @@ No round limit — the loop continues until the user approves or aborts.
 
 ### Step 6: Finalize & Clean Up (Director)
 
-1. Update design document Status to "Complete" and add final Changelog entry.
-2. Commit (separate commands): `git add <design-doc>` then `git commit -m "docs: mark design doc as complete"`
-3. Shut down all teammates, then clean up the team.
+1. Cancel the `/loop` monitor (`CronDelete`).
+2. Update design document Status to "Complete" and add final Changelog entry.
+3. Commit (separate commands): `git add <design-doc>` then `git commit -m "docs: mark design doc as complete"`
+4. Shut down all teammates, then clean up the team.
 
 **Cleanup notes**: Shut down all teammates before cleaning up the team. Check `tmux ls` for orphans.
 

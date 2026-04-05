@@ -121,7 +121,8 @@ After the content revision loop completes, visually review the rendered presenta
 2. Start Slidev dev server (`run_in_background: true`):
    - **macOS**: `script -q /dev/null bun run slidev --open false {folder}/slide.md`
    - **Linux**: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null`
-3. Director MUST NOT use any `mcp__playwright__*` tools — Playwright is exclusively for Visual Reviewers.
+3. Set `{server_url}` to the Slidev dev server URL (default: `http://localhost:3030`). Use this value when spawning Visual Reviewers.
+4. Director MUST NOT use any `mcp__playwright__*` tools — Playwright is exclusively for Visual Reviewers.
 
 **Batched Review Loop** (batch_size=10, fresh Visual Reviewer per batch to avoid context overflow):
 

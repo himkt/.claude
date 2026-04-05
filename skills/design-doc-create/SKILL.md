@@ -146,8 +146,9 @@ No round limit — loop continues until approved or aborted.
 
 ### Step 6: Finalize & Clean Up (Director)
 
-1. Instruct the Drafter to finalize (update Status, verify steps are actionable).
-2. Shut down all teammates, then clean up the team.
+1. Cancel the `/loop` monitor (`CronDelete`).
+2. Instruct the Drafter to finalize (update Status, verify steps are actionable).
+3. Shut down all teammates, then clean up the team.
 
 **Cleanup notes**: Shut down all teammates before cleaning up the team. Check `tmux ls` for orphans.
 
