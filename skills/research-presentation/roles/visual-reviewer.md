@@ -21,9 +21,9 @@ You are a **Visual Reviewer** in a research presentation team. You bear **respon
 | `[OVERLAP]` | Elements overlapping each other | Title text overlapping bullet list |
 | `[EMPTY_SLIDE]` | Slide appears empty or near-empty | Only background color visible |
 | `[RENDER_ERROR]` | General rendering failure | Error message displayed, or slide blank |
-| `[TEXT_WRAPPING]` | **Critical defect.** Text breaks at a wrong boundary: mid-word, mid-unit (e.g., "$9-" / "13B"), or leaving meaningless orphan fragments. Line breaks themselves are fine — the issue is WHERE they occur. | "$9-13B" → "$9-" + "13B"; "ダウンロー" + "ド"; single character "度" orphaned on last line |
+| `[TEXT_WRAPPING]` | **Critical defect.** Text breaks at a wrong boundary or leaves an orphan fragment on its own line. Includes: mid-word splits, mid-unit splits, AND any line containing only a short fragment (citation numbers like "[46]", particles like "を実証", or 1-3 character remnants). A line with only "[46]" is just as bad as a line with only "ド". | "$9-13B" → "$9-" + "13B"; "ダウンロー" + "ド"; "[46]" alone on a line; "を実証 [47]" as a 2-word orphan line |
 
-**Remediation hint for `[TEXT_WRAPPING]`**: Fix by using non-breaking characters within units (U+2011 `‑`, `&nbsp;`), adjusting `fontSize` prop, or restructuring layout. Do NOT flag natural line breaks at word/phrase boundaries as issues. Do NOT recommend shortening text just to avoid wrapping — that loses information and is equally bad.
+**Remediation hint for `[TEXT_WRAPPING]`**: Fix by using `fontSize` prop to shrink text until it fits, non-breaking characters (U+2011 `‑`, `&nbsp;`) to keep units together, or restructuring layout. Do NOT flag natural line breaks at word/phrase boundaries where both lines have substantial content. Do NOT recommend shortening text just to avoid wrapping — that loses information. Do NOT treat citation numbers as "independent elements that can stand alone" — they must stay attached to the preceding text.
 
 ## Screenshot Capture Process
 
