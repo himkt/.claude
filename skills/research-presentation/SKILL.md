@@ -117,7 +117,7 @@ After the content revision loop completes, visually review the rendered presenta
 
 **Working directory: project root** (the directory containing `node_modules/` and `skills/`). Do NOT cd to plugin source directories — they are source repos, not runnable installations.
 
-1. From the project root, run `bun install` to ensure dependencies
+1. From the project root, run `bun install --frozen-lockfile` to ensure dependencies
 2. Start Slidev dev server (`run_in_background: true`):
    - **macOS**: `script -q /dev/null bun run slidev --open false {folder}/slide.md`
    - **Linux**: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null`
