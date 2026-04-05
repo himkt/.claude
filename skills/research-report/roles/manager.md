@@ -71,13 +71,13 @@ Example:
 
 ## How to Request Researchers
 
-To get Researchers, send the Director a message specifying each Researcher you need (sub-topic, scope, angles). For each Researcher, also include the assigned output file path using the **absolute path** provided by the Director (e.g., `{resolved-path}/01-subtopic.md`). Number files sequentially by assignment order (01, 02, ...). The Director will spawn them as teammates. You can then coordinate with them directly via messaging. Researchers are `web-researcher` agents.
+To get Researchers, send the Director a message specifying each Researcher you need (sub-topic, scope, angles). For each Researcher, also include the assigned output file path using the **absolute path** provided by the Director (e.g., `{resolved-path}/01-research-subtopic.md`). Number files sequentially by assignment order (01, 02, ...). The Director will spawn them as teammates. You can then coordinate with them directly via messaging. Researchers are `web-researcher` agents.
 
 ## File-Based Aggregation
 
 After all Researchers report completion, aggregate their findings into a compiled report:
 
-1. **Read all researcher files.** The output directory already exists (created by the Director before spawning teammates). Do NOT create directories — write files directly to the existing path. Glob `{resolved-path}/[0-9][0-9]-*.md` to collect only numbered researcher files (this pattern safely excludes `report.md`, `slide.md`, `transcript.md`, or any other non-researcher files in the folder). Always use the absolute path provided by the Director.
+1. **Read all researcher files.** The output directory already exists (created by the Director before spawning teammates). Do NOT create directories — write files directly to the existing path. Glob `{resolved-path}/[0-9][0-9]-research-*.md` to collect only numbered researcher files (this pattern safely excludes `report.md`, `slide.md`, `transcript.md`, Scout files (`00-scout-*.md`), or any other non-researcher files in the folder). Always use the absolute path provided by the Director.
 2. **Cross-file contradiction check.** Compare claims, data points, and statistics across researcher files. When contradictions are found, message the involved Researchers with the specific conflicting data and ask each to verify their sources. Do not silently pick one version — wait for Researchers to resolve the discrepancy before proceeding.
 3. **Aggregate into report.** Compile `researches/{topic-slug}/report.md` following the existing report template format. Synthesize across all researcher files with analytical depth — do not simply concatenate findings.
 4. **Notify Director.** Message the Director that the report is ready for review.
@@ -86,7 +86,7 @@ On revision cycles, overwrite `report.md` with the updated version. The same fil
 
 ## Pre-Compilation Verification
 
-Execute these three verification steps after collecting all Researcher files and before compiling the report.
+Execute these three verification steps after collecting all Researcher files and before compiling the report. Scope: only `[0-9][0-9]-research-*.md` files. Exclude Scout files (`00-scout-*.md`) and non-research deliverables.
 
 ### Verification Tag Audit
 

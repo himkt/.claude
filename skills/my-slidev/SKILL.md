@@ -1,6 +1,6 @@
 ---
 name: my-slidev
-description: Create Slidev presentations using the custom theme with cover, bullets, two-cols, and blank layouts. Use when generating presentations from research reports, outlines, or other content. References /slidev for syntax details.
+description: Create Slidev presentations using the custom theme with cover, bullets, two-cols, blank, stats-grid, section-divider, and end layouts. Use when generating presentations from research reports, outlines, or other content. References /slidev for syntax details.
 ---
 
 # Custom Slidev Theme Presentation Guide

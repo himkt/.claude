@@ -11,7 +11,7 @@ Generate comprehensive research reports using a multi-layer agent hierarchy: Dir
 | Role | Agent | Does | Does NOT | Role definition |
 |:--|:--|:--|:--|:--|
 | **Director** | Main Claude | Spawn all teammates, review all deliverables, demand revisions | Write the report, decompose topics, conduct research | [roles/director.md](roles/director.md) |
-| **Manager** | `general-purpose` | Light web search for topic decomposition, request researcher spawning, coordinate researchers, compile report, revise | Conduct deep investigation — all substantive research MUST be delegated to Researchers | [roles/manager.md](roles/manager.md) |
+| **Manager** | `general-purpose` | Run orientation searches for landscape understanding and topic decomposition, request Scout/Researcher spawning, coordinate Scouts and Researchers, compile report, revise | Conduct deep investigation — all substantive research MUST be delegated to Researchers | [roles/manager.md](roles/manager.md) |
 | **Scout** | `web-researcher` | Landscape mapping — broad discovery to expand knowledge before decomposition | Collect facts for the report, write report sections | [roles/scout.md](roles/scout.md) |
 | **Researcher** | `web-researcher` | Search exhaustively, collect facts with sources, filter misinformation, write findings to assigned file | Synthesize or write report sections | [roles/researcher.md](roles/researcher.md) |
 
@@ -61,7 +61,7 @@ Create the team and spawn the Manager with a prompt covering:
 6. How to request Researchers: send the Director a message specifying sub-topics, scope, angles, and assigned file paths. Director spawns them as `web-researcher` agent teammates. Manager coordinates via messaging.
 7. Handle researcher failures: re-split topics and request new Researchers from Director
 8. Report format specification (copy template rules from template.md)
-9. **Output folder path**: Pass `${OUTPUT_DIR}` (the resolved absolute path from Step 0) to the Manager. The Manager writes the compiled report to `${OUTPUT_DIR}/report.md`. Researchers write to `${OUTPUT_DIR}/NN-{subtopic}.md`.
+9. **Output folder path**: Pass `${OUTPUT_DIR}` (the resolved absolute path from Step 0) to the Manager. The Manager writes the compiled report to `${OUTPUT_DIR}/report.md`. Researchers write to `${OUTPUT_DIR}/NN-research-{subtopic}.md`.
 10. User's language preference (if specified)
 11. Mandate: "Your first draft will be reviewed critically. Aim for highest quality on first attempt."
 ### Step 2: Knowledge Bootstrapping — Scout Phase (Director)
@@ -109,7 +109,7 @@ Read your role definition at: roles/researcher.md
 
 CURRENT DATE: {today's date}
 YOUR ASSIGNMENT: [specific sub-topic and what to investigate]
-OUTPUT FILE: {resolved-path}/NN-{subtopic}.md
+OUTPUT FILE: {resolved-path}/NN-research-{subtopic}.md
 
 Write findings to the output file, then message the Manager when complete.
 ```

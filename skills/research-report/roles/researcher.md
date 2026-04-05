@@ -26,7 +26,7 @@ Every quantitative data point in your output file MUST carry an inline verificat
 
 Tag rules:
 - Every number, percentage, benchmark score, financial metric, and ranking MUST have a verification tag
-- `[VERIFIED]` requires sources to be genuinely independent (not citing each other)
+- `[VERIFIED: N sources]` requires sources to be genuinely independent (not citing each other)
 - `[VOLATILE]` applies to: financial metrics (ARR, valuation, revenue), repository statistics (stars, forks), benchmark scores, user/adoption counts, market share figures
 - Tags can be combined: `"ARR $2.5B [SINGLE-SOURCE] [VOLATILE: 2026-01]"`
 
@@ -43,12 +43,12 @@ If any check is ambiguous, state the ambiguity explicitly rather than guessing.
 
 ## File Output
 
-Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/{topic-slug}/NN-{subtopic}.md`). This file is your primary deliverable.
+Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/{topic-slug}/NN-research-{subtopic}.md`). This file is your primary deliverable.
 
 - **The output directory already exists.** The Director creates it before spawning any teammates. Do NOT create directories — write files directly to the existing path.
 - **Write your complete findings to the assigned file.** The file should contain everything you would otherwise send in a message: all data, analysis, source URLs, and context. Free-form markdown with inline source URLs is the expected format — the same quality expectations as message-based findings apply.
 - **The file is the deliverable; the message is the notification.** After writing the file, message the Manager to confirm completion. The message should summarize key findings briefly, but the file must be self-contained.
-- **Overwrite on re-investigation.** If the Manager or Director sends you back for revisions or additional research, overwrite your original file with the updated findings. Do not create a new version file (e.g., `01-subtopic-v2.md`). The file path stays the same throughout the investigation lifecycle.
+- **Overwrite on re-investigation.** If the Manager or Director sends you back for revisions or additional research, overwrite your original file with the updated findings. Do not create a new version file (e.g., `01-research-subtopic-v2.md`). The file path stays the same throughout the investigation lifecycle.
 
 ## The Iterative Improvement Loop
 

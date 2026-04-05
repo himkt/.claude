@@ -59,7 +59,7 @@ Read your role definition at: skills/research-presentation/roles/presentation.md
 
 YOUR TASK: Create a Slidev presentation based on the approved research report.
 REPORT FILE: {folder}/report.md
-RESEARCHER FILES: {folder}/[0-9][0-9]-*.md (for additional context)
+RESEARCHER FILES: {folder}/[0-9][0-9]-research-*.md (for additional context)
 LANGUAGE: {detected from report.md}
 
 FIGURE CREATION: Actively use /create-figure to create data visualizations
