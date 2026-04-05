@@ -70,8 +70,8 @@ After generating all slides, check every slide:
 
 ### Application
 
-- `<Highlight type="positive">+99%</Highlight>` — strong emphasis with background tint
-- `<span class="c-primary">81.2%</span>` — light emphasis, text color only
+- `<Highlight type="positive">+99%</Highlight>` — positive emphasis (green)
+- `<Highlight>81.2%</Highlight>` — neutral emphasis (blue, default)
 - `<Admonition type="tip" title="Key Takeaway">text</Admonition>` — callout box
 - `<div class="bg-primary-light">text</div>` — lightweight single-line highlight
 
