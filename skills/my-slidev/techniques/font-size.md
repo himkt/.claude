@@ -29,7 +29,7 @@ Any valid CSS font-size value is accepted (`"18px"`, `"0.9em"`, `"1rem"`, etc.).
 | Layout | Default | Affects |
 |--------|---------|---------|
 | `cover` | `"22px"` | Content/subtitle (`p`), not `h1` |
-| `bullets` | `"22px"` | Bullet items (`li`) |
+| `bullets` | `"18px"` | Bullet items (`li`) |
 | `bullets-sm` | `"14px"` | Bullet items (`li`) |
 | `blank` | `""` (inherit) | All content via inheritance |
 | `two-cols` | `""` (inherit) | Both columns via inheritance |
@@ -37,14 +37,14 @@ Any valid CSS font-size value is accepted (`"18px"`, `"0.9em"`, `"1rem"`, etc.).
 ## When to Use
 
 - A bullet wraps mid-word or at an unnatural break point
-- The slide has 4-5 bullets that are slightly too long to fit at normal size
+- The slide has 4-7 bullets that are slightly too long to fit at normal size
 - A `blank` slide with text + table that is borderline overflowing
 - A `bullets-sm` reference slide with long URLs that clip
 
 ## When NOT to Use — Split the Slide Instead
 
 - Content fundamentally exceeds one slide's capacity
-- More than 5 bullets even at reduced size
+- More than 7 bullets even at reduced size
 - Multiple tables or diagrams on one slide
 
 ## Priority Order

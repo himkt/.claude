@@ -63,12 +63,24 @@ layout: bullets
 | Op. Margin | 24.2% | 16.4% | <Highlight type="negative">-7.8pp</Highlight> |
 ```
 
-## Highlight vs Span Utility Classes
+## Color Discipline
 
-| Technique | Visual Effect | Best For |
-|-----------|--------------|----------|
-| `<Highlight>` | Background + colored text + bold | Key figures that need strong emphasis |
-| `<span class="c-positive">` | Colored text only | Subtle inline coloring |
-| `<Highlight>` + `**bold**` | Not needed — Highlight already applies `font-weight: 600` | — |
+Every colored element must have a semantic reason for its color. Never use color for decoration.
 
-**Rule of thumb**: Use `<Highlight>` for the 1-2 most important data points per slide. Use `<span class="c-...">` for lighter emphasis where a background would be distracting.
+| Color | Semantic | When to use | Example |
+|-------|----------|-------------|---------|
+| `positive` (green) | Good news | Growth, improvement, achievement, gain | Revenue +93%, adoption 84% |
+| `negative` (red) | Bad news | Decline, risk, vulnerability, loss, stagnation | Vulnerability 45%, -19% slower |
+| `primary` (blue) | Neutral key metric | Quantities without positive/negative connotation | Context window 1M tokens, 5 product forms |
+| `accent` (orange) | Caution / noteworthy | Transitional states, mixed signals, items needing attention | -4% (improved but unreliable) |
+| `important` (purple) | Critical / structural | Must-know points that don't fit other categories | — |
+
+**Decision flow**: Ask "is this good or bad for the audience?" → Good: `positive`. Bad: `negative`. Neither: `primary`. Mixed/uncertain: `accent`.
+
+## Usage Rules
+
+Always use `<Highlight>` for colored emphasis. Do NOT use `<span class="c-...">` utility classes for inline emphasis — they exist for theme internals only.
+
+1. **All colored numbers and keywords use `<Highlight>`.** No exceptions. This keeps visual weight consistent across slides.
+2. **Max 3 per slide.** More than 3 highlights dilute attention. If a slide needs more, move data to a table or chart instead.
+3. **`<Highlight>` + `**bold**` is redundant** — Highlight already applies `font-weight: 600`.

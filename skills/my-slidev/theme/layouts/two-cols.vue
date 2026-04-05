@@ -51,14 +51,14 @@ const gridTemplate = computed(() => {
   border-left: 4px solid var(--c-primary);
   padding: 24px 48px 24px 44px;
   flex: 0 0 auto;
-  min-height: 20%;
+  min-height: 10%;
   display: flex;
   align-items: center;
 }
 
 .two-cols-header :deep(h1) {
   font-weight: 800;
-  font-size: 32px;
+  font-size: 28px;
   color: var(--c-text);
   margin: 0;
 }

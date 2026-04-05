@@ -21,9 +21,9 @@ You are a **Visual Reviewer** in a research presentation team. You bear **respon
 | `[OVERLAP]` | Elements overlapping each other | Title text overlapping bullet list |
 | `[EMPTY_SLIDE]` | Slide appears empty or near-empty | Only background color visible |
 | `[RENDER_ERROR]` | General rendering failure | Error message displayed, or slide blank |
-| `[TEXT_WRAPPING]` | Text wraps at an awkward position, leaving short orphan words/fragments on the last line. Unlike `[OVERFLOW]` (content cut off and invisible), text wrapping issues are fully visible but aesthetically poor. | Bullet ends with only "した" or "the" on a new line |
+| `[TEXT_WRAPPING]` | **Critical defect.** Text breaks at a wrong boundary: mid-word, mid-unit (e.g., "$9-" / "13B"), or leaving meaningless orphan fragments. Line breaks themselves are fine — the issue is WHERE they occur. | "$9-13B" → "$9-" + "13B"; "ダウンロー" + "ド"; single character "度" orphaned on last line |
 
-**Remediation hint for `[TEXT_WRAPPING]`**: Include in your report that the Presentation Agent can use the `fontSize` prop (see `techniques/font-size.md`) as the primary fix. Text shortening or slide splitting are alternatives.
+**Remediation hint for `[TEXT_WRAPPING]`**: Fix by using non-breaking characters within units (U+2011 `‑`, `&nbsp;`), adjusting `fontSize` prop, or restructuring layout. Do NOT flag natural line breaks at word/phrase boundaries as issues. Do NOT recommend shortening text just to avoid wrapping — that loses information and is equally bad.
 
 ## Screenshot Capture Process
 

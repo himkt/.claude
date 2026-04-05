@@ -59,8 +59,17 @@ Read your role definition at: skills/research-presentation/roles/presentation.md
 
 YOUR TASK: Create a Slidev presentation based on the approved research report.
 REPORT FILE: {folder}/report.md
-RESEARCHER FILES: {folder}/[0-9][0-9]-*.md (for additional context)
+RESEARCHER FILES: {folder}/[0-9][0-9]-research-*.md (for additional context)
 LANGUAGE: {detected from report.md}
+
+FIGURE CREATION: Actively use /create-figure to create data visualizations
+(charts, graphs, plots) from report data. When the report contains numerical
+data, trends, comparisons, or distributions, create figures rather than
+showing data as text-only bullets. Choose the right representation for each
+dataset — figures for visual patterns, tables for reference data and exact
+values. Set FIGURE_BASE to {folder} before loading Skill(create-figure).
+This makes figures go to {folder}/figures/output/. Embed with
+![description](./figures/output/filename.png).
 
 CITATION RULES: Carry [N] citations from the report into slides. Renumber
 sequentially based on first slide appearance. Add References slide(s) at the

@@ -44,6 +44,21 @@ You are the **Director** in a research presentation team. You bear **ultimate re
 | `[REDUNDANCY]` | Same point repeated unnecessarily across narration blocks |
 | `[SOURCE REFERENCE]` | Oral source reference missing where needed, or citation number read aloud |
 
+## Layout Quality Review
+
+Before approving any slide deck, verify these structural quality criteria:
+
+| Criterion | Pass Condition |
+|-----------|---------------|
+| **No "Markdown brain"** | No more than 3 consecutive `bullets` layout slides |
+| **Section breaks exist** | `section-divider` slides appear at major topic transitions (every 5-8 content slides) |
+| **Hero numbers are visible** | Key metrics (percentages, dollar amounts, multipliers) use `stats-grid` layout, not buried in bullet text |
+| **Layout variety** | For 20+ slide decks, at least 6 non-bullets slides |
+| **Figure integration** | No duplicate titles (slide heading + chart title), `.figure-caption` used for sources, theme-aligned colors |
+| **Caption consistency** | All figure sources use `<div class="figure-caption">`, never raw `<div class="text-sm ...">` |
+
+If any criterion fails, send `[SLIDE STRUCTURE]` or `[VISUAL]` tagged feedback to the Presentation Agent with specific fix instructions.
+
 ## Revision Approach
 
 - Aim for 2-3 revision rounds maximum (balance quality against token cost)

@@ -38,7 +38,7 @@ defineProps({
 
 .cover-content :deep(h1) {
   font-weight: 800;
-  font-size: 45px;
+  font-size: 40px;
   color: var(--c-text);
   margin-bottom: 16px;
 }
