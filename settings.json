@@ -38,12 +38,13 @@
       "Bash(git status)",
       "Bash(script -q /dev/null bun run slidev --open false */slide.md)",
       "Bash(script -qfc 'bun run slidev --open false */slide.md' /dev/null)",
+      "Bash(script -qfc \"bun run slidev --open false */slide.md\" /dev/null)",
       "Bash(tmux ls *)",
       "Bash(uv sync *)",
       "Bash(uv run pytest *)",
       "Bash(uv run ruff check *)",
       "Bash(uv run ruff format *)",
-      "Bash(uv run --frozen --project ~/.claude figures/src/*.py)",
+      "Bash(uv run --frozen --project ~/.claude *.py)",
       "NotebookEdit",
       "Read(/settings.json)",
       "Read(/skills/**)",
@@ -71,6 +72,7 @@
       "mcp__playwright__browser_close",
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_snapshot",
       "mcp__playwright__browser_wait_for"
     ],
     "deny": [
