@@ -12,8 +12,7 @@ defineProps({
     <div class="stats-cards" :class="`cols-${Math.min(stats.length, 4)}`">
       <div v-for="(stat, i) in stats" :key="i" class="stat-card" :class="stat.type || 'primary'">
         <div class="stat-value">{{ stat.value }}</div>
-        <div class="stat-label">{{ stat.label }}</div>
-        <div v-if="stat.source" class="stat-source">{{ stat.source }}</div>
+        <div class="stat-label">{{ stat.label }} <span v-if="stat.source" class="stat-source">{{ stat.source }}</span></div>
       </div>
     </div>
     <slot />
@@ -55,9 +54,9 @@ defineProps({
   align-content: center;
 }
 
-.stats-cards.cols-2 { grid-template-columns: repeat(2, 1fr); }
-.stats-cards.cols-3 { grid-template-columns: repeat(3, 1fr); }
-.stats-cards.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.stats-cards.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.stats-cards.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.stats-cards.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
 .stat-card {
   background: var(--c-primary-light);
@@ -65,6 +64,7 @@ defineProps({
   padding: 28px 24px;
   text-align: center;
   border-left: 4px solid var(--c-primary);
+  container-type: inline-size;
 }
 
 .stat-card.accent {
@@ -85,11 +85,12 @@ defineProps({
 }
 
 .stat-value {
-  font-size: var(--fs-hero);
+  font-size: clamp(2rem, 5cqi, 4rem);
   font-weight: 800;
   line-height: var(--lh-tight);
   color: var(--c-primary);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   margin-bottom: 8px;
 }
 
@@ -108,7 +109,6 @@ defineProps({
 .stat-source {
   font-size: 0.75rem;
   color: var(--c-text-secondary);
-  margin-top: 6px;
 }
 
 .page-number {

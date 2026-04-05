@@ -54,6 +54,7 @@ After generating all slides, check every slide:
 - **Max 7 bullets, ~15 words each**
 - **No nested layouts**
 - **Content must fit** — if it overflows, split or switch layout
+- **Bad text wrapping is a critical defect.** The issue is NOT line breaks themselves — long text may need to wrap. The issue is breaking at wrong boundaries: mid-word, mid-unit ("$9-" / "13B"), or leaving meaningless orphan fragments. Wrapping must occur at natural unit boundaries (between words, between logical groups). Do NOT shorten text just to avoid wrapping — that loses information. Instead: use non-breaking characters (U+2011 `‑`, `&nbsp;`) within units that must stay together, adjust `fontSize`, or restructure the layout.
 
 ## Color
 
