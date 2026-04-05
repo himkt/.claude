@@ -144,26 +144,62 @@ Read the output files and review using the tag criteria in [roles/director.md](r
 
 After the content revision loop completes and the Director is satisfied with slide content, perform a visual review of the rendered presentation.
 
-**Phase 1 — Server Startup & Review:**
+**Constraint**: Playwright MCP supports only one browser session at a time. Visual Reviewers accumulate context quickly (snapshots per slide). To avoid context overflow, process slides in batches of up to 10, with a fresh Visual Reviewer per batch.
 
-1. Director installs dependencies and starts the Slidev dev server:
-   First, run `bun install` to ensure Slidev and its dependencies are available.
-   Then start the server (platform-dependent, run_in_background):
+**Server Startup (once):**
+
+1. Run `bun install` to ensure dependencies are available.
+2. Start the Slidev dev server (run_in_background):
    - **macOS**: `script -q /dev/null bun run slidev --open false {folder}/slide.md`
    - **Linux**: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null`
-2. Director spawns the Visual Reviewer, passing `http://localhost:3030` as SERVER URL. **Director MUST NOT use any `mcp__playwright__*` tools** — all Playwright usage is exclusively for the Visual Reviewer teammate.
-3. Visual Reviewer confirms server readiness via `browser_navigate` (retry up to 3 times with 3-second waits), then captures screenshots and accessibility snapshots for all slides
-4. Visual Reviewer sends a structured review report to the Director
+3. **Director MUST NOT use any `mcp__playwright__*` tools** — all Playwright usage is exclusively for Visual Reviewer teammates.
 
-**Phase 2 — Fix (if issues found):**
+**Batched Review Loop:**
 
-5. Director extracts issues from the report and sends tagged feedback to the Presentation Agent (using visual issue tags: `[OVERFLOW]`, `[BROKEN_LAYOUT]`, `[MISSING_CONTENT]`, `[OVERLAP]`, `[EMPTY_SLIDE]`, `[RENDER_ERROR]`, `[TEXT_WRAPPING]`)
-6. Presentation Agent fixes the issues in `slide.md`
-7. Director triggers the Visual Reviewer to re-check only the affected slides
-8. Repeat Phase 2 up to 2 rounds
-9. After 2 rounds, any remaining issues are reported to the user alongside deliverables
+```
+total_slides = count slides in slide.md
+batch_size = 10
+start = 1
 
-**Phase 2 skip:** If the review report shows zero issues, skip directly to Step 5.
+while start <= total_slides:
+    end = min(start + batch_size - 1, total_slides)
+
+    # 1. Spawn a fresh Visual Reviewer for this batch
+    spawn Visual Reviewer with slides [start..end]
+
+    # 2. Inner fix loop (max 2 rounds per batch)
+    for round in 1..2:
+        wait for Visual Reviewer report
+
+        if no issues:
+            break
+
+        # Route issues to Presentation Agent for fix
+        send tagged feedback to Presentation Agent
+        wait for Presentation Agent to fix
+
+        # Re-check only affected slides
+        send re-check request to Visual Reviewer
+
+    # 3. Shutdown this Visual Reviewer
+    shutdown Visual Reviewer
+
+    # 4. Move to next batch
+    start = end + 1
+```
+
+**Visual Reviewer spawn prompt** (per batch):
+
+```
+You are a Visual Reviewer. Read: roles/visual-reviewer.md
+
+CHECK SLIDES {start} TO {end} ONLY.
+SERVER URL: http://localhost:3030
+
+Report ONLY slides with issues. If all pass, say "ALL PASS".
+```
+
+**Why batched**: Each Visual Reviewer accumulates ~1MB+ of context per 10 slides (accessibility snapshots, screenshots). A single reviewer checking 40+ slides will hit context limits and stop responding. Fresh reviewers per batch avoid this.
 
 ### Step 5: Present Deliverables to User (Director)
 
@@ -184,7 +220,7 @@ When the user provides feedback after reviewing the deliverables:
    - Transcript feedback → Transcript Agent
 2. **Route feedback** to the relevant agent(s) using the same tag-based format
 3. **Agents revise** and send updated deliverables back to you
-4. **Visual re-review (conditional):** If the Presentation Agent modified slides, trigger a focused visual re-review of only the changed slides. The Presentation Agent reports which slide numbers it modified when sending fixes back to the Director. The Director passes these slide numbers to the Visual Reviewer for targeted re-check. This re-review follows the same Phase 1-2 pattern from Step 4 but scoped to affected slides only.
+4. **Visual re-review (conditional):** If the Presentation Agent modified slides, spawn a fresh Visual Reviewer to check only the changed slides (same pattern as Step 4 but scoped to affected slide numbers only).
 5. **Re-review** the changes, then re-present to the user (return to Step 5)
 
 This loop repeats until the user explicitly approves all deliverables.
