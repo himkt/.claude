@@ -48,11 +48,11 @@ Pick the right format — don't default to bullets or bar charts.
 
 ## Text Emphasis
 
-Follow the **Color Discipline** and **Highlight vs Span** sections in `techniques/highlight.md`. Key rules:
+Follow the **Color Discipline** and **Usage Rules** sections in `techniques/highlight.md`. Key rules:
 
-- **Max 1 `<Highlight>` per slide** — the single most important data point. All other emphasis uses `<span class="c-...">`.
+- **Always use `<Highlight>`** for colored numbers and keywords. Never use `<span class="c-...">`.
+- **Max 3 per slide.** More than 3 → move data to a table or chart.
 - **Semantic color**: positive (green), negative (red), neutral (blue), caution (orange). Ask "is this good or bad for the audience?"
-- **No `c-primary` as catch-all.** If the number is good news, use `c-positive`; if bad, `c-negative`. Blue is only for neutral metrics.
 
 ## Citations
 

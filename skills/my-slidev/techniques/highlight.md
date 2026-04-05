@@ -77,17 +77,10 @@ Every colored element must have a semantic reason for its color. Never use color
 
 **Decision flow**: Ask "is this good or bad for the audience?" → Good: `positive`. Bad: `negative`. Neither: `primary`. Mixed/uncertain: `accent`.
 
-## Highlight vs Span Utility Classes
+## Usage Rules
 
-| Technique | Visual Effect | Best For |
-|-----------|--------------|----------|
-| `<Highlight>` | Background + colored text + bold | The single most important data point on a slide |
-| `<span class="c-...">` | Colored text only | All other colored emphasis |
-| `<Highlight>` + `**bold**` | Not needed — Highlight already applies `font-weight: 600` | — |
+Always use `<Highlight>` for colored emphasis. Do NOT use `<span class="c-...">` utility classes for inline emphasis — they exist for theme internals only.
 
-**Rules:**
-
-1. **Maximum 1 `<Highlight>` per slide.** This is the number the audience should remember.
-2. **Use `<span class="c-...">` for all other emphasis.** Same color semantics apply.
-3. **Same color semantics for both.** `<Highlight type="positive">` and `<span class="c-positive">` follow the same color discipline table above.
-4. **Stats/KPI slides are the exception.** On `stats-grid` or KPI-style table layouts where multiple large numbers are presented equally, `<Highlight>` is not used — each number uses `<span class="c-...">` with its semantic color.
+1. **All colored numbers and keywords use `<Highlight>`.** No exceptions. This keeps visual weight consistent across slides.
+2. **Max 3 per slide.** More than 3 highlights dilute attention. If a slide needs more, move data to a table or chart instead.
+3. **`<Highlight>` + `**bold**` is redundant** — Highlight already applies `font-weight: 600`.
