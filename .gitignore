@@ -21,6 +21,7 @@
 !bin
 !bin/**
 !.claude
+!.claude/settings.json
 !.claude/skills/**
 !.claude/CLAUDE.md
 !rules
