@@ -67,8 +67,9 @@ FIGURE CREATION: Actively use /create-figure to create data visualizations
 data, trends, comparisons, or distributions, create figures rather than
 showing data as text-only bullets. Choose the right representation for each
 dataset — figures for visual patterns, tables for reference data and exact
-values. Load Skill(create-figure), generate PNGs, copy them to
-{folder}/figures/, and embed with ![description](./figures/filename.png).
+values. Set FIGURE_BASE to {folder} before loading Skill(create-figure).
+This makes figures go to {folder}/figures/output/. Embed with
+![description](./figures/output/filename.png).
 
 CITATION RULES: Carry [N] citations from the report into slides. Renumber
 sequentially based on first slide appearance. Add References slide(s) at the

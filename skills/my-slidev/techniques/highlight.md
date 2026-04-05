@@ -63,12 +63,31 @@ layout: bullets
 | Op. Margin | 24.2% | 16.4% | <Highlight type="negative">-7.8pp</Highlight> |
 ```
 
+## Color Discipline
+
+Every colored element must have a semantic reason for its color. Never use color for decoration.
+
+| Color | Semantic | When to use | Example |
+|-------|----------|-------------|---------|
+| `positive` (green) | Good news | Growth, improvement, achievement, gain | Revenue +93%, adoption 84% |
+| `negative` (red) | Bad news | Decline, risk, vulnerability, loss, stagnation | Vulnerability 45%, -19% slower |
+| `primary` (blue) | Neutral key metric | Quantities without positive/negative connotation | Context window 1M tokens, 5 product forms |
+| `accent` (orange) | Caution / noteworthy | Transitional states, mixed signals, items needing attention | -4% (improved but unreliable) |
+| `important` (purple) | Critical / structural | Must-know points that don't fit other categories | — |
+
+**Decision flow**: Ask "is this good or bad for the audience?" → Good: `positive`. Bad: `negative`. Neither: `primary`. Mixed/uncertain: `accent`.
+
 ## Highlight vs Span Utility Classes
 
 | Technique | Visual Effect | Best For |
 |-----------|--------------|----------|
-| `<Highlight>` | Background + colored text + bold | Key figures that need strong emphasis |
-| `<span class="c-positive">` | Colored text only | Subtle inline coloring |
+| `<Highlight>` | Background + colored text + bold | The single most important data point on a slide |
+| `<span class="c-...">` | Colored text only | All other colored emphasis |
 | `<Highlight>` + `**bold**` | Not needed — Highlight already applies `font-weight: 600` | — |
 
-**Rule of thumb**: Use `<Highlight>` for the 1-2 most important data points per slide. Use `<span class="c-...">` for lighter emphasis where a background would be distracting.
+**Rules:**
+
+1. **Maximum 1 `<Highlight>` per slide.** This is the number the audience should remember.
+2. **Use `<span class="c-...">` for all other emphasis.** Same color semantics apply.
+3. **Same color semantics for both.** `<Highlight type="positive">` and `<span class="c-positive">` follow the same color discipline table above.
+4. **Stats/KPI slides are the exception.** On `stats-grid` or KPI-style table layouts where multiple large numbers are presented equally, `<Highlight>` is not used — each number uses `<span class="c-...">` with its semantic color.

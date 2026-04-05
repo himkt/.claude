@@ -11,12 +11,17 @@ description: >
 Generate matplotlib charts. Scripts, outputs, and data go in separate subdirectories under `figures/`.
 Only the execution borrows the uv environment from `~/.claude`.
 
+**Before writing any script, read the Chart Type Selection and Color Rules sections.** All charts in a deck share the same `C_BAR` / `C_BAR_SEC` palette regardless of data topic.
+
 ## Procedure
 
 ### 0. Resolve directories
 
-Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies).
+If `${FIGURE_BASE}` is already set by the calling context (e.g., a research skill passes its project folder), use it as `${BASE}` and skip base-dir resolution.
+
+Otherwise: Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies).
 If the resolved `${BASE}` is `~/.claude`, override to `${BASE} = /tmp/claude-code`.
+
 Set `${SRC_DIR} = ${BASE}/figures/src`.
 Set `${OUTPUT_DIR} = ${BASE}/figures/output`.
 Set `${DATA_DIR} = ${BASE}/figures/data`.
@@ -103,6 +108,24 @@ categories = ["Q1", "Q2", "Q3", "Q4"]
 values = [120, 185, 240, 310]
 ```
 
+## Chart Type Selection
+
+Pick the right visualization for the data. Do NOT default to bar charts for everything.
+
+| Data pattern | Chart type | matplotlib |
+|---|---|---|
+| Category comparison, ranking | Horizontal bar | `ax.barh()` |
+| Time series, trend | Line chart | `ax.plot()` |
+| Correlation between 2 variables | Scatter plot | `ax.scatter()` |
+| Distribution of one variable | Histogram | `ax.hist()` |
+| Distribution comparison across groups | Box plot or violin plot | `ax.boxplot()` / `ax.violinplot()` |
+| Matrix, cross-tabulation | Heatmap | `ax.imshow()` + annotate |
+| Part-of-whole composition | Stacked bar | `ax.bar(bottom=...)` |
+| Before/after, paired comparison | Dumbbell chart | `ax.hlines()` + `ax.scatter()` |
+| Time-based categories (quarters, years) | Vertical bar | `ax.bar()` |
+
+**Horizontal vs vertical bars**: Prefer `barh` when category labels are text. Use vertical `bar` only for time-based x-axes.
+
 ## Color Rules
 
 **1 chart = max 2 colors.** This is the single most important design rule. Violating it produces amateurish, noisy charts.
@@ -143,11 +166,10 @@ C_GRID = '#E2E8F0'
 
 ### Prohibited
 
-- **3+ different hues in one chart** — never blue + red + green + orange
-- **Semantic rainbow** — do NOT assign a different color to each bar "because they mean different things"
-- **Full-saturation colors for all bars** — at most 1 bar gets a saturated accent; the rest are muted or same-hue
-- **`C_POSITIVE` (`#16A34A` green) in bar charts** — green bars look garish; use blue as the default positive
-- **Different Y-axis scales in small multiples** — when panels are side-by-side, all panels MUST share the same Y-axis range. Different scales mislead the reader into comparing bar heights directly. This is a data integrity issue, not just aesthetics
+- **Semantic coloring** — do NOT choose colors based on what the data "means." A vulnerability chart uses `C_BAR` (blue), not red. An adoption chart uses `C_BAR`, not green. Data meaning comes from axis labels and slide context. All charts in a deck must look like they belong together
+- **3+ hues in one chart** — never blue + red + green + orange. Use `C_NEGATIVE` or `C_ACCENT` for at most 1 highlighted item; everything else is `C_BAR` or `C_BAR_SEC`
+- **`C_NEGATIVE` / `C_POSITIVE` as primary color** — red and green are only for highlighting a single item, never for all data points
+- **Different Y-axis scales in small multiples** — side-by-side panels MUST share the same Y-axis range
 
 ### Standard axes styling
 

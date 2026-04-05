@@ -24,12 +24,15 @@ Choose the best layout for each slide's content. The `/my-slidev` skill defines 
 
 ## Information Representation
 
-Pick the right format — don't default to bullets.
+Pick the right format — don't default to bullets or bar charts.
 
 | Information | Format |
 |---|---|
-| Trends over time | Chart (line) |
-| Category comparisons | Chart (bar) |
+| Trends over time | Line chart |
+| Category comparisons, rankings | Horizontal bar chart |
+| Distribution of values | Histogram, box plot, violin plot |
+| Correlation between variables | Scatter plot |
+| Part-of-whole composition | Stacked bar chart |
 | Exact reference values, feature matrices | Table |
 | Concepts, qualitative assessments | Bullets |
 | Flows, processes | Mermaid diagram |
@@ -37,11 +40,19 @@ Pick the right format — don't default to bullets.
 
 ## Figures
 
-- Load `Skill(create-figure)` and follow its procedure
-- Set `OUTPUT_DIR` to the Director-provided figure directory
+- Set `${FIGURE_BASE}` to the Director-provided folder path (the research project folder), then load `Skill(create-figure)`. Follow its Chart Type Selection and Color Rules strictly.
+- Embed with `![description](./figures/output/filename.png)` (relative from slide.md)
 - **No `ax.set_title()`** — slide heading is the chart title
 - **Use `.figure-caption`** for source attribution
 - One figure per slide max
+
+## Text Emphasis
+
+Follow the **Color Discipline** and **Highlight vs Span** sections in `techniques/highlight.md`. Key rules:
+
+- **Max 1 `<Highlight>` per slide** — the single most important data point. All other emphasis uses `<span class="c-...">`.
+- **Semantic color**: positive (green), negative (red), neutral (blue), caution (orange). Ask "is this good or bad for the audience?"
+- **No `c-primary` as catch-all.** If the number is good news, use `c-positive`; if bad, `c-negative`. Blue is only for neutral metrics.
 
 ## Citations
 
