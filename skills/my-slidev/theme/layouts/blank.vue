@@ -7,6 +7,9 @@ defineProps({
 <template>
   <div class="slidev-layout blank" :style="fontSize ? { fontSize } : {}">
     <slot />
+    <div class="page-number">
+      {{ String($slidev.nav.currentPage).padStart(String($slidev.nav.total).length, '0') }}/{{ String($slidev.nav.total).padStart(String($slidev.nav.total).length, '0') }}
+    </div>
   </div>
 </template>
 
@@ -36,6 +39,15 @@ defineProps({
 
 .blank :deep(li) {
   margin-bottom: 6px;
+}
+
+.page-number {
+  position: absolute;
+  bottom: 16px;
+  right: 32px;
+  font-size: 13px;
+  color: var(--c-text-secondary);
+  font-weight: 500;
 }
 
 .blank::after {

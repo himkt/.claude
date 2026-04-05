@@ -59,14 +59,12 @@ print(f"Saved: {output_path}")
 ```
 
 Key points:
-- **All text in figures must be in English** — titles, axis labels, legends, annotations, and tick labels. matplotlib's default fonts do not support CJK characters (Japanese, Chinese, Korean), causing them to render as □ (tofu). Even when the report or presentation is in a non-English language, all figure text must be English.
-- `matplotlib.use("Agg")` must come before importing `pyplot`
-- `OUTPUT_DIR` and `DATA_DIR` are hardcoded absolute paths embedded by the skill at script-generation time. Do not use `pathlib.Path(__file__).resolve().parent`
-- Output filenames must match the script name (e.g., `sales_chart.py` → `sales_chart.png`). For multiple outputs from one script, use a `_N` suffix (e.g., `sales_chart_1.png`, `sales_chart_2.png`)
-- Never call `plt.show()`. Save to PNG with `plt.savefig()`
-- Always call `plt.close()` after saving
-- Default output: PNG, `dpi=150`, `bbox_inches="tight"`
-- For multiple charts, combine into one script using `plt.figure()` or `plt.subplots()`
+- **All figure text in English** — matplotlib defaults don't support CJK; use English for labels/titles/legends
+- **No `ax.set_title()`** — when embedded in slides, the slide heading is the title
+- `matplotlib.use("Agg")` before `import matplotlib.pyplot`
+- Output filename matches script name (`chart.py` → `chart.png`)
+- Never `plt.show()`, always `plt.savefig()` then `plt.close()`
+- PNG, `dpi=150`, `bbox_inches="tight"`, `facecolor='white'`
 
 ### 2. Execute the script
 
@@ -77,7 +75,7 @@ Run a single Bash call with `--frozen` and `--project` to use this environment w
 uv run --frozen --project ~/.claude ${SRC_DIR}/script_name.py
 ```
 
-`--frozen` prevents uv from updating the lockfile. `--project ~/.claude` tells uv to use `~/.claude/pyproject.toml` and `~/.claude/.venv` without changing CWD. The script path under `${SRC_DIR}` ensures the script can be located and executed without relying on CWD; output location is controlled by the hardcoded `OUTPUT_DIR` constant in the script.
+`--frozen` prevents lockfile updates. `--project ~/.claude` uses `~/.claude/.venv` without changing CWD.
 
 ### 3. Verify the result
 
