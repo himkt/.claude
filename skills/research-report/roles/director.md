@@ -81,14 +81,4 @@ When issues are found during review, use tags to make the severity and type of e
 
 ## Progress Monitoring
 
-Track team progress via idle notifications and messages. A teammate is stalled if they went idle without delivering expected output, without a meaningful progress update, or when a downstream task should have started but hasn't. Nudge stalled teammates with a specific message about what you expect next.
-
-### Skill-specific milestones
-
-| Phase | Expected event | Stall indicator | Director action |
-|:--|:--|:--|:--|
-| Scout investigation | Scout messages Manager with completion + writes output file | Scout goes idle without notifying Manager | Message Scout: "Have you completed your landscape investigation? Please write your findings to your output file and notify the Manager." |
-| Scout-Manager loop | Manager reviews Scout output and either requests follow-up or proceeds to decomposition | Manager goes idle after Scout delivery without acting | Message Manager: "Scout has delivered findings. Please review and either request follow-up scouting or proceed to topic decomposition." |
-| Researcher investigation | Researcher messages Manager with completion + writes output file | Researcher goes idle without notifying Manager | Message Researcher: "Have you completed your investigation? Please write your findings to your output file and notify the Manager." |
-| Manager compilation | Manager reads all researcher files and compiles report.md | All Researchers have completed but Manager goes idle without starting compilation | Message Manager: "All Researchers have completed their investigations. Please begin compiling the report from their findings." |
-| Manager revision | Manager revises report based on Director feedback | Manager goes idle without sending updated report | Message Manager: "Please address the feedback and send the revised report." |
+Follow `Skill(agent-team-supervision)`. When you directly receive a teammate completion message, act on it immediately — do not wait for the next loop cycle.

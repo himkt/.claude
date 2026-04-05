@@ -23,9 +23,29 @@ You are a **Visual Reviewer** in a research presentation team. You bear **respon
 | `[OVERLAP]` | Elements overlapping each other | Title text overlapping bullet list |
 | `[EMPTY_SLIDE]` | Slide appears empty or near-empty | Only background color visible |
 | `[RENDER_ERROR]` | General rendering failure | Error message displayed, or slide blank |
-| `[TEXT_WRAPPING]` | **Critical defect.** Text breaks at a wrong boundary or leaves an orphan fragment on its own line. Includes: mid-word splits, mid-unit splits, AND any line containing only a short fragment (citation numbers like "[46]", particles like "を実証", or 1-3 character remnants). A line with only "[46]" is just as bad as a line with only "ド". | "$9-13B" → "$9-" + "13B"; "ダウンロー" + "ド"; "[46]" alone on a line; "を実証 [47]" as a 2-word orphan line |
+| `[TEXT_WRAPPING]` | **Critical defect.** Text breaks at a wrong boundary or leaves an orphan fragment. See detailed checking procedure below. | "$9-13B" → "$9-" + "13B"; "ダウンロー" + "ド"; "[46]" alone on a line; "を実証 [47]" as a 2-word orphan line |
 
-**Remediation hint for `[TEXT_WRAPPING]`**: Fix by using `fontSize` prop to shrink text until it fits, non-breaking characters (U+2011 `‑`, `&nbsp;`) to keep units together, or restructuring layout. Do NOT flag natural line breaks at word/phrase boundaries where both lines have substantial content. Do NOT recommend shortening text just to avoid wrapping — that loses information. Do NOT treat citation numbers as "independent elements that can stand alone" — they must stay attached to the preceding text.
+### TEXT_WRAPPING Deep Check Procedure (MANDATORY for every slide)
+
+**This is the most common defect. You MUST check every text element on every slide systematically.**
+
+For each text element (bullet, label, paragraph, table cell, stats-grid label, Admonition text):
+
+1. **Read the accessibility snapshot** to see the actual rendered text layout line by line
+2. **Check every line break** against these rules:
+
+**FAIL conditions (report as [TEXT_WRAPPING]):**
+- **Mid-word split**: A word is broken across lines (e.g., "ダウンロー" / "ド", "リー" / "ド", "モデ" / "ル", "トーク" / "ン", "ライセン" / "ス")
+- **Mid-unit split**: A number+unit or compound term is broken (e.g., "1,000" / "万", "$9-" / "13B", "ARC-AGI-" / "2")
+- **Orphan fragment**: Last line of a text block contains fewer than 5 characters (e.g., "ド [41]", "を実証", "[46]", "占有")
+- **Citation orphan**: A citation like "[N]" appears as the only content or with fewer than 3 characters before it on the last line
+- **Particle orphan**: A Japanese particle (を、が、は、に、で、と、も、の) starts a new line when it should attach to the preceding word
+
+**PASS conditions (do NOT flag):**
+- Natural line break at a word/phrase boundary where both lines have substantial content (10+ characters each)
+- Line break after a complete clause or sentence
+
+**Remediation hint**: Fix by using `fontSize` prop to shrink text until it fits, non-breaking characters (U+2011 `‑`, `&nbsp;`) to keep units together, or shortening text. Do NOT treat citation numbers as independent elements — they must stay attached to the preceding text.
 
 ## Screenshot Capture Process
 

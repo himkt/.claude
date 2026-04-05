@@ -141,9 +141,9 @@ Before creating any team:
 4. Determine the step order and total number of steps.
 5. **Create a feature branch if on the default branch.** Get the default branch with `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'` and the current branch with `git branch --show-current`. If they match, use `AskUserQuestion` to propose the branch name `feat/<design-doc-slug>` and ask the user to approve before creating it. The user will create the branch themselves or approve the proposed name. If already on a non-default branch, skip this step.
 
-### Step 3: Create Team & Spawn Teammates (Director)
+### Step 3: Create Team & Start Monitor (Director)
 
-Create an agent team and spawn the teammates needed for this project. Analyze the implementation tasks to decide which roles to spawn (see [roles/director.md](roles/director.md) for team composition guidelines).
+Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE spawning teammates. Then create an agent team and spawn the teammates needed for this project. Analyze the implementation tasks to decide which roles to spawn (see [roles/director.md](roles/director.md) for team composition guidelines).
 
 **Programmer spawn prompt:**
 
@@ -296,9 +296,10 @@ No round limit — the loop continues until the user approves or aborts.
 
 ### Step 6: Finalize & Clean Up (Director)
 
-1. Update design document Status to "Complete" and add final Changelog entry.
-2. Commit (separate commands): `git add <design-doc>` then `git commit -m "docs: mark design doc as complete"`
-3. Shut down all teammates, then clean up the team.
+1. Cancel the `/loop` monitor (`CronDelete`).
+2. Update design document Status to "Complete" and add final Changelog entry.
+3. Commit (separate commands): `git add <design-doc>` then `git commit -m "docs: mark design doc as complete"`
+4. Shut down all teammates, then clean up the team.
 
 **Cleanup notes**: Shut down all teammates before cleaning up the team. Check `tmux ls` for orphans.
 

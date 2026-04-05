@@ -47,7 +47,22 @@ Before creating the team, determine where output files will be saved.
 3. Create the output directory.
 4. Pass `${OUTPUT_DIR}` as the resolved absolute path to the Manager and all Researchers in their spawn prompts.
 
-### Step 1: Create Team & Launch Manager (Director)
+### Step 1: Start Progress Monitor (Director — MANDATORY)
+
+Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE proceeding to any subsequent step. The loop must check `${OUTPUT_DIR}` for these expected deliverables:
+
+- `report.md` — required final compiled report from the Manager
+- `00-scout-*.md` — Scout landscape/discovery notes (one or more files may exist)
+- `NN-research-*.md` — Researcher findings files for delegated sub-topics (`NN` is the assigned number; one or more files may exist)
+
+Use these rules so readiness/stall decisions are deterministic:
+
+- After Scouts/Researchers have been assigned, progress should be visible via creation of at least one `00-scout-*.md` or `NN-research-*.md` file.
+- Do not consider the workflow ready for Step 5 until `report.md` exists.
+- If no new matching files appear in `${OUTPUT_DIR}` for an extended interval, or expected intermediate files stop increasing while teammates are still assigned, nudge stalled teammates.
+- Keep the monitor running until Step 8.
+
+### Step 2: Create Team & Launch Manager (Director)
 
 You (Claude, the lead agent) create an agent team and spawn a Manager teammate. You do NOT decompose topics yourself — that is the Manager's operational decision.
 
@@ -64,7 +79,7 @@ Create the team and spawn the Manager with a prompt covering:
 9. **Output folder path**: Pass `${OUTPUT_DIR}` (the resolved absolute path from Step 0) to the Manager. The Manager writes the compiled report to `${OUTPUT_DIR}/report.md`. Researchers write to `${OUTPUT_DIR}/NN-research-{subtopic}.md`.
 10. User's language preference (if specified)
 11. Mandate: "Your first draft will be reviewed critically. Aim for highest quality on first attempt."
-### Step 2: Knowledge Bootstrapping — Scout Phase (Director)
+### Step 3: Knowledge Bootstrapping — Scout Phase (Director)
 
 After the Manager assesses the topic, the Manager may request Scout(s) from the Director for landscape mapping before topic decomposition.
 
@@ -94,9 +109,9 @@ Write findings to the output file, then message the Manager when complete.
 
 **Safety cap**: Maximum 3 Scout-Manager iterations (request → investigate → review constitutes one iteration). After 3 iterations, the Manager must proceed to topic decomposition with the knowledge gathered so far.
 
-**Transition**: Once the Manager signals that scouting is complete and sends a Researcher spawn request, the Director proceeds to Step 3 (Spawn Researchers).
+**Transition**: Once the Manager signals that scouting is complete and sends a Researcher spawn request, the Director proceeds to Step 4 (Spawn Researchers).
 
-### Step 3: Spawn Researchers (Director)
+### Step 4: Spawn Researchers (Director)
 
 After the Manager decomposes the topic and sends a spawn request, the Director spawns each Researcher as a teammate.
 
@@ -116,68 +131,24 @@ Write findings to the output file, then message the Manager when complete.
 
 The Director repeats this step whenever the Manager requests additional Researchers (e.g., for coverage gaps, failed investigations, or revision-driven re-research).
 
-### Step 4: Critical Review (Director)
+### Step 5: Review & Revision Loop (Director ↔ Manager)
 
-When the Manager finishes and sends you the completed report (messages are delivered automatically via the team mailbox), read the report file and review it critically against the checklist in [roles/director.md](roles/director.md).
+When the Manager delivers the compiled report, read it and review critically against the checklist in [roles/director.md](roles/director.md). Send tagged feedback to the Manager; Manager revises and resubmits. Repeat until quality is met (aim for 2-3 rounds max).
 
-### Step 5: Revision Loop (Director ↔ Manager)
+### Step 6: Present to User (Director)
 
-**This is where report quality is forged.** The first draft is raw material. The revision loop transforms it into a polished deliverable.
+Present the approved report to the user with: summary of findings (2-3 sentences), file paths (report, scout files, researcher files), limitations, and request for feedback. If the user provides feedback, route it to the Manager, re-review, and re-present. Repeat until the user approves.
 
-When issues are found, message the Manager teammate with specific, categorized, tagged feedback. See [roles/director.md](roles/director.md) for feedback tags and severity definitions.
+### Step 7: Offer Presentation Chaining (Director)
 
-### Step 6: Iterate Until Quality Is Met (Director)
+After user approval, offer to create a presentation via `AskUserQuestion` (adapt to user's language). If yes, proceed to Step 8, then invoke `/research-presentation ${OUTPUT_DIR}`. If no, proceed directly to Step 8.
 
-Re-review per [roles/director.md](roles/director.md) quality criteria. Once approved, proceed to Step 7.
+### Step 8: Finalize & Clean Up (Director)
 
-### Step 7: Present Deliverables to User (Director)
-
-After the Director approves the report internally, present it to the user:
-
-1. **Summary of findings** — key insights from the report (2-3 sentences)
-2. **File paths** — list deliverable files:
-   - Report: `${OUTPUT_DIR}/report.md`
-   - Scout files: `${OUTPUT_DIR}/00-scout-*.md` (landscape mapping data)
-   - Researcher files: `${OUTPUT_DIR}/NN-research-*.md` (raw research data for reference)
-3. **Limitations** — any caveats, known gaps, or areas where sources were limited
-4. **Request for feedback** — explicitly ask the user to review and provide feedback or approve
-
-### Step 8: User Revision Loop (Director)
-
-When the user provides feedback after reviewing the report:
-
-1. **Route feedback to the Manager** using the same tag-based format (may trigger re-research via Researchers)
-2. **Manager revises** the report and sends the updated version back to you
-3. **Re-review** the changes, then re-present to the user (return to Step 7)
-
-This loop repeats until the user explicitly approves the report.
-
-### Step 9: Offer Presentation Chaining (Director)
-
-After the user approves the report, offer to create a presentation:
-
-```
-AskUserQuestion:
-  Question: "Would you like to create a presentation (slides + reading transcript) from this report?"
-    (Adapt the question text to match the user's language)
-  Options:
-    - "Yes, create presentation"
-    - "No, report only"
-```
-
-- **If yes:** Proceed to Step 10 (shut down all research agents and clean up the team), then invoke `/research-presentation ${OUTPUT_DIR}` via the Skill tool. Since `${OUTPUT_DIR}` is an absolute path, `/research-presentation` skips its own base directory prompt. A new team is created by `/research-presentation` with its own lifecycle.
-- **If no:** Proceed directly to Step 10.
-
-### Step 10: Finalize & Clean Up (Director)
-
-1. Confirm all final deliverables are saved to `${OUTPUT_DIR}/`
-2. **Shutdown sequence:**
-   1. Send shutdown requests to: all Researchers
-   2. Send shutdown request to: Manager
-   3. Clean up the team
+1. Cancel the `/loop` monitor (`CronDelete`)
+2. Send shutdown requests to all Researchers, then Manager
+3. Clean up the team
 
 **Cleanup notes**: Shut down all teammates before cleaning up the team. Check `tmux ls` for orphans.
-
-**Quality standards**: Defined in [template.md](template.md). All team members must follow them.
 
 $ARGUMENTS
