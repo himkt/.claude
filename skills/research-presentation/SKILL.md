@@ -181,7 +181,11 @@ while start <= total_slides:
         # Re-check only affected slides
         send re-check request to Visual Reviewer
 
-    # 3. Shutdown this Visual Reviewer
+    # 3. Close browser and shutdown this Visual Reviewer
+    #    MUST close browser BEFORE shutdown to release the Playwright session.
+    #    Otherwise the next batch's Visual Reviewer will fail with
+    #    "Browser is already in use" error.
+    send "close browser with mcp__playwright__browser_close" to Visual Reviewer
     shutdown Visual Reviewer
 
     # 4. Move to next batch
@@ -229,9 +233,10 @@ This loop repeats until the user explicitly approves all deliverables.
 
 1. Confirm all final deliverables are saved
 2. **Shutdown sequence:**
-   1. Send shutdown requests to: Presentation Agent, Transcript Agent, Visual Reviewer
-   2. Kill the Slidev dev server background process if still running
-   3. Clean up the team
+   1. If a Visual Reviewer is still running, send "close browser with mcp__playwright__browser_close" BEFORE shutdown
+   2. Send shutdown requests to: Presentation Agent, Transcript Agent, Visual Reviewer
+   3. Kill the Slidev dev server background process if still running
+   4. Clean up the team
 
 **Cleanup notes**: Shut down all teammates before cleaning up the team. Kill the Slidev dev server background task if still running. Check `tmux ls` for teammate orphans (`teammateMode: "tmux"` runs each teammate in a tmux session — this check is unrelated to the Slidev server).
 
