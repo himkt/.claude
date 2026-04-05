@@ -168,7 +168,7 @@ C_GRID = '#E2E8F0'
 
 - **Semantic coloring** — do NOT choose colors based on what the data "means." A vulnerability chart uses `C_BAR` (blue), not red. An adoption chart uses `C_BAR`, not green. Data meaning comes from axis labels and slide context. All charts in a deck must look like they belong together
 - **3+ hues in one chart** — never blue + red + green + orange. Use `C_NEGATIVE` or `C_ACCENT` for at most 1 highlighted item; everything else is `C_BAR` or `C_BAR_SEC`
-- **`C_NEGATIVE` / `C_POSITIVE` as primary color** — red and green are only for highlighting a single item, never for all data points
+- **`C_NEGATIVE` / `C_ACCENT` as primary color** — highlight colors are only for emphasizing a single item, never for all data points
 - **Different Y-axis scales in small multiples** — side-by-side panels MUST share the same Y-axis range
 
 ### Standard axes styling
