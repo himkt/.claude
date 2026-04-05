@@ -54,6 +54,17 @@ Follow the **Color Discipline** and **Usage Rules** sections in `techniques/high
 - **Max 3 per slide.** More than 3 → move data to a table or chart.
 - **Semantic color**: positive (green), negative (red), neutral (blue), caution (orange). Ask "is this good or bad for the audience?"
 
+## Text Wrapping Prevention
+
+Bad text wrapping (mid-word splits, orphan fragments, citation numbers alone on a line) is a critical defect. After writing each slide, mentally check whether any line would end with a short orphan. Fix with these tools, in order of preference:
+
+1. **`fontSize` prop** — add `fontSize: "16px"` (or smaller) to the slide's frontmatter to shrink all text and fit more per line. This is the safest fix because it doesn't change content.
+2. **Split into multiple slides** — if a slide has too much text to fit at any readable font size, split it into two slides. Do not cram.
+3. **Non-breaking characters** — use `&nbsp;` between a word and its citation `[N]`, or U+2011 `‑` within compound terms, to keep units together.
+4. **Minor text adjustments** — rephrase to shift where the line breaks, but do NOT shorten text to the point of losing information.
+
+Citation numbers (`[N]`) must NEVER appear alone on a line. Use `&nbsp;` between the last word and its citation: `テキスト&nbsp;[46]`.
+
 ## Citations
 
 Carry `[N]` from the report, renumber by first slide appearance. Max 3-4 per slide. Add References slide(s) at end.
