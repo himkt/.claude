@@ -36,39 +36,22 @@ Before creating each slide, evaluate which representation best communicates the 
 
 Carry `[N]` citations from the report into slides. Renumber sequentially by first slide appearance (do not reuse report numbering). Use plain text `[N]` — no HTML. Max 3-4 citations per slide. Add References slide(s) at the end listing only cited sources. See the loaded `/my-slidev` skill for full citation formatting rules.
 
+## Data Accuracy Escalation
+
+When transferring data from the report to slides, if a data point raises concern (e.g., contradicts widely-known information, has an unusually specific figure without context, or is marked `(single source)` in the report):
+
+1. Do NOT silently omit or modify the data
+2. Message the Director with: the specific data point, the slide it would appear on, and the nature of the concern
+3. The Director decides whether to include as-is, investigate further, or omit
+4. Wait for the Director's response before finalizing that slide
+
 ## Data Visualization with Figures
 
-**Actively create data visualizations using the `/create-figure` skill.** When the report contains numerical data, trends, comparisons, or distributions, create charts and figures to make the data visually compelling on slides. Do not default to text-only bullets when a figure would communicate the insight more effectively.
+**Actively create figures** when the report contains data that benefits from visualization. Use the Information Representation table above to decide when a figure is the right choice. Do not default to text-only bullets when a chart would communicate the insight more effectively. Create figures proactively — don't wait for the Director to ask.
 
-### When to Create Figures
+**How to create figures:** Load `Skill(create-figure)` and follow its procedure. After figures are saved, copy the output PNGs to `{folder}/figures/` and embed with `![description](./figures/filename.png)`.
 
-- **Trends over time** → line charts
-- **Comparisons across categories** → bar charts, grouped bar charts
-- **Proportions / composition** → pie charts, stacked bar charts
-- **Distributions** → histograms
-- **Relationships between variables** → scatter plots
-- **Before/after or with/without contrasts** → side-by-side bar charts
-
-### When Tables Are Better
-
-- Reference data (version lists, feature matrices, specification comparisons)
-- Exact values matter more than visual patterns
-- Small datasets (2-3 rows) where a chart adds no insight
-
-Choose the representation that best communicates the data's story — a professional consultant picks the right tool for each situation.
-
-### How to Create Figures
-
-1. Load the skill: `Skill(create-figure)`
-2. Create a matplotlib script for the visualization based on report data
-3. After the figure is saved, copy the output PNG to `{folder}/figures/` (create the directory if needed)
-4. Embed in slides using markdown image syntax: `![description](./figures/filename.png)`
-
-### Guidelines
-
-- **Create figures proactively** — don't wait for the Director to ask. Scan the report for data that would benefit from visualization and create figures on your own initiative
-- Keep figures clean and readable at slide scale (large fonts, minimal clutter, generous whitespace)
-- Match the report's language for axis labels, titles, and legends
+**Slide-specific rules:**
 - One figure per slide maximum for readability
 - Use the `blank` layout for slides with figures to avoid layout conflicts with bullet formatting
 
