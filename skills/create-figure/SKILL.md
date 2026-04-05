@@ -24,6 +24,8 @@ Set `${DATA_DIR} = ${BASE}/figures/data`.
 Create the directories if they do not exist.
 All subsequent steps use `${SRC_DIR}`, `${OUTPUT_DIR}`, and `${DATA_DIR}` instead of CWD for file creation. Never create scripts or outputs in `~/.claude`.
 
+**Font:** No setup needed. The theme font `Noto Sans` is available as a system font. Scripts set `plt.rcParams['font.family'] = 'Noto Sans'` (see template below).
+
 ### 1. Create the script
 
 Use the Write tool to create a `.py` file in `${SRC_DIR}`.
@@ -35,9 +37,15 @@ import pathlib
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 
 OUTPUT_DIR = pathlib.Path("${OUTPUT_DIR}")   # filled in by skill
 DATA_DIR = pathlib.Path("${DATA_DIR}")       # filled in by skill
+
+# ── Font: register theme font by family name ──
+_font = pathlib.Path(matplotlib.get_cachedir()) / 'custom_fonts' / 'MPLUSRounded1c-Medium.ttf'
+fm.fontManager.addfont(str(_font))
+plt.rcParams['font.family'] = 'M PLUS Rounded 1c'
 
 # Data input
 data_path = DATA_DIR / "data.csv"
@@ -49,7 +57,7 @@ fig, ax = plt.subplots()
 # Output — filename matches script name
 script_stem = pathlib.Path(__file__).stem
 output_path = OUTPUT_DIR / f"{script_stem}.png"
-plt.savefig(output_path, dpi=150, bbox_inches="tight")
+plt.savefig(output_path, dpi=150, bbox_inches="tight", facecolor='white')
 plt.close()
 print(f"Saved: {output_path}")
 ```

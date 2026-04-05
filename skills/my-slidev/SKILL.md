@@ -34,6 +34,108 @@ fonts:
 | `bullets-sm` | Reference slides, bibliography, or any slide needing smaller text with a header. Same structure as `bullets` with smaller text and no bullet markers. | Same as `bullets`: `::header::` with `# Title`, then `::default::` with `- bullet` items |
 | `two-cols` | Side-by-side comparisons, text+code, text+image, data+analysis. Two columns with a shared header. | `::header::` with `# Title`, then `::left::` and `::right::` slots. Set `columns: "2:1"` in frontmatter for ratio. |
 | `blank` | Slides that need free-form content: tables, diagrams, custom HTML, large text blocks, or anything that doesn't fit the bullets pattern. | Any markdown content. Add `class: v-center` for vertical centering. |
+| `stats-grid` | **Key metrics, KPI highlights, hero numbers.** Use when you have 2-4 numbers that are the main message of the slide. Numbers become prominent cards rather than buried in text. | `::header::` with `# Title`, stats defined in frontmatter `stats` array. Each stat: `{ value, label, source?, type? }`. Types: `primary` (default), `accent`, `positive`, `negative`, `important`. |
+| `section-divider` | **Chapter breaks between major sections.** Creates visual rhythm and orients the audience. Has optional progress indicator dots. | `# Section Title` with optional paragraph subtitle or bullet list preview. Set `section: N` and `totalSections: N` in frontmatter. |
+| `end` | **Last slide.** Closing signal for the audience (Thank you / Questions? / Contact). | `# Thank You` with optional subtitle text. |
+
+## Post-Generation Self-Review (mandatory)
+
+After generating all slides, review EVERY slide against these trigger rules. This is not optional — it is the single most important quality gate.
+
+### Trigger Rules
+
+For each slide, check these conditions in order. If any condition matches, apply the fix:
+
+| Condition | Action |
+|-----------|--------|
+| Slide has 3+ standalone numbers buried in bullet text | Replace with `stats-grid` layout |
+| Slide has a markdown table with 3-5 rows | Consider if `stats-grid` or `two-cols` would work better |
+| Slide shows a comparison (X vs Y, old vs new, before vs after) | Use `two-cols` layout with clear visual contrast |
+| 3+ consecutive `bullets` slides | Insert a different layout (chart, stats-grid, section-divider) to break monotony |
+| Slide contains a figure + source text | Ensure `.figure-caption` is used, not raw `<div>` |
+| Slide is the last content slide | Insert `end` layout after references |
+| Data represents something semantically negative (vulnerabilities, failures, attacks) | Use `type: "negative"` on stats cards, `C_NEGATIVE` in charts |
+
+### Checklist
+
+Run through this after all slides are written:
+
+1. Count consecutive `bullets` slides — max 3 in a row
+2. Search for numbers in bullet text — any number that's the slide's main point should be in `stats-grid`
+3. Verify all `section-divider` slides have `totalSections` set
+4. Verify `end` layout exists as the final slide
+5. Verify all figure captions use `.figure-caption` class
+6. Verify layout variety meets the minimum threshold (see Layout Variety Rule)
+
+## Anti-Patterns to Avoid
+
+These patterns produce slides that look like "Markdown dumped into slides." Actively avoid them.
+
+### 1. Markdown Brain (most common anti-pattern)
+
+**Problem:** Generating consecutive bullet-point slides because the source material is structured as bullet points.
+
+| Signal | Fix |
+|--------|-----|
+| 3+ consecutive `bullets` layout slides | Insert a `section-divider`, `stats-grid`, `blank` (with table/chart), or `two-cols` to break the monotony |
+| A bullet contains a prominent number (84%, $380B, 50x) | Extract the number to a `stats-grid` card instead |
+| A bullet describes a comparison | Use `two-cols` layout |
+
+**Rule:** Ask yourself for each slide: "Is `bullets` truly the best layout for this content, or am I defaulting to it because bullets are easy?"
+
+### 2. Numbers Buried in Text
+
+**Problem:** The report's most impactful data points (84%, $380B, 45%) are embedded in sentences where they lose visual impact.
+
+**Fix:** Any slide whose primary message is 2-4 key numbers should use `stats-grid` layout. The hero-sized numbers become the slide's focal point.
+
+```yaml
+---
+layout: stats-grid
+stats:
+  - value: "84%"
+    label: "AI tool adoption"
+    source: "[1]"
+  - value: "41%"
+    label: "GitHub code is AI-generated"
+    source: "[2]"
+  - value: "$9.5B"
+    label: "Market size 2026"
+    source: "[3]"
+---
+
+::header::
+
+# Market Overview
+```
+
+### 3. Table Overuse
+
+**Problem:** Using markdown tables for all comparative data. Tables work for reference data but are poor for emphasis.
+
+| Content | Better Alternative |
+|---------|-------------------|
+| 3-4 key metrics | `stats-grid` with card per metric |
+| Two-option comparison | `two-cols` layout |
+| Feature matrix with 6+ rows | Table is acceptable, use `blank` layout |
+| Rankings or scores | Chart (bar/horizontal bar) |
+
+### 4. Missing Section Breaks
+
+**Problem:** 30+ slides with no visual chapter breaks. The audience loses orientation.
+
+**Fix:** Insert `section-divider` slides at major topic transitions (every 5-8 content slides).
+
+```yaml
+---
+layout: section-divider
+section: 2
+---
+
+# Security & Privacy
+
+AI-generated code risks and enterprise compliance
+```
 
 ## Content Structuring Rules
 
@@ -43,6 +145,7 @@ fonts:
 4. **First slide is always `cover`** — with presentation title and author
 5. **Default to `bullets` layout** — use `blank` for tables, diagrams, or free-form content
 6. **No nested layouts** — one layout per slide, no layout nesting
+7. **One main message per slide** — if you cannot state the slide's point in one sentence, split it
 
 ## Content Overflow Guidelines
 
@@ -84,7 +187,7 @@ The theme automatically displays page numbers on `bullets` layout slides:
 
 - **Format**: `current/total` (e.g., `03/12`), zero-padded based on total slide count
 - **Position**: Bottom-right corner, subtle gray text
-- **Visibility**: `bullets`, `bullets-sm`, and `two-cols` layouts only — page numbers do NOT appear on `cover` or `blank` layouts
+- **Visibility**: `bullets`, `bullets-sm`, `two-cols`, and `stats-grid` layouts only — page numbers do NOT appear on `cover`, `blank`, or `section-divider` layouts
 - **Automatic**: No author action needed. Page numbers are rendered by the theme.
 
 ## Color Usage
@@ -149,6 +252,73 @@ Lightweight alternative (no title or border — use only for minimal single-line
 - **`<Highlight>` for strong emphasis** — use for the 1-2 most important data points per slide
 - **`<span class="c-...">` for light emphasis** — use when a background tint would be distracting
 - **Never color entire bullets** — only color the specific number or keyword that needs emphasis
+
+## Figures and Charts
+
+### Figure Integration Rules
+
+When embedding matplotlib/chart images in slides, follow these rules to maintain visual consistency:
+
+1. **No duplicate titles** — If the slide has a `## Title`, the figure image must NOT contain its own title. Set `ax.set_title('')` or omit the title in the script. The slide heading IS the chart title.
+2. **Use `.figure-caption` for sources** — Never use raw `<div class="text-sm ...">`. Always use: `<div class="figure-caption">Source text</div>`
+3. **Figure + insight composition** — When a chart needs explanatory text (e.g., Admonition), prefer `two-cols` layout with chart in `::left::` and insight in `::right::`, or keep the Admonition brief (1-2 lines).
+4. **Color consistency** — All figures must use the theme-aligned color palette (see `/create-figure` skill). The primary color in charts must match `--c-primary` (blue-600 = `#2563EB`).
+
+### Figure Caption Pattern
+
+```md
+![Chart description](./figures/chart_name.png)
+
+<div class="figure-caption">Source: [N] — brief context</div>
+```
+
+The `.figure-caption` class provides: small font, secondary color, top border separator. Never use inline styles or ad-hoc `<div>` wrappers for figure captions.
+
+### Figure Slide Layout
+
+For slides with only a figure and optional caption:
+
+```md
+---
+layout: blank
+---
+
+## Chart Title (this is the only title — no title inside the image)
+
+![description](./figures/chart.png)
+
+<div class="figure-caption">Source: [N]</div>
+```
+
+For figure + insight (preferred for analytical slides):
+
+```md
+---
+layout: two-cols
+columns: "3:2"
+---
+
+::header::
+
+# Analysis Title
+
+::left::
+
+![description](./figures/chart.png)
+
+<div class="figure-caption">Source: [N]</div>
+
+::right::
+
+Key findings from this data:
+
+- Insight point 1
+- Insight point 2
+
+<Admonition type="warning" title="Note">
+Brief interpretive note
+</Admonition>
+```
 
 ## Tables and Diagrams
 
@@ -240,6 +410,43 @@ layout: bullets
 - Full-year progress rate at 81.2%
 ```
 
+### Stats-Grid Slide (hero numbers)
+
+```md
+---
+layout: stats-grid
+stats:
+  - value: "84%"
+    label: "Developer AI tool adoption"
+    source: "[1]"
+  - value: "41%"
+    label: "GitHub code is AI-generated"
+    source: "[2]"
+  - value: "$9.5B"
+    label: "AI coding market 2026"
+    source: "[3]"
+---
+
+::header::
+
+# Market at a Glance
+```
+
+Types for stats cards: `primary` (default blue), `accent` (orange), `positive` (green), `negative` (red), `important` (purple).
+
+### Section Divider Slide
+
+```md
+---
+layout: section-divider
+section: 2
+---
+
+# Security & Privacy
+
+Key risks in AI-generated code
+```
+
 ### Bullets-sm Slide (references)
 
 ```md
@@ -320,6 +527,11 @@ Avoid monotonous bullet-point slides. Vary the presentation with these technique
 | 5-10 | 2+ |
 | 11-20 | 4+ |
 | 21+ | 6+ |
+
+Additionally:
+- **Every 5-8 content slides**, insert a `section-divider`
+- **Every slide deck** should have at least 1 `stats-grid` slide if the content has key metrics
+- **No more than 3 consecutive `bullets` slides** without a different layout in between
 
 ### Available Techniques
 
