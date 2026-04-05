@@ -37,15 +37,11 @@ import pathlib
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
 
 OUTPUT_DIR = pathlib.Path("${OUTPUT_DIR}")   # filled in by skill
 DATA_DIR = pathlib.Path("${DATA_DIR}")       # filled in by skill
 
-# ── Font: register theme font by family name ──
-_font = pathlib.Path(matplotlib.get_cachedir()) / 'custom_fonts' / 'MPLUSRounded1c-Medium.ttf'
-fm.fontManager.addfont(str(_font))
-plt.rcParams['font.family'] = 'M PLUS Rounded 1c'
+plt.rcParams['font.family'] = 'Noto Sans'
 
 # Data input
 data_path = DATA_DIR / "data.csv"
@@ -108,6 +104,66 @@ Inline data (from web search or user input):
 categories = ["Q1", "Q2", "Q3", "Q4"]
 values = [120, 185, 240, 310]
 ```
+
+## Color Rules
+
+**1 chart = max 2 colors.** This is the single most important design rule. Violating it produces amateurish, noisy charts.
+
+### Allowed palette
+
+```python
+# Primary (use for most bars/lines)
+C_BAR = '#3B82F6'         # blue-500
+
+# Muted secondary (use for secondary series, negative values, or contrast)
+C_BAR_SEC = '#94A3B8'     # slate-400
+
+# Accent (use for ONE highlighted item only — never for multiple bars)
+C_ACCENT = '#1E40AF'      # blue-800 (darker shade of primary)
+
+# Negative accent (use only when one specific item is the "worst")
+C_NEGATIVE = '#DC2626'    # red-600
+
+# Spine / grid
+C_TEXT = '#1E293B'
+C_TEXT_SEC = '#64748B'
+C_GRID = '#E2E8F0'
+```
+
+### Decision table
+
+| Data pattern | Colors to use |
+|---|---|
+| Single series, all same type | `C_BAR` for all |
+| Single series, grouping by category | Lightness steps of blue (`#1E40AF` / `#3B82F6` / `#93C5FD`) |
+| Two series (e.g., Verified vs Pro) | `C_BAR` + `C_BAR_SEC` |
+| Positive vs negative values | `C_BAR` (positive) + `C_BAR_SEC` (negative) |
+| Highlight one worst item | `C_BAR_SEC` for all + `C_NEGATIVE` for worst |
+| Highlight one best/top item | `C_BAR` for all + `C_ACCENT` (darker) for top |
+
+### Prohibited
+
+- **3+ different hues in one chart** — never blue + red + green + orange
+- **Semantic rainbow** — do NOT assign a different color to each bar "because they mean different things"
+- **Full-saturation colors for all bars** — at most 1 bar gets a saturated accent; the rest are muted or same-hue
+- **`C_POSITIVE` (`#16A34A` green) in bar charts** — green bars look garish; use blue as the default positive
+- **Different Y-axis scales in small multiples** — when panels are side-by-side, all panels MUST share the same Y-axis range. Different scales mislead the reader into comparing bar heights directly. This is a data integrity issue, not just aesthetics
+
+### Standard axes styling
+
+Apply to every figure:
+
+```python
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_color(C_GRID)
+ax.spines['bottom'].set_color(C_GRID)
+ax.tick_params(colors=C_TEXT_SEC)
+ax.yaxis.grid(True, alpha=0.3, color='#CBD5E1')
+ax.set_axisbelow(True)
+```
+
+Always use `facecolor='white'` in `plt.savefig()`.
 
 ## Out of scope
 

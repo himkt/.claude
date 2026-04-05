@@ -18,7 +18,7 @@ theme: <absolute-path-to-skills/my-slidev/theme>
 title: <Presentation Title>
 author: <Author Name>
 fonts:
-  sans: M PLUS Rounded 1c
+  sans: Noto Sans JP
   provider: google
 ---
 ```
