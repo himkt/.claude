@@ -52,7 +52,7 @@ plt.rcParams['font.family'] = 'Noto Sans'
 data_path = DATA_DIR / "data.csv"
 
 # Create the figure
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(constrained_layout=True)
 # ... plotting logic ...
 
 # Output — filename matches script name
@@ -115,7 +115,7 @@ Pick the right visualization for the data. Do NOT default to bar charts for ever
 | Data pattern | Chart type | matplotlib |
 |---|---|---|
 | Category comparison, ranking | Horizontal bar | `ax.barh()` |
-| Time series, trend | Line chart | `ax.plot()` |
+| Time series, trend | Line chart | `ax.plot()` — format dates with `mdates.DateFormatter` (see below) |
 | Correlation between 2 variables | Scatter plot | `ax.scatter()` |
 | Distribution of one variable | Histogram | `ax.hist()` |
 | Distribution comparison across groups | Box plot or violin plot | `ax.boxplot()` / `ax.violinplot()` |
@@ -125,6 +125,37 @@ Pick the right visualization for the data. Do NOT default to bar charts for ever
 | Time-based categories (quarters, years) | Vertical bar | `ax.bar()` |
 
 **Horizontal vs vertical bars**: Prefer `barh` when category labels are text. Use vertical `bar` only for time-based x-axes.
+
+### Time series date axes
+
+```python
+import matplotlib.dates as mdates
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+fig.autofmt_xdate()  # auto-rotate date labels
+```
+
+### Multi-panel layout
+
+For side-by-side comparison panels, use `subplot_mosaic` or `GridSpec`. **All panels must share the same Y-axis range** (see Prohibited section).
+
+```python
+# Named panels — cleaner than index-based access
+fig, axes = plt.subplot_mosaic(
+    [['left', 'right']],
+    figsize=(12, 5), constrained_layout=True,
+)
+axes['left'].barh(categories, values_a, color=C_BAR)
+axes['right'].barh(categories, values_b, color=C_BAR_SEC)
+
+# Complex layouts with GridSpec
+from matplotlib.gridspec import GridSpec
+fig = plt.figure(figsize=(12, 8), constrained_layout=True)
+gs = GridSpec(2, 3, figure=fig)
+ax_wide = fig.add_subplot(gs[0, :])   # top row, full width
+ax_left = fig.add_subplot(gs[1, :2])  # bottom row, 2/3 width
+ax_right = fig.add_subplot(gs[1, 2])  # bottom row, 1/3 width
+```
 
 ## Color Rules
 
@@ -164,6 +195,19 @@ C_GRID = '#E2E8F0'
 | Highlight one worst item | `C_BAR_SEC` for all + `C_NEGATIVE` for worst |
 | Highlight one best/top item | `C_BAR` for all + `C_ACCENT` (darker) for top |
 
+### Annotations for highlighting
+
+Use annotations to call out a specific data point instead of (or alongside) color highlighting:
+
+```python
+ax.annotate('Peak', xy=(x_peak, y_peak),
+            xytext=(x_peak + offset, y_peak + offset),
+            fontsize=10, color=C_TEXT,
+            arrowprops=dict(arrowstyle='->', color=C_TEXT_SEC, lw=1.5))
+```
+
+Keep annotation text short (1–3 words). Use `C_TEXT` for text, `C_TEXT_SEC` for arrows.
+
 ### Prohibited
 
 - **Semantic coloring** — do NOT choose colors based on what the data "means." A vulnerability chart uses `C_BAR` (blue), not red. An adoption chart uses `C_BAR`, not green. Data meaning comes from axis labels and slide context. All charts in a deck must look like they belong together
@@ -186,6 +230,22 @@ ax.set_axisbelow(True)
 ```
 
 Always use `facecolor='white'` in `plt.savefig()`.
+
+### Legend positioning
+
+When a legend is needed, place it outside the plot area to avoid obscuring data:
+
+```python
+ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', frameon=False)
+```
+
+For horizontal legends below the chart (useful in multi-series line plots):
+
+```python
+ax.legend(bbox_to_anchor=(0.5, -0.12), loc='upper center', ncol=3, frameon=False)
+```
+
+Use `frameon=False` to keep the look clean. Limit legend entries to ≤ 5; if more, reconsider the chart design.
 
 ## Out of scope
 
