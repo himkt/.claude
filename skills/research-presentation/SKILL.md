@@ -13,7 +13,7 @@ Create a Slidev presentation and reading transcript from an existing research re
 | **Director** | Main Claude | Spawn all teammates, review all deliverables, demand revisions | Create slides/transcript, conduct research, modify report | [roles/director.md](roles/director.md) |
 | **Presentation** | `general-purpose` | Create Slidev presentation from report using /my-slidev | Invent data, modify report, conduct research | [roles/presentation.md](roles/presentation.md) |
 | **Transcript** | `general-purpose` | Create reading transcript with 1:1 slide correspondence | Invent data, modify report, conduct research | [roles/transcript.md](roles/transcript.md) |
-| **Visual Reviewer** | `general-purpose` | Capture screenshots/snapshots of all slides using playwright-mcp, identify visual issues including aesthetic quality, report findings to Director | Edit slide.md, modify report, fix issues directly | [roles/visual-reviewer.md](roles/visual-reviewer.md) |
+| **Visual Reviewer** | `general-purpose` | Capture screenshots/snapshots of all slides using the agent-browser CLI (`bun run agent-browser`) with a per-batch named session (`--session vr-batch-{start}`), identify visual issues including aesthetic quality, report findings to Director | Edit slide.md, modify report, fix issues directly | [roles/visual-reviewer.md](roles/visual-reviewer.md) |
 
 ## Architecture
 
@@ -135,7 +135,7 @@ After the content revision loop completes, visually review the rendered presenta
    - **macOS**: `script -q /dev/null bun run slidev --open false {folder}/slide.md`
    - **Linux**: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null`
 3. Set `{server_url}` to the Slidev dev server URL (default: `http://localhost:3030`). Use this value when spawning Visual Reviewers.
-4. Director MUST NOT use any `mcp__playwright__*` tools — Playwright is exclusively for Visual Reviewers.
+4. Director MUST NOT run `bun run agent-browser --session vr-batch-* open|snapshot|screenshot|wait|close` directly — agent-browser is exclusively for Visual Reviewers (the only exception is the `close --all` safety net in Step 7).
 
 **Batched Review Loop** (batch_size=10, fresh Visual Reviewer per batch to avoid context overflow):
 
@@ -153,7 +153,7 @@ while start <= total_slides:
         if no issues: break
         route issues to Presentation Agent → fix → re-check affected slides
 
-    send "mcp__playwright__browser_close" to Visual Reviewer  # MUST close before shutdown
+    send "agent-browser close" instruction to Visual Reviewer  # MUST close session before shutdown
     shutdown Visual Reviewer
     start = end + 1
 ```
@@ -165,14 +165,14 @@ You are a Visual Reviewer and a teammate in a research team.
 
 Read your role definition at: skills/research-presentation/roles/visual-reviewer.md
 
-YOUR TASK: Visually verify the rendered Slidev presentation using playwright-mcp browser tools.
+YOUR TASK: Visually verify the rendered Slidev presentation using `bun run agent-browser` CLI commands. SESSION NAME: `vr-batch-{start}` — every command MUST be invoked as `bun run agent-browser --session vr-batch-{start} <subcommand> ...`. Run `bun run agent-browser --session vr-batch-{start} close` before exiting.
 SLIDE FILE: {folder}/slide.md
 
 CHECK SLIDES {start} TO {end} ONLY.
 SERVER URL: {server_url}
 
 PROCESS:
-1. Navigate to SERVER URL to confirm connectivity
+1. Run server readiness check: `bun run agent-browser --session vr-batch-{start} open {server_url}/1` then `bun run agent-browser --session vr-batch-{start} wait --load networkidle`
 2. For each slide: navigate to {server_url}/{slide_number},
    take a screenshot and accessibility snapshot, check for visual issues.
    Screenshots are for in-session review only — do NOT persist them.
@@ -198,7 +198,7 @@ Present deliverables (slides, transcript, preview URL) and request approval via 
 **Only enter after user approves in Step 5.**
 
 1. Cancel the `/loop` monitor (`CronDelete`)
-2. If Visual Reviewer running: send `mcp__playwright__browser_close` BEFORE shutdown
+2. If Visual Reviewer running: instruct it to run `bun run agent-browser --session vr-batch-{N} close` BEFORE shutdown. After all teammates exit, Director runs `bun run agent-browser close --all` as a safety net.
 3. Send shutdown requests to all teammates
 4. Kill Slidev dev server if still running
 5. Clean up the team
