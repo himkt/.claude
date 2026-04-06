@@ -17,7 +17,7 @@ slide-review work.
 ## Your Accountability
 
 - **Detect visual issues including aesthetic quality.** Check for text overflow, broken layouts, missing content, overlapping elements, empty slides, render errors, and aesthetic quality problems such as awkward text wrapping. Aim for visually beautiful slides, not just functionally correct ones.
-- **Capture evidence for every slide.** Take a screenshot and accessibility snapshot for each slide to verify rendering. Screenshots do NOT need to be persisted — they are for in-session review only. Do NOT copy, move, or save screenshots to any directory.
+- **Capture evidence for every slide.** Take a screenshot and accessibility snapshot for each slide to verify rendering. Persist each screenshot to `{folder}/screenshots/vr{start}-r{round}-p{slide_number}.png` (see the Per-Slide Capture procedure below for the exact command). The Director provides `{folder}` and `{round}` in the spawn prompt and updates `{round}` on re-check requests via the protocol described in §4c.
 - **Report findings in structured format.** Use the visual issue tags consistently and provide actionable descriptions so the Presentation Agent can fix issues without guessing.
 - **Re-check affected slides after fixes.** When the Director requests a re-check, verify only the specified slides — not the entire deck.
 
@@ -35,6 +35,7 @@ slide-review work.
 | `[OVERLAP]` | Elements overlapping each other | Title text overlapping bullet list |
 | `[EMPTY_SLIDE]` | Slide appears empty or near-empty | Only background color visible |
 | `[RENDER_ERROR]` | General rendering failure | Error message displayed, or slide blank |
+| `[CONSOLE_ERROR]` | Browser console error or uncaught page error detected via the Diagnostic Escalation procedure (`agent-browser console` / `errors`). Distinct from `[RENDER_ERROR]`, which covers visually observable breakage. | "Uncaught TypeError: Cannot read property 'foo' of undefined at slide-7.vue:42" |
 | `[TEXT_WRAPPING]` | **Critical defect.** Text breaks at a wrong boundary or leaves an orphan fragment. See detailed checking procedure below. | "$9-13B" → "$9-" + "13B"; "ダウンロー" + "ド"; "[46]" alone on a line; "を実証 [47]" as a 2-word orphan line |
 
 ### TEXT_WRAPPING Deep Check Procedure (MANDATORY for every slide)
@@ -80,9 +81,27 @@ For each slide_number in your assigned `{start}..{end}` range — do NOT capture
 
 1. `bun run agent-browser --session vr-batch-{N} open {server_url}/{slide_number}`
 2. `bun run agent-browser --session vr-batch-{N} wait --load networkidle`
-3. `bun run agent-browser --session vr-batch-{N} screenshot` (agent-browser saves to its default temp dir; the Visual Reviewer does NOT move, copy, or persist the file — it is for in-session review only)
+3. `bun run agent-browser --session vr-batch-{N} screenshot {folder}/screenshots/vr{start}-r{round}-p{slide_number}.png` (persisted; agent-browser does NOT auto-create parent directories, but the Director already created `{folder}/screenshots/.keep` at Step 4 start, so the directory always exists by the time the VR runs)
 4. `bun run agent-browser --session vr-batch-{N} snapshot` (full accessibility tree — required for the TEXT_WRAPPING line-by-line check)
 5. Compare visible content against expected content from `slide.md` and record any issues using the tags in the Visual Issue Categories table
+
+> **Note on `{N}` overload:** in this role file the placeholder `{N}` historically refers to the `vr-batch-{N}` session number (which equals `{start}`). To avoid confusion with the new filename's `{N}` (slide page number), the screenshot command above uses `{slide_number}` literally instead of `{N}`. The session-name `{N}` and the filename's `{start}` are the same value.
+
+### Diagnostic Escalation (on-demand only)
+
+`agent-browser console` and `agent-browser errors` are NOT part of the standard per-slide loop. Do not run them on healthy slides. Use them only when troubleshooting one of these conditions:
+
+| Trigger | What to run | Purpose |
+|---------|-------------|---------|
+| Slide renders blank or near-empty after `wait --load networkidle` succeeds | `bun run agent-browser --session vr-batch-{start} console` then `errors` | Surface uncaught JS errors or Slidev compile errors that prevented mounting |
+| `wait --load networkidle` keeps timing out across all 3 readiness retries | `bun run agent-browser --session vr-batch-{start} errors` | Check whether a page error is blocking network idle |
+| You suspect a `[RENDER_ERROR]` and need an attribution clue before reporting | Both, in that order | Provide actionable detail to the Director |
+
+**Reporting:** if `console` or `errors` returns non-empty output that explains the issue, file the finding under `[CONSOLE_ERROR]` (see the Visual Issue Categories table). Quote the most relevant 1–3 lines of console/error output in the report so the Presentation Agent can act on it without re-running the diagnostic.
+
+**`--clear` usage:** prefer `bun run agent-browser --session vr-batch-{start} console --clear` and `errors --clear` between distinct diagnostic checks so output from a previous slide does not pollute the next attribution. Clearing is optional, not required.
+
+**Do NOT** run `console`/`errors` after every slide. They are an escalation tool, not an instrumentation tool.
 
 ## Review Report Format
 

@@ -29,6 +29,7 @@ You are the **Director** in a research presentation team. You bear **ultimate re
 | `[OVERLAP]` | Elements overlapping each other |
 | `[EMPTY_SLIDE]` | Slide appears empty or near-empty |
 | `[RENDER_ERROR]` | General rendering failure |
+| `[CONSOLE_ERROR]` | Browser console error or uncaught page error reported by the Visual Reviewer's Diagnostic Escalation (`agent-browser console` / `errors`). Distinct from `[RENDER_ERROR]`. |
 | `[TEXT_WRAPPING]` | Text wraps awkwardly with orphan words on the last line |
 
 ## Transcript Review Tags
