@@ -17,7 +17,7 @@
       "Bash(bun install --frozen-lockfile)",
       "Bash(bun run agent-browser --help)",
       "Bash(bun run agent-browser --version)",
-      "Bash(bun run agent-browser --session vr-batch-* open *)",
+      "Bash(bun run agent-browser --session vr-batch-* open http://localhost:3030*)",
       "Bash(bun run agent-browser --session vr-batch-* snapshot)",
       "Bash(bun run agent-browser --session vr-batch-* snapshot *)",
       "Bash(bun run agent-browser --session vr-batch-* screenshot)",

@@ -153,7 +153,7 @@ while start <= total_slides:
         if no issues: break
         route issues to Presentation Agent → fix → re-check affected slides
 
-    send "agent-browser close" instruction to Visual Reviewer  # MUST close session before shutdown
+    send `bun run agent-browser --session vr-batch-{start} close` instruction to Visual Reviewer  # MUST close the current batch session before shutdown
     shutdown Visual Reviewer
     start = end + 1
 ```
@@ -173,9 +173,10 @@ SERVER URL: {server_url}
 
 PROCESS:
 1. Run server readiness check: `bun run agent-browser --session vr-batch-{start} open {server_url}/1` then `bun run agent-browser --session vr-batch-{start} wait --load networkidle`
-2. For each slide: navigate to {server_url}/{slide_number},
-   take a screenshot and accessibility snapshot, check for visual issues.
-   Screenshots are for in-session review only — do NOT persist them.
+2. For each slide: run `bun run agent-browser --session vr-batch-{start} open {server_url}/{slide_number}`,
+   then `bun run agent-browser --session vr-batch-{start} wait --load networkidle`, then capture
+   a screenshot and accessibility snapshot using the `screenshot` and `snapshot` subcommands,
+   and check for visual issues. Screenshots are for in-session review only — do NOT persist them.
 
 VISUAL ISSUE CATEGORIES: [OVERFLOW], [BROKEN_LAYOUT], [MISSING_CONTENT], [OVERLAP], [EMPTY_SLIDE], [RENDER_ERROR], [TEXT_WRAPPING]
 
@@ -198,7 +199,7 @@ Present deliverables (slides, transcript, preview URL) and request approval via 
 **Only enter after user approves in Step 5.**
 
 1. Cancel the `/loop` monitor (`CronDelete`)
-2. If Visual Reviewer running: instruct it to run `bun run agent-browser --session vr-batch-{N} close` BEFORE shutdown. After all teammates exit, Director runs `bun run agent-browser close --all` as a safety net.
+2. If Visual Reviewer running: instruct it to run `bun run agent-browser --session vr-batch-{start} close` BEFORE shutdown. After all teammates exit, Director runs `bun run agent-browser close --all` as a safety net.
 3. Send shutdown requests to all teammates
 4. Kill Slidev dev server if still running
 5. Clean up the team
