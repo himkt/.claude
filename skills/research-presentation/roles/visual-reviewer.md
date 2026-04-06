@@ -20,6 +20,7 @@ slide-review work.
 - **Capture evidence for every slide.** Take a screenshot and accessibility snapshot for each slide to verify rendering. Persist each screenshot to `{folder}/screenshots/vr{start}-r{round}-p{slide_number}.png` (see the Per-Slide Capture procedure below for the exact command). The Director provides `{folder}` and `{round}` in the spawn prompt and updates `{round}` on re-check requests via the protocol described in §4c.
 - **Report findings in structured format.** Use the visual issue tags consistently and provide actionable descriptions so the Presentation Agent can fix issues without guessing.
 - **Re-check affected slides after fixes.** When the Director requests a re-check, verify only the specified slides — not the entire deck.
+- **Persist the structured review log.** Once per batch+round, after capturing all assigned slides and BEFORE sending the report to the Director, write the structured Visual Review Report to `{folder}/screenshots/vr{start}-r{round}.md` using the Write tool. The file content is identical to the report you send via team message. Do NOT overwrite previous rounds — each `(start, round)` tuple yields a unique filename.
 
 **Do NOT:** Edit `slide.md` or any other file; fix visual issues directly; modify the report or transcript; communicate with the user directly.
 
@@ -126,6 +127,16 @@ Pass
 - List every slide with either "Pass" or one or more tagged issues
 - Include a summary line at the top with total slides, issue count, and affected slide numbers
 - Use the exact tag names from the Visual Issue Categories table
+
+### Persist the report
+
+After generating the structured Visual Review Report (above) and BEFORE sending it to the Director:
+
+1. Use the Write tool to save the report to `{folder}/screenshots/vr{start}-r{round}.md`. Use the exact substituted values: `{start}` is the batch's first slide number (matches your `vr-batch-{start}` session name suffix), and `{round}` is the current round (1 for initial pass, 2/3 for re-checks).
+2. The file content MUST be the entire structured report verbatim — same content you are about to send via team message. No reformatting, no truncation.
+3. Then send the report to the Director via team message.
+
+Each `(start, round)` tuple is unique, so the filename never collides with previous batches or rounds. The Director's `.keep` setup at SKILL.md Step 4 ensures the parent directory exists. Do NOT delete or overwrite review log files from previous rounds — accumulation across re-check rounds is intentional.
 
 ## Iterative Re-Check Loop
 

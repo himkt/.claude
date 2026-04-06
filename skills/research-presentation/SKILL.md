@@ -190,6 +190,11 @@ PROCESS:
    escalation when a slide is blank, broken, or you suspect a `[RENDER_ERROR]` and need an
    attribution clue. See "Diagnostic Escalation" in your role definition for triggers and
    reporting format.
+4. After capturing all slides in your assigned [start..end] range, persist your structured
+   Visual Review Report to {folder}/screenshots/vr{start}-r{round}.md using the Write tool
+   BEFORE sending the report message to the Director. The file content must be identical
+   to the report you send via team message. See "Persist the report" in your role definition
+   for the exact procedure.
 
 VISUAL ISSUE CATEGORIES: [OVERFLOW], [BROKEN_LAYOUT], [MISSING_CONTENT], [OVERLAP], [EMPTY_SLIDE], [RENDER_ERROR], [CONSOLE_ERROR], [TEXT_WRAPPING]
 
