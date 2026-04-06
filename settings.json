@@ -15,6 +15,17 @@
     "allow": [
       "Edit",
       "Bash(bun install --frozen-lockfile)",
+      "Bash(bun run agent-browser --help)",
+      "Bash(bun run agent-browser --version)",
+      "Bash(bun run agent-browser --session vr-batch-* open *)",
+      "Bash(bun run agent-browser --session vr-batch-* snapshot)",
+      "Bash(bun run agent-browser --session vr-batch-* snapshot *)",
+      "Bash(bun run agent-browser --session vr-batch-* screenshot)",
+      "Bash(bun run agent-browser --session vr-batch-* screenshot *)",
+      "Bash(bun run agent-browser --session vr-batch-* wait *)",
+      "Bash(bun run agent-browser --session vr-batch-* close)",
+      "Bash(bun run agent-browser --session vr-batch-* close *)",
+      "Bash(bun run agent-browser close --all)",
       "Bash(gh api repos/*/*/pulls/*/comments)",
       "Bash(gh api repos/*/*/pulls/*/comments *)",
       "Bash(gh api repos/*/*/pulls/*/reviews)",
@@ -68,18 +79,12 @@
       "WebSearch",
       "Write",
       "Write(//tmp/claude-code/**)",
-      "mcp__pathfinder-python__definition",
-      "mcp__playwright__browser_close",
-      "mcp__playwright__browser_console_messages",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_tabs",
-      "mcp__playwright__browser_take_screenshot",
-      "mcp__playwright__browser_wait_for"
+      "mcp__pathfinder-python__definition"
     ],
     "deny": [
       "Bash(awk *)",
       "Bash(bun install)",
+      "Bash(bun run agent-browser open *)",
       "Bash(cat *)",
       "Bash(echo *)",
       "Bash(find *)",
@@ -106,9 +111,6 @@
   },
   "model": "opus[1m]",
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "playwright"
-  ],
   "hooks": {
     "PreToolUse": [
       {
