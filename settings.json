@@ -61,6 +61,7 @@
       "Read(/skills/**)",
       "Read(/plugins/**)",
       "Read(//tmp/claude-code/**)",
+      "Read(~/.agent-browser/tmp)",
       "Skill(create-figure)",
       "Skill(design-doc)",
       "Skill(github-cli)",
