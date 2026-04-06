@@ -17,17 +17,26 @@ Only the execution borrows the uv environment from `~/.claude`.
 
 ### 0. Resolve directories
 
-If `${FIGURE_BASE}` is already set by the calling context (e.g., a research skill passes its project folder), use it as `${BASE}` and skip base-dir resolution.
+**CRITICAL — placeholder convention.** `${FIGURE_BASE}`, `${BASE}`, `${SRC_DIR}`, `${OUTPUT_DIR}`, and `${DATA_DIR}` in this document are **template placeholders, NOT shell environment variables**. You must mentally resolve each one to a concrete absolute path and write that literal path into the script file via the Write tool.
 
-Otherwise: Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies).
-If the resolved `${BASE}` is `~/.claude`, override to `${BASE} = /tmp/claude-code`.
+**Do NOT** run `export FIGURE_BASE=...`, `FIGURE_BASE=... uv run ...`, or any other shell variable assignment. Bash calls in Claude Code are ephemeral — values set in one call do not persist to the next. The placeholders are resolved entirely in your head, not in the shell.
 
-Set `${SRC_DIR} = ${BASE}/figures/src`.
-Set `${OUTPUT_DIR} = ${BASE}/figures/output`.
-Set `${DATA_DIR} = ${BASE}/figures/data`.
+**Resolve `${BASE}` in this order:**
 
-Create the directories if they do not exist.
-All subsequent steps use `${SRC_DIR}`, `${OUTPUT_DIR}`, and `${DATA_DIR}` instead of CWD for file creation. Never create scripts or outputs in `~/.claude`.
+1. **Calling-context override**: If a parent skill's spawn prompt told you the figure base directory (e.g., `/research-presentation` passes its research folder as the figure base), use that path literally as `${BASE}`. Skip base-dir resolution.
+2. **Otherwise**: Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies). If the resolved `${BASE}` is `~/.claude`, override to `${BASE} = /tmp/claude-code`.
+
+**Derive the subdirectories** (each is a literal path string you will embed in the script):
+
+- `${SRC_DIR} = ${BASE}/figures/src`
+- `${OUTPUT_DIR} = ${BASE}/figures/output`
+- `${DATA_DIR} = ${BASE}/figures/data`
+
+Example resolution: if the calling skill said "use `/tmp/claude-code/researches/foo` as the figure base", then `${SRC_DIR}` in your head is `/tmp/claude-code/researches/foo/figures/src` — that literal string is what you write into the Python script.
+
+If the directories do not exist yet, the Write tool auto-creates parent directories when you write the script file — do NOT call `mkdir`.
+
+All subsequent steps use `${SRC_DIR}`, `${OUTPUT_DIR}`, and `${DATA_DIR}` as literal resolved paths. Never create scripts or outputs in `~/.claude`.
 
 **Font:** No setup needed. The theme font `Noto Sans` is available as a system font. Scripts set `plt.rcParams['font.family'] = 'Noto Sans'` (see template below).
 
@@ -35,7 +44,7 @@ All subsequent steps use `${SRC_DIR}`, `${OUTPUT_DIR}`, and `${DATA_DIR}` instea
 
 Use the Write tool to create a `.py` file in `${SRC_DIR}`.
 
-The script must follow this pattern:
+The script must follow this pattern. **Replace `${OUTPUT_DIR}` and `${DATA_DIR}` below with the literal concrete paths you resolved in Step 0** — the Python source you write must contain real path strings, not `${...}` syntax:
 
 ```python
 import pathlib
@@ -43,8 +52,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-OUTPUT_DIR = pathlib.Path("${OUTPUT_DIR}")   # filled in by skill
-DATA_DIR = pathlib.Path("${DATA_DIR}")       # filled in by skill
+# REPLACE these with literal paths from Step 0 resolution.
+# e.g. pathlib.Path("/tmp/claude-code/researches/foo/figures/output")
+OUTPUT_DIR = pathlib.Path("${OUTPUT_DIR}")
+DATA_DIR = pathlib.Path("${DATA_DIR}")
 
 plt.rcParams['font.family'] = 'Noto Sans'
 

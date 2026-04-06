@@ -71,9 +71,22 @@ FIGURE CREATION: Actively use /create-figure to create data visualizations
 data, trends, comparisons, or distributions, create figures rather than
 showing data as text-only bullets. Choose the right representation for each
 dataset — figures for visual patterns, tables for reference data and exact
-values. Set FIGURE_BASE to {folder} before loading Skill(create-figure).
-This makes figures go to {folder}/figures/output/. Embed with
-![description](./figures/output/filename.png).
+values.
+
+When loading Skill(create-figure), use {folder} as the figure base directory
+— substitute it literally wherever the skill's instructions reference
+${FIGURE_BASE} or ${BASE}. These are TEMPLATE PLACEHOLDERS, not shell
+environment variables. Do NOT run `export FIGURE_BASE=...` or any shell
+variable assignment; Bash calls in Claude Code are ephemeral and values do
+not persist. Just resolve the paths in your head and write the literal
+absolute paths into the Python scripts via the Write tool.
+
+Resolved paths for this run:
+  - figures/src:    {folder}/figures/src
+  - figures/output: {folder}/figures/output
+  - figures/data:   {folder}/figures/data
+
+Embed figures in slides with ![description](./figures/output/filename.png).
 
 CITATION RULES: Carry [N] citations from the report into slides. Renumber
 sequentially based on first slide appearance. Add References slide(s) at the
