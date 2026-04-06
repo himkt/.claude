@@ -147,16 +147,20 @@ start = 1
 while start <= total_slides:
     end = min(start + 9, total_slides)
 
-    spawn Visual Reviewer with slides [start..end], round=1
-    # spawn prompt MUST include {folder} and {round}=1; VR uses them to build screenshot paths
+    vr_round = 1                                # current VR round number; bumped on each re-check
+    spawn Visual Reviewer with slides [start..end], ROUND=vr_round
+    # spawn prompt MUST include `RESEARCH FOLDER: {folder}` and `ROUND: 1` lines so the VR
+    # can build screenshot/report paths
 
-    for round in 1..2:                          # max 2 fix rounds per batch
-        wait for report
+    while True:                                 # initial review (r1) + up to 2 re-checks (r2, r3)
+        wait for report from VR for round {vr_round}
         if no issues: break
-        route issues to Presentation Agent → fix → re-check affected slides
-        # when sending the re-check request to VR, include `round={round+1}` so the VR
-        # writes the next capture to `vr{start}-r{round+1}-p{N}.png` instead of overwriting
-        # the previous round's screenshots
+        if vr_round >= 3: break                 # max 2 re-check rounds reached; remaining issues escalate to user in Step 5
+        route issues to Presentation Agent → fix
+        vr_round += 1
+        send re-check request to VR with a `ROUND: {vr_round}` line in the team message
+        # VR writes the next capture to `vr{start}-r{vr_round}-p{slide_number}.png` and
+        # the next persisted report to `vr{start}-r{vr_round}.md`, preserving prior rounds
 
     send `bun run agent-browser --session vr-batch-{start} close` instruction to Visual Reviewer  # MUST close the current batch session before shutdown
     shutdown Visual Reviewer
@@ -198,7 +202,7 @@ PROCESS:
 
 VISUAL ISSUE CATEGORIES: [OVERFLOW], [BROKEN_LAYOUT], [MISSING_CONTENT], [OVERLAP], [EMPTY_SLIDE], [RENDER_ERROR], [CONSOLE_ERROR], [TEXT_WRAPPING]
 
-Report ONLY slides with issues. If all pass, say "ALL PASS".
+Report every slide in your assigned [start..end] range. For each slide, record either `Pass` or one or more applicable visual issue tag(s) with a brief explanation. Do NOT use "ALL PASS" — the persisted log file (`vr{start}-r{round}.md`) must contain a complete record of every slide for traceability across rounds.
 ```
 
 ### Step 5: User Approval (Director)
