@@ -70,6 +70,7 @@
       "Write(//tmp/claude-code/**)",
       "mcp__pathfinder-python__definition",
       "mcp__playwright__browser_close",
+      "mcp__playwright__browser_console_messages",
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_snapshot",
       "mcp__playwright__browser_tabs",
