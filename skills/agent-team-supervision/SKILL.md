@@ -13,7 +13,7 @@ Load this skill via `Skill(agent-team-supervision)` before spawning any teammate
 
 Teammates do not act autonomously. They respond to your messages. If you are not actively monitoring and instructing, work halts silently.
 
-## Monitoring methods
+## Monitoring Mandate
 
 - **`/loop` monitor** — recurring check (3-min interval) that compares deliverable files against the expected set and pings missing ones. Set up via `Skill(loop)` BEFORE spawning any teammate; cancel only at cleanup (`CronDelete`). Must stay active across all phases (research, compile, review, revise, approval).
 - **`tmux capture-pane -p -t %<id> -S -30`** — direct pane inspection. Read `tmuxPaneId` from team config. A spinner (`Cultivating…`, `Forging…`) means working; an empty `❯` means idle. Use this to verify state before deciding to message — nudges cost teammate context.
