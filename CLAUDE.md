@@ -8,13 +8,13 @@ Invoke matching skills before acting. Heed override instructions in each entry.
 - `/design-doc` — Standard design-doc template and guidelines. Load when writing/editing any design document. Do NOT use freeform format.
 - `/design-doc-create` — Create a design document, spec, or implementation plan via the design-doc-creator agent team. Do NOT use EnterPlanMode.
 - `/design-doc-execute` — Implement a design document via TDD agent team with auto-validation. Argument: doc path. Do NOT implement manually.
-- `/design-doc-interview` — Validate a design doc via multi-session Q&A; adds `COMMENT(claude)` annotations. Argument: doc path. Use between /design-doc-create and /design-doc-execute.
+- `/design-doc-interview` — Validate a design doc via multi-session Q&A; adds `COMMENT(claude)` annotations. Argument: doc path. Use between /design-doc-create and /design-doc-execute. Do NOT use to create or execute design documents.
 - `/github-cli` — Fetch GitHub issue/PR details via the `gh` CLI. Triggered when user shares a github.com URL. Do NOT run `gh` directly.
 - `/my-slidev` — Generate Slidev presentations using the custom theme. Use for slides built from research reports, outlines, or notes.
-- `/nixos-boot-troubleshoot` — Diagnose NixOS boot failures (kernel panic, black screen, crash after reboot) via journal logs and generation comparison.
+- `/nixos-boot-troubleshoot` — Diagnose NixOS boot failures (kernel panic, black screen, crash after reboot, system won't boot) via journal logs and generation comparison. Use when `nixos-rebuild switch` works but reboot fails.
 - `/pathfinder-explain` — Trace a symbol's definition via LSP and explain its implementation. Argument: symbol name. Do NOT rely on grep alone.
 - `/research-presentation` — Create Slidev slides and a reading transcript from an existing research folder. Argument: folder name. Do NOT use for research itself — use /research-report.
-- `/research-report` — Comprehensive multi-source research report via an agent team. Output: `researches/{slug}/`. Optionally chains to /research-presentation. Do NOT do a quick web search — use this for thorough research.
+- `/research-report` — Comprehensive multi-source research report via an agent team. Output: `researches/{slug}/`. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Optionally chains to /research-presentation. Do NOT do a quick web search — use this for thorough research.
 - `/sync-skills` — Sync the auto-generated skill list in `CLAUDE.md` with skill definitions on disk. Run after adding/removing/modifying a skill.
 
 Notes:

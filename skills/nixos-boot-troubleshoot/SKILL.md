@@ -1,6 +1,6 @@
 ---
 name: nixos-boot-troubleshoot
-description: Diagnose NixOS boot failures (kernel panic, black screen, crash after reboot) via journal logs and generation comparison.
+description: Diagnose NixOS boot failures (kernel panic, black screen, crash after reboot, system won't boot) via journal logs and generation comparison. Use when `nixos-rebuild switch` works but reboot fails.
 ---
 
 # NixOS Boot Failure Troubleshooting

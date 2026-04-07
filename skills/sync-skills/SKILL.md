@@ -70,6 +70,6 @@ Follow the "Per-target procedure" below.
 2. Generate the section body:
    - Start with the intro paragraph: `Invoke matching skills before acting. Heed override instructions in each entry.`
    - Then one `- /name — summary` line per skill, sorted alphabetically
-   - Each summary is derived from the `description` field in SKILL.md frontmatter. Aim for ~20-25 tokens per skill. Always preserve trigger keywords and override instructions; drop filler like 'Use this skill when...', 'Also invokable via...', or restated invocation guidance. Write in English only.
+   - Each summary is derived from the `description` field in SKILL.md frontmatter. Keep each summary to a single short sentence. Always preserve trigger keywords and override instructions; drop filler like 'Use this skill when...', 'Also invokable via...', or restated invocation guidance. Write in English only.
 3. Compare with the existing section in the target CLAUDE.md. Update only if there are differences.
 4. Replace the section (from heading up to the next `## `) in-place. If the section doesn't exist: Project or Plugin target → add at top of file, Local target → add immediately before `## Directory Structure`. Only modify the target section — preserve everything else.

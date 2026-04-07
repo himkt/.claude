@@ -1,6 +1,6 @@
 ---
 name: design-doc-interview
-description: Validate a design doc via multi-session Q&A; adds `COMMENT(claude)` annotations. Argument: doc path. Use between /design-doc-create and /design-doc-execute.
+description: Validate a design doc via multi-session Q&A; adds `COMMENT(claude)` annotations. Argument: doc path. Use between /design-doc-create and /design-doc-execute. Do NOT use to create or execute design documents.
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Agent
 ---
 
