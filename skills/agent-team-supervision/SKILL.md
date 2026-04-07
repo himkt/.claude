@@ -13,31 +13,20 @@ Load this skill via `Skill(agent-team-supervision)` before spawning any teammate
 
 Teammates do not act autonomously. They respond to your messages. If you are not actively monitoring and instructing, work halts silently.
 
-## Monitoring Mandate
+## Monitoring methods
 
-Before spawning ANY teammate, set up a `/loop` monitor using `Skill(loop)` or `/loop` with a 3-minute interval. The loop prompt must:
+- **`/loop` monitor** — recurring check (3-min interval) that compares deliverable files against the expected set and pings missing ones. Set up via `Skill(loop)` BEFORE spawning any teammate; cancel only at cleanup (`CronDelete`). Must stay active across all phases (research, compile, review, revise, approval).
+- **`tmux capture-pane -p -t %<id> -S -30`** — direct pane inspection. Read `tmuxPaneId` from team config. A spinner (`Cultivating…`, `Forging…`) means working; an empty `❯` means idle. Use this to verify state before deciding to message — nudges cost teammate context.
 
-1. Check the output directory for expected deliverable files
-2. Compare found files against the expected set
-3. Message any teammate whose deliverable is missing: "Report your progress now. If blocked, state what is blocking you."
-4. Message the Director (team-lead) when all deliverables exist: "All deliverables are ready for review."
+## Communication methods
 
-**Lifecycle:** The loop MUST stay active from the first teammate spawn until the final shutdown (`CronDelete` only in the cleanup step). It must run through all phases: research, compilation, review, revision, user approval.
+- **`SendMessage`** — the only way to instruct teammates. Always specific, never "are you OK?".
+- **Never** use `tmux send-keys` to drive a teammate.
 
-## Spawn Protocol
+## Spawn protocol
 
-Every time you spawn a teammate:
+Ensure `/loop` is running, then spawn, then verify active. No teammate without an active monitor.
 
-1. Ensure the `/loop` monitor is already running (set it up if not)
-2. Spawn the teammate
-3. Verify the teammate is active
+## Stall response
 
-Never spawn teammates without an active monitor. Never cancel the monitor until all work is fully complete and the team is being shut down.
-
-## Stall Response
-
-When you receive any signal that a teammate may be stalled (loop check, idle notification, user nudge):
-
-- Evaluate immediately: Is the teammate working, blocked, or dead?
-- Send a specific instruction, not a generic "are you OK?"
-- If a teammate is unresponsive after 2 nudges, escalate to the user
+On any stall signal (loop ping, idle notification, user nudge): inspect the pane first, send a specific instruction if truly idle, escalate to the user after 2 unanswered nudges.
