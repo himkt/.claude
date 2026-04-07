@@ -1,6 +1,6 @@
 ---
 name: github-cli
-description: Use this skill when the user shares a GitHub URL (issue or pull request). Automatically fetch details using GitHub CLI (gh command). Triggered by URLs like github.com/himkt/.claude/issues/123 or github.com/himkt/.claude/pull/123. Do NOT run gh commands directly — always invoke this skill first.
+description: Fetch GitHub issue/PR details via the `gh` CLI. Triggered when user shares a github.com URL. Do NOT run `gh` directly.
 ---
 
 # GitHub CLI Skill

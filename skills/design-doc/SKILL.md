@@ -1,6 +1,6 @@
 ---
 name: design-doc
-description: Standardized design document format with template and guidelines. Load this skill when writing or editing a design document to ensure correct structure. Teammates in agent teams must always load this skill using Skill(design-doc). Do NOT write design documents in a freeform format — always use this skill's template.
+description: Standard design-doc template and guidelines. Load when writing/editing any design document. Do NOT use freeform format.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 

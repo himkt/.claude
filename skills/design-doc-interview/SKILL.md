@@ -1,12 +1,6 @@
 ---
 name: design-doc-interview
-description: >-
-  Validate a design document through fine-grained multi-question Q&A across multiple sessions.
-  Adds COMMENT(claude) annotations for discrepancies found.
-  Supports multi-session splitting for large documents.
-  Use after /design-doc-create and before /design-doc-execute.
-  Takes document path as argument.
-  Do NOT use this to create or execute design documents — use the dedicated skills instead.
+description: Validate a design doc via multi-session Q&A; adds `COMMENT(claude)` annotations. Argument: doc path. Use between /design-doc-create and /design-doc-execute.
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Agent
 ---
 

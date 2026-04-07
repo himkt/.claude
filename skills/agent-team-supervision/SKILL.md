@@ -1,6 +1,6 @@
 ---
 name: agent-team-supervision
-description: Mandatory supervision obligations for any agent acting as Director (team lead) in an agent team. Load this skill before spawning any teammates. Defines monitoring mandate, spawn protocol, and stall response.
+description: Director's monitoring mandate and stall protocol for agent teams. Load before spawning any teammate.
 ---
 
 # Agent Team Supervision

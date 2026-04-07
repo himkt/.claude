@@ -1,9 +1,6 @@
 ---
 name: base-dir
-description: >
-  Resolve the base directory for output files. Loaded by consuming skills
-  via Skill(base-dir) when they need to determine where to write output.
-  Do NOT invoke this skill directly — consuming skills load it automatically.
+description: Internal base-directory resolver loaded by other skills. Do NOT invoke directly.
 ---
 
 # Base Directory Resolution

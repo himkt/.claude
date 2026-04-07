@@ -1,6 +1,6 @@
 ---
 name: sync-skills
-description: Sync skill lists in CLAUDE.md files with the actual skill definitions on disk, using the current working directory as the base. Run this after adding, removing, or modifying skills.
+description: Sync the auto-generated skill list in `CLAUDE.md` with skill definitions on disk. Run after adding/removing/modifying a skill.
 context: conversation
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash(pwd), Bash(find -L *), AskUserQuestion
 ---

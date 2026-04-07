@@ -1,6 +1,6 @@
 ---
 name: pathfinder-explain
-description: Explain the implementation of a symbol by tracing its definition using LSP. Use when user asks to explain, trace, or understand how a specific symbol (function, class, variable) is implemented. Takes symbol name as argument. Do NOT rely on grep and reading files alone — use this skill for accurate LSP-based tracing.
+description: Trace a symbol's definition via LSP and explain its implementation. Argument: symbol name. Do NOT rely on grep alone.
 context: fork
 ---
 

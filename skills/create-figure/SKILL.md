@@ -1,9 +1,6 @@
 ---
 name: create-figure
-description: >
-  Create data visualizations and charts using matplotlib. Triggered when user
-  asks to create a chart, plot, graph, or visualize data. Also invokable via
-  /create-figure. Do NOT use plt.show() — always save to PNG files.
+description: Create matplotlib charts/plots/graphs. Saves to PNG. Do NOT use plt.show().
 ---
 
 # Create Figure

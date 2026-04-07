@@ -1,6 +1,6 @@
 ---
 name: research-presentation
-description: Create a Slidev presentation and reading transcript from an existing research report folder. Reads report.md and researcher files for context, creates slides using /my-slidev skill and a reading transcript. Takes folder path as argument (e.g., topic-name). Do NOT use for research — use /research-report for that.
+description: Create Slidev slides and a reading transcript from an existing research folder. Argument: folder name. Do NOT use for research itself — use /research-report.
 allowed-tools: Read, Write, Edit, Glob, Grep, Agent
 ---
 

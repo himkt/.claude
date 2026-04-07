@@ -1,6 +1,6 @@
 ---
 name: design-doc-create
-description: Create a new design document using the design-doc-creator agent. Use when user wants to create a specification, implementation plan, or technical document. Teammates must always load skills using the Skill tool, not by reading skill files directly. Do NOT use EnterPlanMode — always invoke this skill instead.
+description: Create a design document, spec, or implementation plan via the design-doc-creator agent team. Do NOT use EnterPlanMode.
 allowed-tools: Read, Write, Edit, Glob, Grep, Agent, WebSearch, WebFetch
 ---
 
