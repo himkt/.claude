@@ -4,17 +4,17 @@ Invoke matching skills before acting. Heed override instructions in each entry.
 
 - `/agent-team-supervision` — Director's monitoring mandate and stall protocol for agent teams. Load before spawning any teammate.
 - `/base-dir` — Internal base-directory resolver loaded by other skills. Do NOT invoke directly.
-- `/create-figure` — Create matplotlib charts/plots/graphs. Saves to PNG. Do NOT use plt.show().
+- `/create-figure` — Use when user asks to create a matplotlib chart, plot, or graph. Save to PNG, do NOT use plt.show().
 - `/design-doc` — Standard design-doc template and guidelines. Load when writing/editing any design document. Do NOT use freeform format.
-- `/design-doc-create` — Create a design document, spec, or implementation plan via the design-doc-creator agent team. Do NOT use EnterPlanMode.
-- `/design-doc-execute` — Implement a design document via TDD agent team with auto-validation. Argument: doc path. Do NOT implement manually.
-- `/design-doc-interview` — Validate a design doc via multi-session Q&A; adds `COMMENT(claude)` annotations. Argument: doc path. Use between /design-doc-create and /design-doc-execute. Do NOT use to create or execute design documents.
+- `/design-doc-create` — Use when user wants to create a design document, spec, or implementation plan. Do NOT use EnterPlanMode.
+- `/design-doc-execute` — Use when user wants to implement a design document. Argument: doc path. Do NOT implement manually.
+- `/design-doc-interview` — Use when user wants to validate a design doc via multi-session Q&A; adds `COMMENT(claude)` annotations. Argument: doc path. Do NOT use to create or execute design documents.
 - `/github-cli` — Fetch GitHub issue/PR details via the `gh` CLI. Triggered when user shares a github.com URL. Do NOT run `gh` directly.
 - `/my-slidev` — Generate Slidev presentations using the custom theme. Use for slides built from research reports, outlines, or notes.
-- `/nixos-boot-troubleshoot` — Diagnose NixOS boot failures (kernel panic, black screen, crash after reboot, system won't boot) via journal logs and generation comparison. Use when `nixos-rebuild switch` works but reboot fails.
-- `/pathfinder-explain` — Trace a symbol's definition via LSP and explain its implementation. Argument: symbol name. Do NOT rely on grep alone.
-- `/research-presentation` — Create Slidev slides and a reading transcript from an existing research folder. Argument: folder name. Do NOT use for research itself — use /research-report.
-- `/research-report` — Comprehensive multi-source research report via an agent team. Output: `researches/{slug}/`. Optionally chains to /research-presentation. Do NOT do a quick web search — use this for thorough research.
+- `/nixos-boot-troubleshoot` — Use when user reports a NixOS boot failure (kernel panic, black screen, crash after reboot, system won't boot).
+- `/pathfinder-explain` — Use when user asks to explain or trace how a symbol (function, class, variable) is implemented, via LSP. Argument: symbol name. Do NOT rely on grep alone.
+- `/research-presentation` — Use when user wants Slidev slides and a reading transcript from an existing research folder. Argument: folder name. Do NOT use for research — use /research-report.
+- `/research-report` — Use when user wants a comprehensive multi-source research report. Do NOT do a quick web search.
 - `/sync-skills` — Sync the auto-generated skill list in `CLAUDE.md` with skill definitions on disk. Run after adding/removing/modifying a skill.
 
 Notes:

@@ -1,6 +1,6 @@
 ---
 name: design-doc-create
-description: Create a design document, spec, or implementation plan via the design-doc-creator agent team. Do NOT use EnterPlanMode.
+description: Use when user wants to create a design document, spec, or implementation plan. Do NOT use EnterPlanMode.
 allowed-tools: Read, Write, Edit, Glob, Grep, Agent, WebSearch, WebFetch
 ---
 

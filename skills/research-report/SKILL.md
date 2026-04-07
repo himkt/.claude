@@ -1,6 +1,6 @@
 ---
 name: research-report
-description: Comprehensive multi-source research report via an agent team. Output: `researches/{slug}/`. Optionally chains to /research-presentation. Do NOT do a quick web search — use this for thorough research.
+description: Use when user wants a comprehensive multi-source research report. Do NOT do a quick web search.
 allowed-tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, Agent
 ---
 

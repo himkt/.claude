@@ -1,6 +1,6 @@
 ---
 name: design-doc-execute
-description: Implement a design document via TDD agent team with auto-validation. Argument: doc path. Do NOT implement manually.
+description: Use when user wants to implement a design document. Argument: doc path. Do NOT implement manually.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, WebSearch, WebFetch
 ---
 

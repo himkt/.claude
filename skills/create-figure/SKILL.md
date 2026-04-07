@@ -1,6 +1,6 @@
 ---
 name: create-figure
-description: Create matplotlib charts/plots/graphs. Saves to PNG. Do NOT use plt.show().
+description: Use when user asks to create a matplotlib chart, plot, or graph. Save to PNG, do NOT use plt.show().
 ---
 
 # Create Figure
