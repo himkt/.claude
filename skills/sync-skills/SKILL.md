@@ -68,8 +68,8 @@ Follow the "Per-target procedure" below.
 1. Run `find -L {skills_dir} -maxdepth 2 -name SKILL.md` via Bash to discover all SKILL.md files (follows symlinks). Parse `name` and `description` from YAML frontmatter of each found file.
    <!-- FIXME: Glob does not follow symlinks, so we use find -L instead. Revert to Glob and remove Bash from allowed-tools once Glob gains symlink support. -->
 2. Generate the section body:
-   - Start with the intro paragraph: `When a task matches a skill below, you MUST invoke it via the Skill tool BEFORE taking any other action. Pay attention to override instructions (what NOT to do) in each entry.`
+   - Start with the intro paragraph: `Invoke matching skills before acting. Heed override instructions in each entry.`
    - Then one `- /name — summary` line per skill, sorted alphabetically
-   - Each summary is derived from the `description` field in SKILL.md frontmatter. It MUST include all of the following that are present in the description: (1) when to use the skill (trigger conditions), (2) what it does, (3) any override instructions (what NOT to do instead). Condense for readability, but never drop trigger conditions or override instructions. Write in English only.
+   - Each summary is derived from the `description` field in SKILL.md frontmatter. Aim for ~20-25 tokens per skill. Always preserve trigger keywords and override instructions; drop filler like 'Use this skill when...', 'Also invokable via...', or restated invocation guidance. Write in English only.
 3. Compare with the existing section in the target CLAUDE.md. Update only if there are differences.
 4. Replace the section (from heading up to the next `## `) in-place. If the section doesn't exist: Project or Plugin target → add at top of file, Local target → add immediately before `## Directory Structure`. Only modify the target section — preserve everything else.
