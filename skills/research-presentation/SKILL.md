@@ -135,7 +135,8 @@ After the content revision loop completes, visually review the rendered presenta
    - **macOS**: `script -q /dev/null bun run slidev --open false {folder}/slide.md`
    - **Linux**: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null`
 3. Set `{server_url}` to the Slidev dev server URL (default: `http://localhost:3030`). Use this value when spawning Visual Reviewers.
-4. Director MUST NOT run `bun run agent-browser --session vr-batch-* open|snapshot|screenshot|wait|close` directly — agent-browser is exclusively for Visual Reviewers (the only exception is the `close --all` safety net in Step 7).
+4. Create the persistent screenshots directory: write `{folder}/screenshots/.keep` (empty file) using the Write tool. This is a one-time operation per `/research-presentation` invocation; do NOT delete or wipe it on subsequent batches. agent-browser does not auto-create parent directories when given an explicit `screenshot <path>`, so this step is required for VR's per-slide capture to succeed.
+5. Director MUST NOT run `bun run agent-browser --session vr-batch-* open|snapshot|screenshot|wait|close` directly — agent-browser is exclusively for Visual Reviewers (the only exception is the `close --all` safety net in Step 7). The Director MAY run `console` and `errors` for diagnostics if needed (e.g., investigating a stuck VR), but should prefer letting the VR do it.
 
 **Batched Review Loop** (batch_size=10, fresh Visual Reviewer per batch to avoid context overflow):
 
@@ -146,12 +147,20 @@ start = 1
 while start <= total_slides:
     end = min(start + 9, total_slides)
 
-    spawn Visual Reviewer with slides [start..end]
+    vr_round = 1                                # current VR round number; bumped on each re-check
+    spawn Visual Reviewer with slides [start..end], ROUND=vr_round
+    # spawn prompt MUST include `RESEARCH FOLDER: {folder}` and `ROUND: 1` lines so the VR
+    # can build screenshot/report paths
 
-    for round in 1..2:                          # max 2 fix rounds per batch
-        wait for report
+    while True:                                 # initial review (r1) + up to 2 re-checks (r2, r3)
+        wait for report from VR for round {vr_round}
         if no issues: break
-        route issues to Presentation Agent → fix → re-check affected slides
+        if vr_round >= 3: break                 # max 2 re-check rounds reached; remaining issues escalate to user in Step 5
+        route issues to Presentation Agent → fix
+        vr_round += 1
+        send re-check request to VR with a `ROUND: {vr_round}` line in the team message
+        # VR writes the next capture to `vr{start}-r{vr_round}-p{slide_number}.png` and
+        # the next persisted report to `vr{start}-r{vr_round}.md`, preserving prior rounds
 
     send `bun run agent-browser --session vr-batch-{start} close` instruction to Visual Reviewer  # MUST close the current batch session before shutdown
     shutdown Visual Reviewer
@@ -167,6 +176,8 @@ Read your role definition at: skills/research-presentation/roles/visual-reviewer
 
 YOUR TASK: Visually verify the rendered Slidev presentation using `bun run agent-browser` CLI commands. SESSION NAME: `vr-batch-{start}` — every command MUST be invoked as `bun run agent-browser --session vr-batch-{start} <subcommand> ...`. Run `bun run agent-browser --session vr-batch-{start} close` before exiting.
 SLIDE FILE: {folder}/slide.md
+RESEARCH FOLDER: {folder}            # used for screenshot output paths
+ROUND: 1                             # initial round; Director will send a new `ROUND: 2` (or 3) line in re-check messages
 
 CHECK SLIDES {start} TO {end} ONLY.
 SERVER URL: {server_url}
@@ -175,12 +186,23 @@ PROCESS:
 1. Run server readiness check: `bun run agent-browser --session vr-batch-{start} open {server_url}/1` then `bun run agent-browser --session vr-batch-{start} wait --load networkidle`
 2. For each slide: run `bun run agent-browser --session vr-batch-{start} open {server_url}/{slide_number}`,
    then `bun run agent-browser --session vr-batch-{start} wait --load networkidle`, then capture
-   a screenshot and accessibility snapshot using the `screenshot` and `snapshot` subcommands,
-   and check for visual issues. Screenshots are for in-session review only — do NOT persist them.
+   a screenshot to `{folder}/screenshots/vr{start}-r{round}-p{slide_number}.png` and an
+   accessibility snapshot using the `screenshot <path>` and `snapshot` subcommands,
+   and check for visual issues. The Director has already created `{folder}/screenshots/.keep`,
+   so the directory exists.
+3. `console` and `errors` are NOT part of the standard loop. Use them only as diagnostic
+   escalation when a slide is blank, broken, or you suspect a `[RENDER_ERROR]` and need an
+   attribution clue. See "Diagnostic Escalation" in your role definition for triggers and
+   reporting format.
+4. After capturing all slides in your assigned [start..end] range, persist your structured
+   Visual Review Report to {folder}/screenshots/vr{start}-r{round}.md using the Write tool
+   BEFORE sending the report message to the Director. The file content must be identical
+   to the report you send via team message. See "Persist the report" in your role definition
+   for the exact procedure.
 
-VISUAL ISSUE CATEGORIES: [OVERFLOW], [BROKEN_LAYOUT], [MISSING_CONTENT], [OVERLAP], [EMPTY_SLIDE], [RENDER_ERROR], [TEXT_WRAPPING]
+VISUAL ISSUE CATEGORIES: [OVERFLOW], [BROKEN_LAYOUT], [MISSING_CONTENT], [OVERLAP], [EMPTY_SLIDE], [RENDER_ERROR], [CONSOLE_ERROR], [TEXT_WRAPPING]
 
-Report ONLY slides with issues. If all pass, say "ALL PASS".
+Report every slide in your assigned [start..end] range. For each slide, record either `Pass` or one or more applicable visual issue tag(s) with a brief explanation. Do NOT use "ALL PASS" — the persisted log file (`vr{start}-r{round}.md`) must contain a complete record of every slide for traceability across rounds.
 ```
 
 ### Step 5: User Approval (Director)
