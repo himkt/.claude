@@ -14,7 +14,7 @@ Invoke matching skills before acting. Heed override instructions in each entry.
 - `/nixos-boot-troubleshoot` — Diagnose NixOS boot failures (kernel panic, black screen, crash after reboot, system won't boot) via journal logs and generation comparison. Use when `nixos-rebuild switch` works but reboot fails.
 - `/pathfinder-explain` — Trace a symbol's definition via LSP and explain its implementation. Argument: symbol name. Do NOT rely on grep alone.
 - `/research-presentation` — Create Slidev slides and a reading transcript from an existing research folder. Argument: folder name. Do NOT use for research itself — use /research-report.
-- `/research-report` — Comprehensive multi-source research report via an agent team. Output: `researches/{slug}/`. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Optionally chains to /research-presentation. Do NOT do a quick web search — use this for thorough research.
+- `/research-report` — Comprehensive multi-source research report via an agent team. Output: `researches/{slug}/`. Optionally chains to /research-presentation. Do NOT do a quick web search — use this for thorough research.
 - `/sync-skills` — Sync the auto-generated skill list in `CLAUDE.md` with skill definitions on disk. Run after adding/removing/modifying a skill.
 
 Notes:

@@ -1,6 +1,6 @@
 ---
 name: research-report
-description: Comprehensive multi-source research report via an agent team. Output: `researches/{slug}/`. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Optionally chains to /research-presentation. Do NOT do a quick web search — use this for thorough research.
+description: Comprehensive multi-source research report via an agent team. Output: `researches/{slug}/`. Optionally chains to /research-presentation. Do NOT do a quick web search — use this for thorough research.
 allowed-tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, Agent
 ---
 
