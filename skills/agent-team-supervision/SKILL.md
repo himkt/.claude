@@ -16,7 +16,7 @@ Teammates do not act autonomously. They respond to your messages. If you are not
 ## Monitoring methods
 
 - **`/loop` monitor** — recurring check (3-min interval) that compares deliverable files against the expected set and pings missing ones. Set up via `Skill(loop)` BEFORE spawning any teammate; cancel only at cleanup (`CronDelete`). Must stay active across all phases (research, compile, review, revise, approval).
-- **`tmux capture-pane -p -t %<id> -S -30`** — direct pane inspection. Read `tmuxPaneId` from team config. A spinner (`Cultivating…`, `Forging…`) means working; an empty `❯` means idle. Use this to verify state before deciding to message — nudges cost teammate context.
+- **`tmux capture-pane -p -t %<id> -S -30`** — direct pane inspection. Each teammate's `tmuxPaneId` is in `~/.claude/teams/{team-name}/config.json`. A spinner (`Cultivating…`, `Forging…`) means working; an empty `❯` means idle. Use this to verify state before deciding to message — nudges cost teammate context.
 
 ## Communication methods
 
