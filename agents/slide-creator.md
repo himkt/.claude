@@ -1,6 +1,6 @@
 ---
 name: slide-creator
-description: Generate a complete Slidev presentation from input content (research reports, outlines, notes). Fully autonomous — produces slides.md without asking clarifying questions. Takes a file path or inline content as input.
+description: Autonomously generate a Slidev presentation (`slides.md`) from a file path or inline content. No clarifying questions.
 color: green
 ---
 
