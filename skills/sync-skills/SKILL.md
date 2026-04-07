@@ -2,7 +2,7 @@
 name: sync-skills
 description: Sync the auto-generated skill list in `CLAUDE.md` with skill definitions on disk. Run after adding/removing/modifying a skill.
 context: conversation
-allowed-tools: Read, Edit, Write, Glob, Grep, Bash(pwd), Bash(find -L *), AskUserQuestion
+allowed-tools: Read, Edit, Write, Glob, Grep, Bash(pwd), AskUserQuestion
 ---
 
 # Sync Skills
@@ -65,11 +65,10 @@ Follow the "Per-target procedure" below.
 
 ## Per-target procedure
 
-1. Run `find -L {skills_dir} -maxdepth 2 -name SKILL.md` via Bash to discover all SKILL.md files (follows symlinks). Parse `name` and `description` from YAML frontmatter of each found file.
-   <!-- FIXME: Glob does not follow symlinks, so we use find -L instead. Revert to Glob and remove Bash from allowed-tools once Glob gains symlink support. -->
+1. Use the Glob tool with pattern `{skills_dir}/*/SKILL.md` to discover all SKILL.md files. Parse `name` and `description` from YAML frontmatter of each found file.
 2. Generate the section body:
    - Start with the intro paragraph: `Invoke matching skills before acting. Heed override instructions in each entry.`
    - Then one `- /name — summary` line per skill, sorted alphabetically
-   - Each summary is derived from the `description` field in SKILL.md frontmatter. Keep each summary to a single short sentence. Always preserve trigger keywords and override instructions; drop filler like 'Use this skill when...', 'Also invokable via...', or restated invocation guidance. Write in English only.
+   - Each summary is derived from the `description` field in SKILL.md frontmatter. Keep each summary concise, preferably a single short sentence, but preserve any required argument/input requirements (e.g., `Argument: doc path`) even if that needs a brief extra clause. Always preserve trigger keywords, required arguments/inputs, and override instructions; drop filler like 'Use this skill when...', 'Also invokable via...', or restated invocation guidance. Write in English only.
 3. Compare with the existing section in the target CLAUDE.md. Update only if there are differences.
 4. Replace the section (from heading up to the next `## `) in-place. If the section doesn't exist: Project or Plugin target → add at top of file, Local target → add immediately before `## Directory Structure`. Only modify the target section — preserve everything else.

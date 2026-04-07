@@ -24,5 +24,5 @@ Notes:
 
 Invoke matching skills before acting. Heed override instructions in each entry.
 
-- `/agent-browser` — Browser automation CLI: navigate, fill forms, click, screenshot, scrape, test web apps. Triggered by "open a website", "scrape data", "automate browser".
-- `/slidev` — Create web slidedecks via Slidev (Markdown, Vue, code highlighting). Use for technical presentations and developer talks.
+- `/agent-browser` — Use for browser automation tasks like navigating, filling forms, scraping data, and testing web apps.
+- `/slidev` — Use to create Slidev web slidedecks for technical presentations and developer talks.
