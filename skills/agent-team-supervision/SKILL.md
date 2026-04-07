@@ -36,8 +36,9 @@ Never spawn teammates without an active monitor. Never cancel the monitor until 
 
 ## Stall Response
 
-When you receive any signal that a teammate may be stalled (loop check, idle notification, user nudge):
+When you receive any signal that a teammate may be stalled (loop check, idle notification, user nudge), evaluate immediately whether the teammate is working, blocked, or dead. You have two channels to inspect their state — always try `SendMessage` first, and fall back to `tmux capture-pane` when no reply comes back (a busy teammate often cannot reply mid-task):
 
-- Evaluate immediately: Is the teammate working, blocked, or dead?
-- Send a specific instruction, not a generic "are you OK?"
-- If a teammate is unresponsive after 2 nudges, escalate to the user
+- SendMessage: send a specific instruction directly to the teammate, never a generic "are you OK?" (interactive and authoritative, but blocks on the teammate actually responding — which may not happen while they are mid-task)
+- tmux capture-pane: snapshot the teammate's pane with `tmux capture-pane -p -t <pane> -S -<lines>` to see exactly what they are doing right now (non-intrusive read-only inspection; works even when the teammate is too busy to respond to messages). Use `tmux ls` to find the pane name.
+
+If a teammate is still unresponsive after 2 nudges (and `tmux capture-pane` shows no forward progress), escalate to the user.
