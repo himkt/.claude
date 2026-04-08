@@ -131,7 +131,7 @@ Once the Reviewer approves, present a summary (including file path) and use `Ask
 | Option | Label | Description | Behavior |
 |:--|:--|:--|:--|
 | 1 | **Approve** | Proceed with the current result | Proceed to finalization (Step 6) |
-| 2 | **Scan for COMMENT markers** | Add `COMMENT(name): feedback` markers to the design document, then select this option to process them | Scan and process markers (see Step 5) |
+| 2 | **Scan for COMMENT markers** | Immediately scan the document for `COMMENT(name): feedback` markers and process them | Scan immediately and process markers (see Step 5) |
 | 3 | *(Other — built-in)* | *(Free text input)* | Interpret user intent (see Step 5) |
 
 See [roles/director.md](roles/director.md) for user interaction rules (COMMENT handling, intent judgment, abort detection).
@@ -139,7 +139,7 @@ See [roles/director.md](roles/director.md) for user interaction rules (COMMENT h
 ### Step 5: User Feedback Loop (Director)
 
 Process the user's selection per the rules in [roles/director.md](roles/director.md):
-- **"Scan for COMMENT markers"**: Scan, route to Drafter if found, explain convention if not. After fixes, re-enter quality loop (Step 3) then re-present (Step 4).
+- **"Scan for COMMENT markers"**: **Immediately** scan the document with Grep for `COMMENT(` markers — do NOT wait for the user to confirm they are done editing. If markers are found, route to Drafter for fixes. If no markers are found, explain the convention, show the file path, and re-prompt. After fixes, re-enter quality loop (Step 3) then re-present (Step 4).
 - **"Other" (free text)**: Interpret intent per director.md rules.
 
 No round limit — loop continues until approved or aborted.
