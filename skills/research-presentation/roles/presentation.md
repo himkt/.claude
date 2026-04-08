@@ -69,6 +69,10 @@ Citation numbers (`[N]`) must NEVER appear alone on a line. Use `&nbsp;` between
 
 Carry `[N]` from the report, renumber by first slide appearance. Max 3-4 per slide. Add References slide(s) at end.
 
+## Timing
+
+Design for a 30–60 minute presentation, budgeting approximately 1.5–2 minutes per content slide. Cover, section-divider, and references slides take less time; content-dense slides (tables, diagrams, data figures) take more. Use this target when deciding whether to split or merge slides.
+
 ## Data Accuracy Escalation
 
 If a data point raises concern, message the Director before including it. Do NOT silently omit or modify.
