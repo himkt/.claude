@@ -1,14 +1,6 @@
 # Tool Discovery
 
-All agents and teammates MUST actively discover and use available tools for optimal task execution.
+Beyond the dedicated-tool guidance in the main system prompt, also actively check:
 
-1. **Skills**: Check the system-reminder for available skills. Use matching skills
-   (e.g., `/pathfinder-explain` for symbol tracing, `/github-cli` for GitHub URLs).
-2. **MCP servers**: Check for `mcp__*` tools in your available tool list.
-   Use them based on their descriptions for tasks like code navigation,
-   browser automation, and verification.
-3. **CLI tools**: Use project-appropriate CLI tools via Bash when MCP alternatives
-   aren't available.
-
-When a better tool exists for a task, use it. Prefer MCP tools and skills over
-manual alternatives.
+1. **Skills**: The system-reminder lists available skills. Use matching skills (e.g., `/pathfinder-explain`, `/github-cli`).
+2. **MCP tools**: Check for `mcp__*` tools in your available tool list and prefer them over manual alternatives when relevant.
