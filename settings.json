@@ -118,6 +118,7 @@
       "Bash(python *)",
       "Bash(python3 *)",
       "Bash(wc *)",
+      "Bash(wget *)",
       "Bash(kill *)"
     ]
   },
