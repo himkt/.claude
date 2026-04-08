@@ -124,9 +124,9 @@ RESEARCH FOLDER: {folder}
 SERVER URL:      {server_url}
 SESSION NAME:    vr-batch-{start}
 CHECK SLIDES:    {start} to {end}
-ROUND:           1
+ROUND:           {round}
 
-When complete, persist the report to {folder}/screenshots/vr{start}-r1.md and send it to the Director.
+When complete, persist the report to {folder}/screenshots/vr{start}-r{round}.md and send it to the Director.
 ```
 
 ### Step 5: User Approval & Revision Loop (Director)
