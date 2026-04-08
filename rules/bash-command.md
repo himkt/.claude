@@ -22,6 +22,7 @@ Use dedicated tools instead of the following Bash commands. These are denied in 
 | `sed`, `awk` | Edit | Exact string replacement in files |
 | `mkdir`, `touch` | Write | Write auto-creates parent directories and can create empty files |
 | `echo`, `printf` | Write (files) or direct text output (communication) | Never use shell output redirection |
+| `curl`, `wget` | WebFetch (public URLs) or delegate to a Visual Reviewer / agent-browser teammate (local dev servers) | Never fetch HTTP yourself with curl/wget — for public URLs use the WebFetch tool, for local dev server diagnostics delegate to a teammate using the agent-browser CLI |
 
 Additional guidance:
 - Use Explore agent (Agent tool with subagent_type=Explore) for broader codebase navigation when simple Glob/Grep is insufficient
