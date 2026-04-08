@@ -14,8 +14,6 @@ Since Claude Code treats `~/.claude/CLAUDE.md` as global settings, this reposito
 
 ## Directory Structure
 
-Non-obvious entries only — self-evident directories like `agents/`, `skills/`, `projects/`, `settings.json` are omitted.
-
 - `bin/status.py` - Status line display (model, directory, token usage with color coding)
 - `design-docs/` - Design documents in `{slug}/design-doc.md` subdirectories. **Gitignored** — never tracked.
 - `vendor/` - Third-party repositories managed as git submodules (e.g., `vendor/slidev`)
