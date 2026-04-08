@@ -11,17 +11,11 @@ Using shell operators breaks pattern matching and triggers user approval prompts
 
 ## Tool Substitution
 
-Use dedicated tools instead of the following Bash commands. These are denied in settings.json.
+A few additional substitutions beyond what the main system prompt already enforces. These commands are denied in `settings.json`.
 
 | Prohibited Command | Use Instead | Notes |
 |-------------------|-------------|-------|
-| `find` | Glob | Pattern-based file search |
-| `ls`, `tree` | Glob | For directory listing. Use Read to inspect a single directory when needed |
-| `grep`, `rg` | Grep | Content search across files |
-| `cat`, `head`, `tail` | Read | Read supports line offset and limit for partial reads |
-| `sed`, `awk` | Edit | Exact string replacement in files |
 | `mkdir`, `touch` | Write | Write auto-creates parent directories and can create empty files |
-| `echo`, `printf` | Write (files) or direct text output (communication) | Never use shell output redirection |
 | `curl`, `wget` | WebFetch (public URLs) or delegate to a Visual Reviewer / agent-browser teammate (local dev servers) | Never fetch HTTP yourself with curl/wget — for public URLs use the WebFetch tool, for local dev server diagnostics delegate to a teammate using the agent-browser CLI |
 
 Additional guidance:
