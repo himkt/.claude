@@ -9,9 +9,6 @@
     "commit": ""
   },
   "permissions": {
-    "additionalDirectories": [
-      "~/.claude"
-    ],
     "allow": [
       "Edit",
       "Bash(bun install --frozen-lockfile)",
@@ -121,6 +118,9 @@
       "Bash(wc *)",
       "Bash(wget *)",
       "Bash(kill *)"
+    ],
+    "additionalDirectories": [
+      "~/.claude"
     ]
   },
   "model": "opus[1m]",
