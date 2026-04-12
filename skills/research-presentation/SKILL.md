@@ -32,7 +32,11 @@ Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a
 
 ### Step 2: Create Team & Spawn Agents (Director)
 
-Create the team and spawn Presentation + Transcript agents in parallel. Both work from `report.md` independently. After the slide deck is finalized (Step 3), the Director sends the final slide structure to the Transcript Agent for realignment.
+**Team creation (mandatory `TeamCreate` tool call):**
+1. `TeamCreate(name="presentation-{topic-slug}")` — creates the team
+2. `Agent(..., team_name="presentation-{topic-slug}")` — spawns each teammate within the team
+
+Spawn Presentation + Transcript agents in parallel. Both work from `report.md` independently. After the slide deck is finalized (Step 3), the Director sends the final slide structure to the Transcript Agent for realignment.
 
 **Presentation Agent spawn prompt:**
 

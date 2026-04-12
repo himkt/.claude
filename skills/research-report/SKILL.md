@@ -64,9 +64,13 @@ Use these rules so readiness/stall decisions are deterministic:
 
 ### Step 2: Create Team & Launch Manager (Director)
 
-You (Claude, the lead agent) create an agent team and spawn a Manager teammate. You do NOT decompose topics yourself — that is the Manager's operational decision.
+You (Claude, the lead agent) create an agent team using `TeamCreate` and spawn a Manager teammate. You do NOT decompose topics yourself — that is the Manager's operational decision.
 
-Create the team and spawn the Manager with a prompt covering:
+**Team creation (mandatory `TeamCreate` tool call):**
+1. `TeamCreate(name="research-{topic-slug}")` — creates the team
+2. `Agent(..., team_name="research-{topic-slug}")` — spawns the Manager as a teammate
+
+Spawn the Manager with a prompt covering:
 
 1. The user's original request in full
 2. **Today's date** (e.g., "Current date: 2026-02-20"). This anchors what "recent" means for all research.

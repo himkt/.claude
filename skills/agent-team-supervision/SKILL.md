@@ -13,6 +13,16 @@ Load this skill via `Skill(agent-team-supervision)` before spawning any teammate
 
 Teammates do not act autonomously. They respond to your messages. If you are not actively monitoring and instructing, work halts silently.
 
+## Team Infrastructure (MANDATORY)
+
+Agent Teams require the `TeamCreate` tool. **NEVER spawn teammates with plain `Agent()` calls.**
+
+**Required sequence — no exceptions:**
+1. `TeamCreate(name="<team-name>")` — establishes the team
+2. `Agent(..., team_name="<team-name>")` — spawns each teammate within the team
+
+Plain `Agent()` calls (without `team_name`) create isolated subagents that cannot use `SendMessage`, cannot be monitored via team infrastructure, and cannot be coordinated as a team. Using plain `Agent()` when a skill specifies Agent Teams is a **violation of the skill specification**.
+
 ## Monitoring Mandate
 
 Before spawning ANY teammate, set up a `/loop` monitor using `Skill(loop)` or `/loop` with a 3-minute interval. The loop prompt must:

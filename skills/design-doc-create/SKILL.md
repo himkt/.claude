@@ -58,7 +58,13 @@ Pass `${DOC_PATH}` to the Drafter as OUTPUT PATH in the spawn prompt.
 
 ### Step 1: Create Team & Start Monitor (Director)
 
-Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE spawning teammates. Then create an agent team and spawn both the Drafter and Reviewer.
+Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE spawning teammates.
+
+**Team creation (mandatory `TeamCreate` tool call):**
+1. `TeamCreate(name="create-{doc-slug}")` — creates the team
+2. `Agent(..., team_name="create-{doc-slug}")` — spawns each teammate within the team
+
+Spawn both the Drafter and Reviewer.
 
 **Drafter spawn prompt:**
 

@@ -143,7 +143,13 @@ Before creating any team:
 
 ### Step 3: Create Team & Start Monitor (Director)
 
-Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE spawning teammates. Then create an agent team and spawn the teammates needed for this project. Analyze the implementation tasks to decide which roles to spawn (see [roles/director.md](roles/director.md) for team composition guidelines).
+Load `Skill(agent-team-supervision)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE spawning teammates.
+
+**Team creation (mandatory `TeamCreate` tool call):**
+1. `TeamCreate(name="execute-{design-doc-slug}")` — creates the team
+2. `Agent(..., team_name="execute-{design-doc-slug}")` — spawns each teammate within the team
+
+Analyze the implementation tasks to decide which roles to spawn (see [roles/director.md](roles/director.md) for team composition guidelines).
 
 **Programmer spawn prompt:**
 
