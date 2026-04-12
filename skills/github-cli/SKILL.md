@@ -50,6 +50,14 @@ gh pr diff {url} --name-only
 gh api repos/{owner}/{repo}/pulls/{number}/comments
 ```
 
+### Request Copilot review
+
+```bash
+gh pr edit {number} --add-reviewer @copilot
+```
+
+After creating or updating a PR, request a Copilot review to get automated feedback.
+
 ### CI check status
 
 ```bash
