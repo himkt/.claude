@@ -112,15 +112,17 @@
       "Bash(touch *)",
       "Bash(tree)",
       "Bash(tree *)",
-      "Bash(uv sync)",
       "Bash(git -C *)",
-      "Bash(git push)",
-      "Bash(git push *)",
       "Bash(python *)",
       "Bash(python3 *)",
       "Bash(wc *)",
       "Bash(wget *)",
       "Bash(kill *)"
+    ],
+    "ask": [
+      "Bash(git push)",
+      "Bash(git push *)",
+      "Bash(uv sync)"
     ],
     "additionalDirectories": [
       "~/.claude"

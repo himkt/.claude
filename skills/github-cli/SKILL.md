@@ -56,10 +56,32 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments
 gh pr edit {number} --add-reviewer @copilot
 ```
 
-After creating or updating a PR, request a Copilot review to get automated feedback.
+The reviewer slug is `@copilot`. Verify with:
+
+```bash
+gh api repos/{owner}/{repo}/pulls/{number}/requested_reviewers
+```
 
 ### CI check status
 
 ```bash
 gh pr checks {url}
 ```
+
+## Creating a Pull Request
+
+Use `--fill` to auto-populate title and body from the branch's commits:
+
+```bash
+gh pr create --fill
+```
+
+Supply `--title` / `--body-file` only when the user explicitly asks for a custom title or description.
+
+Immediately after `gh pr create` succeeds, request a Copilot review on the newly created PR without asking the user:
+
+```bash
+gh pr edit {number} --add-reviewer @copilot
+```
+
+This is automatic — it happens every time a PR is created.
