@@ -85,7 +85,7 @@ Load these skills at startup:
 
 SESSION ID: <session-id>
 DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: <my-agent-id>
+YOUR AGENT ID: {agent_id}
 TASK: Create a Slidev presentation from the approved research report.
 REPORT:           [INSERT {folder}/report.md]
 RESEARCHER FILES: [INSERT {folder}/[0-9][0-9]-research-*.md]
@@ -94,7 +94,7 @@ FIGURE BASE:      [INSERT {folder}]    (substitute literally for ${FIGURE_BASE}/
 OUTPUT:           [INSERT {folder}/slide.md]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "your report"
+- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
 - When you see cafleet poll output with a message from the Director, act on those instructions and ack the task.
 
 When complete, send the file path to the Director.
@@ -125,14 +125,14 @@ Load these skills at startup:
 
 SESSION ID: <session-id>
 DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: <my-agent-id>
+YOUR AGENT ID: {agent_id}
 TASK: Create a reading transcript from the approved research report.
 REPORT:   [INSERT {folder}/report.md]
 LANGUAGE: [INSERT language detected from report.md]
 OUTPUT:   [INSERT {folder}/transcript.md]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "your report"
+- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
 - When you see cafleet poll output with a message from the Director, act on those instructions and ack the task.
 
 When complete, send the file path to the Director.
@@ -219,7 +219,7 @@ Load these skills at startup:
 
 SESSION ID: <session-id>
 DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: <my-agent-id>
+YOUR AGENT ID: {agent_id}
 TASK: Visually verify the rendered Slidev presentation.
 SLIDE FILE:      [INSERT {folder}/slide.md]
 RESEARCH FOLDER: [INSERT {folder}]
@@ -229,7 +229,7 @@ CHECK SLIDES:    [INSERT {start} to {end}]
 ROUND:           [INSERT {round}]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "your report"
+- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
 - When you see cafleet poll output with a message from the Director, act on those instructions and ack the task.
 
 When complete, persist the report to {folder}/screenshots/vr{start}-r{round}.md and send it to the Director via cafleet send.

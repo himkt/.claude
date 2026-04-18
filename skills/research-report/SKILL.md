@@ -117,14 +117,14 @@ Load these skills at startup:
 
 SESSION ID: <session-id>
 DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: <my-agent-id>
+YOUR AGENT ID: {agent_id}
 CURRENT DATE: [INSERT today's date]
 USER REQUEST: [INSERT user's original request in full]
 OUTPUT DIRECTORY: [INSERT ${OUTPUT_DIR}]
 LANGUAGE: [INSERT user's language preference if specified]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "your report"
+- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
 - When you see cafleet poll output with a message from the Director, act on those instructions and ack the task.
 
 To request Scouts or Researchers, send the Director a spawn request specifying: role (Scout or Researcher), scope, search angles, and output file path. The Director will run cafleet member create and relay the new member's findings back to you.
@@ -171,13 +171,13 @@ Load these skills at startup:
 
 SESSION ID: <session-id>
 DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: <my-agent-id>
+YOUR AGENT ID: {agent_id}
 CURRENT DATE: [INSERT today's date]
 YOUR ASSIGNMENT: [landscape scope and what areas to map]
 OUTPUT FILE: [INSERT {resolved-path}/00-scout-{topic}.md]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "your report"
+- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
 - When you see cafleet poll output with a message from the Director, act on those instructions and ack the task.
 
 Write findings to the output file, then send a completion report to the Director. The Director will relay your findings to the Manager.
@@ -222,13 +222,13 @@ Load these skills at startup:
 
 SESSION ID: <session-id>
 DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: <my-agent-id>
+YOUR AGENT ID: {agent_id}
 CURRENT DATE: [INSERT today's date]
 YOUR ASSIGNMENT: [specific sub-topic and what to investigate]
 OUTPUT FILE: [INSERT {resolved-path}/NN-research-{subtopic}.md]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "your report"
+- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
 - When you see cafleet poll output with a message from the Director, act on those instructions and ack the task.
 
 Write findings to the output file, then send a completion report to the Director. The Director will relay findings and any follow-up questions between you and the Manager.

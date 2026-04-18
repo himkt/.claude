@@ -131,13 +131,13 @@ Load these skills at startup:
 
 SESSION ID: <session-id>
 DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: <my-agent-id>     (will be filled in literally by member create)
+YOUR AGENT ID: {agent_id}     (substituted by `cafleet member create` via `str.format()`)
 OUTPUT PATH: [INSERT ${DOC_PATH}]
 
 The user's request: [INSERT USER'S ORIGINAL REQUEST]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "your report"
+- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
 - When you see cafleet poll output with a message from the Director, act on those instructions.
 
 IMPORTANT: You MUST ask clarifying questions BEFORE writing any design document file.
@@ -163,11 +163,11 @@ Load these skills at startup:
 
 SESSION ID: <session-id>
 DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: <my-agent-id>
+YOUR AGENT ID: {agent_id}
 DESIGN DOCUMENT: [INSERT ${DOC_PATH}]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "your report"
+- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
 - When you see cafleet poll output with a message from the Director, act on those instructions.
 
 This is a RESUME session. The document contains COMMENT markers from a previous
@@ -204,10 +204,10 @@ Load these skills at startup:
 
 SESSION ID: <session-id>
 DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: <my-agent-id>
+YOUR AGENT ID: {agent_id}
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "your report"
+- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
 - When you see cafleet poll output with a message from the Director, act on those instructions.
 
 Wait for the Director to assign a document for review. Read the document file and
