@@ -1,12 +1,12 @@
 ---
 name: research-report
-description: Create a comprehensive research report with folder-based output, coordinated via the CAFleet message broker. Researchers write findings to individual files, the Manager compiles report.md, and the Director reviews. Output goes to researches/{topic-slug}/. After report approval, offers to chain into /research-presentation for slides and transcript. Teammates must always load skills using the Skill tool, not by reading skill files directly. Do NOT do a quick web search and summarize — invoke this skill for thorough, multi-source research.
+description: Create a comprehensive research report with folder-based output. Researchers write findings to individual files, the Manager compiles report.md, and the Director reviews. Output goes to researches/{topic-slug}/. After report approval, offers to chain into /research-presentation for slides and transcript. Teammates must always load skills using the Skill tool, not by reading skill files directly. Do NOT do a quick web search and summarize — invoke this skill for thorough, multi-source research.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 
-# Research Report (CAFleet Edition)
+# Research Report
 
-Generate comprehensive research reports using a multi-layer team orchestrated via the CAFleet message broker: Director → Manager → Scouts/Researchers. Every inter-agent message is persisted in SQLite and visible in the admin WebUI timeline. Every member of the team carries serious accountability for the quality of the final deliverable, and the team iterates relentlessly until the report meets the highest standard. After the report is approved, the Director offers to chain into `/research-presentation` for slides and transcript.
+Generate comprehensive research reports using a multi-layer team: Director → Manager → Scouts/Researchers. Every member of the team carries serious accountability for the quality of the final deliverable, and the team iterates relentlessly until the report meets the highest standard. After the report is approved, the Director offers to chain into `/research-presentation` for slides and transcript.
 
 | Role | Identity | Does | Does NOT | Role definition |
 |:--|:--|:--|:--|:--|
@@ -106,7 +106,7 @@ Read the role files that will be embedded verbatim in spawn prompts:
 When constructing the prompt, substitute the literal `<session-id>` and `<director-agent-id>` UUIDs for the placeholders. The new member's own `<my-agent-id>` will be baked in automatically by `cafleet member create`'s `str.format()` substitution. Any literal `{` / `}` in the prompt text must be doubled (`{{` / `}}`).
 
 ```
-You are the Manager in a research report team (CAFleet-native).
+You are the Manager in a research report team.
 
 <ROLE DEFINITION>
 [Content of ~/.claude/skills/research-report/roles/manager.md injected verbatim]
@@ -158,7 +158,7 @@ After assessing the topic, the Manager may send the Director one or more Scout s
 **Scout spawn prompt:**
 
 ```
-You are a Scout Researcher in a research team (CAFleet-native).
+You are a Scout Researcher in a research team.
 
 <ROLE DEFINITION>
 [Content of ~/.claude/skills/research-report/roles/scout.md injected verbatim]
@@ -209,7 +209,7 @@ After decomposing the topic, the Manager sends the Director one or more Research
 **Researcher spawn prompt:**
 
 ```
-You are a Research Specialist in a research team (CAFleet-native).
+You are a Research Specialist in a research team.
 
 <ROLE DEFINITION>
 [Content of ~/.claude/skills/research-report/roles/researcher.md injected verbatim]

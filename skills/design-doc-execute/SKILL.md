@@ -1,12 +1,12 @@
 ---
 name: design-doc-execute
-description: Implement features based on a design document with TDD cycle, coordinated via the CAFleet message broker. Use when the user asks to implement or execute a design document. Takes document path as argument. Do NOT implement a design document by reading it and coding manually — always invoke this skill instead.
+description: Implement features based on a design document with TDD cycle. Use when the user asks to implement or execute a design document. Takes document path as argument. Do NOT implement a design document by reading it and coding manually — always invoke this skill instead.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 
-# Design Doc Execute (CAFleet Edition)
+# Design Doc Execute
 
-Implement features based on a design document using up to four roles orchestrated via the CAFleet message broker: Director (orchestrator), Programmer (implements), Tester (writes tests), and Verifier (E2E/integration testing). Every inter-agent message is persisted in SQLite and visible in the admin WebUI timeline. The Director judges which members to spawn based on the nature of the implementation tasks. For each step, the Tester writes unit tests first, the Director reviews and approves them, then the Programmer implements code to pass the tests. The Director also reviews the Programmer's implementation for code quality and design doc compliance before committing. After all TDD steps, the Verifier performs E2E/integration verification (Phase D) if spawned. After user approval, the Director runs the full publication flow: Step 6 pushes the feature branch and opens a PR with `@copilot` requested, Step 7 runs a cron-driven Copilot review loop that routes inline comments to the still-live Programmer / Tester and exits when Copilot approves or has been quiescent for 5 ticks, and Step 8 finalizes, commits the completion marker, pushes it (when the branch is tracked on origin), and tears the team down.
+Implement features based on a design document using up to four roles: Director (orchestrator), Programmer (implements), Tester (writes tests), and Verifier (E2E/integration testing). The Director judges which members to spawn based on the nature of the implementation tasks. For each step, the Tester writes unit tests first, the Director reviews and approves them, then the Programmer implements code to pass the tests. The Director also reviews the Programmer's implementation for code quality and design doc compliance before committing. After all TDD steps, the Verifier performs E2E/integration verification (Phase D) if spawned. After user approval, the Director runs the full publication flow: Step 6 pushes the feature branch and opens a PR with `@copilot` requested, Step 7 runs a cron-driven Copilot review loop that routes inline comments to the still-live Programmer / Tester and exits when Copilot approves or has been quiescent for 5 ticks, and Step 8 finalizes, commits the completion marker, pushes it (when the branch is tracked on origin), and tears the team down.
 
 | Role | Identity | Does | Does NOT | Role definition |
 |:--|:--|:--|:--|:--|
@@ -219,7 +219,7 @@ Read the role files that will be embedded verbatim in spawn prompts:
 **Programmer spawn prompt:**
 
 ```
-You are the Programmer in a design document execution team (CAFleet-native).
+You are the Programmer in a design document execution team.
 
 <ROLE DEFINITION>
 [Content of roles/programmer.md injected here verbatim]
@@ -259,7 +259,7 @@ Parse `agent_id` from the JSON response and substitute it for `<programmer-agent
 **Tester spawn prompt (if needed):**
 
 ```
-You are the Tester in a design document execution team (CAFleet-native).
+You are the Tester in a design document execution team.
 
 <ROLE DEFINITION>
 [Content of roles/tester.md injected here verbatim]
@@ -300,7 +300,7 @@ Parse `agent_id` from the JSON response and substitute it for `<tester-agent-id>
 **Verifier spawn prompt (if needed):**
 
 ```
-You are the Verifier in a design document execution team (CAFleet-native).
+You are the Verifier in a design document execution team.
 
 <ROLE DEFINITION>
 [Content of roles/verifier.md injected here verbatim]

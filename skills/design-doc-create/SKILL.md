@@ -1,12 +1,11 @@
 ---
 name: design-doc-create
-description: Create a new design document. Use when user wants to create a specification or technical document with CAFleet message broker coordination. Do NOT use EnterPlanMode — always invoke this skill instead.
+description: Create a new design document. Use when user wants to create a specification or technical document. Do NOT use EnterPlanMode — always invoke this skill instead.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 
-# Design Doc Create (CAFleet Edition)
-
-Create high-quality design documents using a three-role team orchestrated via the CAFleet message broker: Director (orchestrator), Drafter (writes the document), and Reviewer (critically reviews drafts). Every inter-agent message is persisted in SQLite and visible in the admin WebUI timeline. The team iterates through an internal quality loop before presenting a polished draft to the user.
+# Design Doc Create
+Create high-quality design documents using a three-role team: Director (orchestrator), Drafter (writes the document), and Reviewer (critically reviews drafts). The team iterates through an internal quality loop before presenting a polished draft to the user.
 
 | Role | Identity | Does | Does NOT | Role definition |
 |:--|:--|:--|:--|:--|
@@ -120,7 +119,7 @@ Read the role files that will be embedded verbatim in spawn prompts:
 When constructing the prompt, substitute the literal `<session-id>` and `<director-agent-id>` UUIDs for the placeholders below. The new member's own `<my-agent-id>` will be allocated by `member create` and baked into the spawn prompt automatically by the `coding_agent.py` template — `_resolve_prompt` now runs `str.format()` on BOTH the default template AND any user-supplied custom prompt, so `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` placeholders are substituted either way. See the Template safety note under `Member Create` in `.claude/skills/cafleet/SKILL.md` — any literal `{` / `}` in a custom prompt must be doubled (`{{` / `}}`), because the prompt is passed through `.format()` even when it contains no placeholders. Pre-substituting the dynamic placeholder values in shell is separate and does NOT remove the need to escape literal braces.
 
 ```
-You are the Drafter in a design document creation team (CAFleet-native).
+You are the Drafter in a design document creation team.
 
 <ROLE DEFINITION>
 [Content of roles/drafter.md injected here verbatim]
@@ -152,7 +151,7 @@ Do NOT create any design document file until you have received answers.
 Use this instead when Step 0 detected resume mode:
 
 ```
-You are the Drafter in a design document creation team (CAFleet-native, RESUME MODE).
+You are the Drafter in a design document creation team (RESUME MODE).
 
 <ROLE DEFINITION>
 [Content of roles/drafter.md injected here verbatim]
@@ -193,7 +192,7 @@ Parse `agent_id` from the JSON response and substitute it for `<drafter-agent-id
 **Reviewer spawn prompt:**
 
 ```
-You are the Reviewer in a design document creation team (CAFleet-native).
+You are the Reviewer in a design document creation team.
 
 <ROLE DEFINITION>
 [Content of roles/reviewer.md injected here verbatim]

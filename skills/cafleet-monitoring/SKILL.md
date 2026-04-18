@@ -1,6 +1,6 @@
 ---
 name: cafleet-monitoring
-description: Mandatory supervision protocol for a Director managing member agents via CAFleet. Defines monitoring loop, spawn protocol, and stall response using cafleet-native commands.
+description: Mandatory supervision protocol for a Director managing member agents. Defines monitoring loop, spawn protocol, and stall response.
 ---
 
 # CAFleet Monitoring Skill
@@ -25,7 +25,7 @@ Every command below uses angle-bracket tokens (`<session-id>`, `<director-agent-
 
 ## Monitoring Mandate
 
-Before spawning **any** member, start a `/loop` monitor with a **1-minute interval** (the `CronCreate` / `ScheduleWakeup` floor — sub-minute polling is not supported by the harness). The loop uses cafleet-native commands exclusively.
+Before spawning **any** member, start a `/loop` monitor with a **1-minute interval** (the `CronCreate` / `ScheduleWakeup` floor — sub-minute polling is not supported by the harness).
 
 | Step | Command | Purpose |
 |---|---|---|

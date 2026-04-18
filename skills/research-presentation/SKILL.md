@@ -1,12 +1,12 @@
 ---
 name: research-presentation
-description: Create a Slidev presentation and reading transcript from an existing research report folder, coordinated via the CAFleet message broker. Reads report.md and researcher files for context, creates slides using /my-slidev skill and a reading transcript. Takes folder path as argument (e.g., topic-name). Do NOT use for research — use /research-report for that.
+description: Create a Slidev presentation and reading transcript from an existing research report folder. Reads report.md and researcher files for context, creates slides using /my-slidev skill and a reading transcript. Takes folder path as argument (e.g., topic-name). Do NOT use for research — use /research-report for that.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-# Research Presentation (CAFleet Edition)
+# Research Presentation
 
-Create a Slidev presentation and reading transcript from an existing research report folder. The Director registers a CAFleet session, spawns Presentation, Transcript, and per-batch Visual Reviewer members via `cafleet member create`, reviews their output via `cafleet send`, and iterates until quality is met. Every inter-agent message is persisted in SQLite and visible in the admin WebUI timeline.
+Create a Slidev presentation and reading transcript from an existing research report folder. The Director spawns Presentation, Transcript, and per-batch Visual Reviewer members, reviews their output, and iterates until quality is met.
 
 | Role | Identity | Does | Does NOT | Role definition |
 |:--|:--|:--|:--|:--|
@@ -71,7 +71,7 @@ Both work from `report.md` independently. After the slide deck is finalized (Ste
 **Presentation member spawn prompt:**
 
 ```
-You are the Presentation Specialist in a research presentation team (CAFleet-native).
+You are the Presentation Specialist in a research presentation team.
 
 <ROLE DEFINITION>
 [Content of ~/.claude/skills/research-presentation/roles/presentation.md injected verbatim]
@@ -114,7 +114,7 @@ Parse `agent_id` and substitute for `<presentation-agent-id>`.
 **Transcript member spawn prompt:**
 
 ```
-You are the Transcript Specialist in a research presentation team (CAFleet-native).
+You are the Transcript Specialist in a research presentation team.
 
 <ROLE DEFINITION>
 [Content of ~/.claude/skills/research-presentation/roles/transcript.md injected verbatim]
@@ -208,7 +208,7 @@ while start <= total_slides:
 **Visual Reviewer spawn prompt** (per batch):
 
 ```
-You are the Visual Reviewer in a research presentation team (CAFleet-native).
+You are the Visual Reviewer in a research presentation team.
 
 <ROLE DEFINITION>
 [Content of ~/.claude/skills/research-presentation/roles/visual-reviewer.md injected verbatim]
