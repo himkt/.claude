@@ -350,7 +350,7 @@ Output (`--json`):
 }
 ```
 
-**Note**: Projects using CAFleet use `Skill(cafleet-monitoring)` instead of the generic `agent-team-supervision` skill. The cafleet-monitoring skill uses `cafleet member capture` exclusively (no raw `tmux capture-pane`), enforcing the cross-Director boundary.
+**Note**: `Skill(cafleet-monitoring)` wraps this command in the canonical 2-stage health check (`cafleet poll` then `member capture`). It uses `cafleet member capture` exclusively (no raw `tmux capture-pane`), enforcing the cross-Director boundary.
 
 ### Member Send-Input
 
