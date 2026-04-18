@@ -141,6 +141,16 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/bin/english_review.py"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
