@@ -42,7 +42,7 @@ The Director MUST be running inside a tmux session (required by `cafleet member 
 
 | Purpose | CAFleet command |
 |---|---|
-| Create session + root Director placement | `cafleet session create --label "create-{slug}"` — bootstraps the session + root Director + placement + Administrator in one transaction (no separate `cafleet register` call needed for the Director) |
+| Create session + root Director placement | `cafleet session create --label "create-<slug>"` — bootstraps the session + root Director + placement + Administrator in one transaction (no separate `cafleet register` call needed for the Director) |
 | Spawn a member agent | `cafleet --session-id <session-id> member create --agent-id <director-agent-id> --name "..." --description "..." -- "<prompt>"` |
 | Director sends a message to a member | `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <drafter-agent-id> --text "..."` |
 | Member sends a message to the Director | `cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "..."` |
@@ -81,10 +81,10 @@ Load `Skill(cafleet)` and `Skill(cafleet-monitoring)`.
 `cafleet session create` (which must be run inside a tmux session) atomically creates the session and registers a root Director bound to the current tmux pane — there is no separate `cafleet register` step for the Director. Use `--json` so both IDs are machine-parseable:
 
 ```bash
-cafleet session create --label "design-doc-create-{slug}" --json
+cafleet session create --label "design-doc-create-<slug>" --json
 # → {
 #     "session_id": "550e8400-e29b-41d4-a716-446655440000",
-#     "label": "design-doc-create-{slug}",
+#     "label": "design-doc-create-<slug>",
 #     "created_at": "…",
 #     "administrator_agent_id": "…",
 #     "director": {

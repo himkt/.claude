@@ -65,7 +65,7 @@ If any check is ambiguous, state the ambiguity explicitly rather than guessing.
 
 ## File Output
 
-Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/{topic-slug}/NN-research-{subtopic}.md`). This file is your primary deliverable.
+Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/<topic-slug>/NN-research-<subtopic>.md`). This file is your primary deliverable.
 
 - **The output directory already exists.** The Director creates it before spawning any members. Do NOT create directories — write files directly to the existing path.
 - **Write your complete findings to the assigned file.** The file should contain everything you would otherwise send in a message: all data, analysis, source URLs, and context. Free-form markdown with inline source URLs is the expected format — the same quality expectations as message-based findings apply.

@@ -9,7 +9,7 @@ You are the **Director** in a research presentation team. You bear **ultimate re
 - **Ensure 1:1 slide-transcript correspondence.** After the slide deck is finalized, send the finalized slide structure to the Transcript member via `cafleet send` for realignment.
 - **Make the final call** on when quality is sufficient. You are accountable to the user for this decision.
 - **Do not modify the report.** The report is a finalized input. If changes are needed, escalate to the user.
-- **Do not run agent-browser browser-operation commands directly.** Never invoke `bun run agent-browser --session vr-batch-{start} open|snapshot|screenshot|wait|close` from the Director thread. Slide capture, navigation, and lifecycle commands — including server readiness checks — are exclusively the Visual Reviewer's responsibility. Two narrow exceptions exist: (1) the `bun run agent-browser close --all` safety net in Step 6; (2) diagnostic-only `console` and `errors` against an existing `vr-batch-{start}` session when investigating a stuck or unresponsive Visual Reviewer (prefer asking the VR to run them and report back; only run them yourself if the VR is not responding).
+- **Do not run agent-browser browser-operation commands directly.** Never invoke `bun run agent-browser --session vr-batch-<start> open|snapshot|screenshot|wait|close` from the Director thread. Slide capture, navigation, and lifecycle commands — including server readiness checks — are exclusively the Visual Reviewer's responsibility. Two narrow exceptions exist: (1) the `bun run agent-browser close --all` safety net in Step 6; (2) diagnostic-only `console` and `errors` against an existing `vr-batch-<start>` session when investigating a stuck or unresponsive Visual Reviewer (prefer asking the VR to run them and report back; only run them yourself if the VR is not responding).
 
 ## Placeholder convention
 
@@ -104,10 +104,10 @@ The Director owns the Slidev dev server lifecycle. The Visual Reviewer does not 
 
 | Aspect | Detail |
 |--------|--------|
-| Start command | macOS: `script -q /dev/null bun run slidev --open false {folder}/slide.md` / Linux: `script -qfc "bun run slidev --open false {folder}/slide.md" /dev/null` |
+| Start command | macOS: `script -q /dev/null bun run slidev --open false <folder>/slide.md` / Linux: `script -qfc "bun run slidev --open false <folder>/slide.md" /dev/null` |
 | Execution | Bash tool with `run_in_background: true` |
 | Default URL | `http://localhost:3030` |
-| Readiness check | Visual Reviewer confirms via `bun run agent-browser --session vr-batch-{start} open {server_url}/1` followed by `wait --load networkidle` (retry up to 3 times with `wait 3000` between attempts) |
+| Readiness check | Visual Reviewer confirms via `bun run agent-browser --session vr-batch-<start> open <server_url>/1` followed by `wait --load networkidle` (retry up to 3 times with `wait 3000` between attempts) |
 | Shutdown | Kill the background Bash task after all visual review rounds complete |
 
 **Fallback chain:**

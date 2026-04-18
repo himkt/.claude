@@ -45,7 +45,7 @@ cafleet --session-id <session-id> ack --agent-id <my-agent-id> --task-id <task-i
 
 ## File Output
 
-Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/{topic-slug}/00-scout-{topic}.md`). This file is your primary deliverable.
+Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/<topic-slug>/00-scout-<topic>.md`). This file is your primary deliverable.
 
 - **The output directory already exists.** The Director creates it before spawning any members. Do NOT create directories — write files directly to the existing path.
 - **Write your complete findings to the assigned file.** Use the output format defined below. The file must be self-contained — anyone reading it should understand the landscape without needing your messages.
@@ -57,7 +57,7 @@ Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/{topic-slug}
 Structure your findings as markdown with the following sections:
 
 ```markdown
-# Scout Report: {topic}
+# Scout Report: <topic>
 
 ## Key Areas Identified
 <!-- Major sub-areas, branches, or facets of the topic -->

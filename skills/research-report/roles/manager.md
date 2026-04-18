@@ -63,7 +63,7 @@ Before decomposing the topic, you may request **Scouts** from the Director for l
 ### Scout-Manager Interaction Protocol (via Director relay)
 
 1. **Assess the topic.** Decide which aspects need landscape scouting — especially areas outside your existing knowledge, recent developments, or emerging sub-fields.
-2. **Request Scouts from the Director.** Send the Director a `cafleet send` message specifying each Scout you need: the scope of landscape to map, search angles, and output file paths (`{resolved-path}/00-scout-{topic}.md`). The Director will spawn them as CAFleet members.
+2. **Request Scouts from the Director.** Send the Director a `cafleet send` message specifying each Scout you need: the scope of landscape to map, search angles, and output file paths (`<resolved-path>/00-scout-<topic>.md`). The Director will spawn them as CAFleet members.
 3. **Review Scout findings.** When the Director relays a Scout's completion, read the Scout output file and identify knowledge gaps, promising leads, or areas that need further exploration.
 4. **Iterate if needed.** You may ask the Director to send a Scout back for targeted follow-up, or request new Scouts for uncovered areas.
 5. **Terminate scouting.** When you judge that sufficient landscape knowledge has been gathered, signal the Director that scouting is complete and proceed to topic decomposition.
@@ -85,22 +85,22 @@ Before decomposing the topic, you may request **Scouts** from the Director for l
 Send the Director a `cafleet send` message specifying each Scout you need:
 - **Scope**: What area of the landscape to map (e.g., "recent advances in transformer architectures since 2024")
 - **Search angles**: Specific directions to explore (e.g., "efficiency techniques, hardware-aware designs, emerging alternatives")
-- **Output file path**: `{resolved-path}/00-scout-{topic}.md` (0-prefixed, within Researcher numbering)
+- **Output file path**: `<resolved-path>/00-scout-<topic>.md` (0-prefixed, within Researcher numbering)
 
 Example:
-> "Please spawn a Scout to map the landscape of [topic area]. Scope: [what to cover]. Angles: [specific directions]. Output: `{resolved-path}/00-scout-{topic-slug}.md`"
+> "Please spawn a Scout to map the landscape of [topic area]. Scope: [what to cover]. Angles: [specific directions]. Output: `<resolved-path>/00-scout-<topic-slug>.md`"
 
 ## How to Request Researchers
 
-Send the Director a `cafleet send` message specifying each Researcher you need (sub-topic, scope, angles). For each Researcher, also include the assigned output file path using the **absolute path** provided by the Director (e.g., `{resolved-path}/01-research-subtopic.md`). Number files sequentially by assignment order (01, 02, ...). The Director will spawn them as CAFleet members and relay their findings back to you.
+Send the Director a `cafleet send` message specifying each Researcher you need (sub-topic, scope, angles). For each Researcher, also include the assigned output file path using the **absolute path** provided by the Director (e.g., `<resolved-path>/01-research-subtopic.md`). Number files sequentially by assignment order (01, 02, ...). The Director will spawn them as CAFleet members and relay their findings back to you.
 
 ## File-Based Aggregation
 
 After the Director reports that all Researchers have completed, aggregate their findings into a compiled report:
 
-1. **Read all researcher files.** The output directory already exists (created by the Director before spawning members). Do NOT create directories — write files directly to the existing path. Glob `{resolved-path}/[0-9][0-9]-research-*.md` to collect only numbered researcher files (this pattern safely excludes `report.md`, `slide.md`, `transcript.md`, Scout files (`00-scout-*.md`), or any other non-researcher files in the folder). Always use the absolute path provided by the Director.
+1. **Read all researcher files.** The output directory already exists (created by the Director before spawning members). Do NOT create directories — write files directly to the existing path. Glob `<resolved-path>/[0-9][0-9]-research-*.md` to collect only numbered researcher files (this pattern safely excludes `report.md`, `slide.md`, `transcript.md`, Scout files (`00-scout-*.md`), or any other non-researcher files in the folder). Always use the absolute path provided by the Director.
 2. **Cross-file contradiction check.** Compare claims, data points, and statistics across researcher files. When contradictions are found, ask the Director (via `cafleet send`) to relay the specific conflicting data to the involved Researchers and have each verify their sources. Do not silently pick one version — wait for Researchers to resolve the discrepancy before proceeding.
-3. **Aggregate into report.** Compile `{resolved-path}/report.md` following the report template format. Synthesize across all researcher files with analytical depth — do not simply concatenate findings.
+3. **Aggregate into report.** Compile `<resolved-path>/report.md` following the report template format. Synthesize across all researcher files with analytical depth — do not simply concatenate findings.
 4. **Notify Director.** Send a `cafleet send` to the Director that the report is ready for review.
 
 On revision cycles, overwrite `report.md` with the updated version. The same file path is used throughout the report lifecycle.

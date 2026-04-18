@@ -1,6 +1,6 @@
 ---
 name: research-report
-description: Create a comprehensive research report with folder-based output. Researchers write findings to individual files, the Manager compiles report.md, and the Director reviews. Output goes to researches/{topic-slug}/. After report approval, offers to chain into /research-presentation for slides and transcript. Teammates must always load skills using the Skill tool, not by reading skill files directly. Do NOT do a quick web search and summarize — invoke this skill for thorough, multi-source research.
+description: Create a comprehensive research report with folder-based output. Researchers write findings to individual files, the Manager compiles report.md, and the Director reviews. Output goes to researches/<topic-slug>/. After report approval, offers to chain into /research-presentation for slides and transcript. Teammates must always load skills using the Skill tool, not by reading skill files directly. Do NOT do a quick web search and summarize — invoke this skill for thorough, multi-source research.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 
@@ -45,7 +45,7 @@ The Director MUST be running inside a tmux session (required by `cafleet member 
 
 | Purpose | CAFleet command |
 |---|---|
-| Create session + root Director placement | `cafleet session create --label "research-{topic-slug}"` — bootstraps the session + root Director + placement + Administrator in one transaction |
+| Create session + root Director placement | `cafleet session create --label "research-<topic-slug>"` — bootstraps the session + root Director + placement + Administrator in one transaction |
 | Spawn a member agent | `cafleet --session-id <session-id> member create --agent-id <director-agent-id> --name "..." --description "..." -- "<prompt>"` |
 | Director sends a message to a member | `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <member-agent-id> --text "..."` |
 | Member sends a message to the Director | `cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "..."` |
@@ -60,7 +60,7 @@ The Director MUST be running inside a tmux session (required by `cafleet member 
 Before creating the session, determine where output files will be saved.
 
 1. Load `Skill(base-dir)` and follow its procedure. (The topic argument is not a path, so the absolute-path skip rule does not apply.)
-2. Compute: `${OUTPUT_DIR} = ${BASE}/researches/{topic-slug}/`
+2. Compute: `${OUTPUT_DIR} = ${BASE}/researches/<topic-slug>/`
 3. Create the output directory.
 4. Pass `${OUTPUT_DIR}` as the resolved absolute path to the Manager and all Researchers in their spawn prompts.
 
@@ -86,7 +86,7 @@ Use these rules so readiness/stall decisions are deterministic:
 `cafleet session create` (which must be run inside a tmux session) atomically creates the session and registers a root Director bound to the current tmux pane. Use `--json` so both IDs are machine-parseable:
 
 ```bash
-cafleet session create --label "research-{topic-slug}" --json
+cafleet session create --label "research-<topic-slug>" --json
 ```
 
 Capture `session_id` and `director.agent_id` from the JSON response. Substitute them for `<session-id>` and `<director-agent-id>` in every subsequent command. **Do not store them in shell variables** — `permissions.allow` matches command strings literally, so every command must carry the literal UUIDs.
@@ -174,7 +174,7 @@ DIRECTOR AGENT ID: <director-agent-id>
 YOUR AGENT ID: {agent_id}
 CURRENT DATE: [INSERT today's date]
 YOUR ASSIGNMENT: [landscape scope and what areas to map]
-OUTPUT FILE: [INSERT {resolved-path}/00-scout-{topic}.md]
+OUTPUT FILE: [INSERT <resolved-path>/00-scout-<topic>.md]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
@@ -187,8 +187,8 @@ Spawn with:
 
 ```bash
 cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
-  --name "Scout-{topic}" \
-  --description "Landscape scout for {topic}" \
+  --name "Scout-<topic>" \
+  --description "Landscape scout for <topic>" \
   -- "<Scout spawn prompt>"
 ```
 
@@ -225,7 +225,7 @@ DIRECTOR AGENT ID: <director-agent-id>
 YOUR AGENT ID: {agent_id}
 CURRENT DATE: [INSERT today's date]
 YOUR ASSIGNMENT: [specific sub-topic and what to investigate]
-OUTPUT FILE: [INSERT {resolved-path}/NN-research-{subtopic}.md]
+OUTPUT FILE: [INSERT <resolved-path>/NN-research-<subtopic>.md]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
@@ -238,8 +238,8 @@ Spawn with:
 
 ```bash
 cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
-  --name "Researcher-{NN}" \
-  --description "Researches {subtopic}" \
+  --name "Researcher-<NN>" \
+  --description "Researches <subtopic>" \
   -- "<Researcher spawn prompt>"
 ```
 
