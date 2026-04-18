@@ -26,7 +26,7 @@ The Director registers with a CAFleet session and spawns each needed member via 
 
 ```
 User
- +-- Director (main Claude -- cafleet register, cafleet member create, orchestrates TDD cycle)
+ +-- Director (main Claude -- cafleet session create, cafleet member create, orchestrates TDD cycle)
       +-- Programmer (member agent -- implements code to pass tests)
       +-- Tester (member agent -- writes unit tests per step)
       +-- Verifier (member agent, optional -- E2E/integration testing)
@@ -210,9 +210,9 @@ Based on the design document steps (see [roles/director.md](roles/director.md) f
 
 Read the role files that will be embedded verbatim in spawn prompts:
 
-- `.claude/skills/design-doc-execute/roles/programmer.md`
-- `.claude/skills/design-doc-execute/roles/tester.md` (if Tester needed)
-- `.claude/skills/design-doc-execute/roles/verifier.md` (if Verifier needed)
+- `~/.claude/skills/design-doc-execute/roles/programmer.md`
+- `~/.claude/skills/design-doc-execute/roles/tester.md` (if Tester needed)
+- `~/.claude/skills/design-doc-execute/roles/verifier.md` (if Verifier needed)
 
 #### 3f. Spawn each member via `cafleet member create`
 

@@ -60,9 +60,9 @@ Capture `session_id` and `director.agent_id` from the JSON response. Substitute 
 
 Read the role files that will be embedded verbatim in spawn prompts:
 
-- `.claude/skills/research-presentation/roles/presentation.md`
-- `.claude/skills/research-presentation/roles/transcript.md`
-- `.claude/skills/research-presentation/roles/visual-reviewer.md`
+- `~/.claude/skills/research-presentation/roles/presentation.md`
+- `~/.claude/skills/research-presentation/roles/transcript.md`
+- `~/.claude/skills/research-presentation/roles/visual-reviewer.md`
 
 #### 2c. Spawn Presentation + Transcript members in parallel
 

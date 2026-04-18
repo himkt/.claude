@@ -95,9 +95,9 @@ Capture `session_id` and `director.agent_id` from the JSON response. Substitute 
 
 Read the role files that will be embedded verbatim in spawn prompts:
 
-- `.claude/skills/research-report/roles/manager.md`
-- `.claude/skills/research-report/roles/scout.md`
-- `.claude/skills/research-report/roles/researcher.md`
+- `~/.claude/skills/research-report/roles/manager.md`
+- `~/.claude/skills/research-report/roles/scout.md`
+- `~/.claude/skills/research-report/roles/researcher.md`
 
 #### 2c. Spawn the Manager
 
