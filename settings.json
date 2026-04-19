@@ -59,6 +59,7 @@
       "Bash(tmux list-panes)",
       "Bash(tmux list-panes *)",
       "Bash(tmux capture-pane *)",
+      "Bash(tmux display-messages *)",
       "Bash(stat *)",
       "Bash(uv run pytest *)",
       "Bash(uv run ruff check *)",

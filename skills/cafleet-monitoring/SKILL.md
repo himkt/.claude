@@ -25,7 +25,21 @@ Every command below uses angle-bracket tokens (`<session-id>`, `<director-agent-
 
 ## Monitoring Mandate
 
-Before spawning **any** member, start a `/loop` monitor with a **1-minute interval** (the `CronCreate` / `ScheduleWakeup` floor — sub-minute polling is not supported by the harness).
+Before spawning **any** member, start a `/loop` monitor with a **fixed 1-minute interval**. Invoke it as:
+
+```
+/loop 1m <monitoring prompt>
+```
+
+The explicit `1m` argument routes through `CronCreate` (fixed cadence). This is mandatory. `1m` is also the harness floor — `CronCreate` / `ScheduleWakeup` do not support sub-minute polling, so `1m` is simultaneously the fastest the harness permits and the fixed cadence this skill requires.
+
+### Interval enforcement — hard rules
+
+- **ALWAYS** pass the literal `1m` interval to `/loop`. Never invoke `/loop` without an interval (that enters dynamic/self-paced mode via `ScheduleWakeup`, which lets the model pick `delaySeconds` and defeats the 1-minute guarantee).
+- **NEVER** call `ScheduleWakeup` directly from this skill or any director role.
+- **NEVER** pass any interval other than `1m` (not `2m`, not `30s`, not "backoff after N idle ticks"). The cadence is not a tunable knob — it is a contract.
+- **NEVER** replace `/loop 1m` with a `CronCreate` call that uses a different cron expression than `* * * * *`.
+- If a monitoring iteration finds the team idle, do **not** lengthen the interval. Keep checking at 1 minute.
 
 | Step | Command | Purpose |
 |---|---|---|
@@ -87,8 +101,10 @@ If a member is still unresponsive after 2 nudges via `cafleet send` AND `cafleet
 
 Substitute the literal UUIDs into every `<session-id>`, `<director-agent-id>`, and `<member-agent-id>` placeholder before passing the prompt to `/loop`. The prompt must contain literal UUIDs, **not** shell variables — the `permissions.allow` matcher only allows literal command strings. Remember: `--session-id` goes before the subcommand, `--agent-id` goes after.
 
+**Invocation form (mandatory):** `/loop 1m <prompt below>`. The `1m` argument is required — do not omit it and do not substitute any other value. See "Interval enforcement — hard rules" above.
+
 ```
-Monitor team health (interval: 1 minute). For each member spawned via `cafleet member create`:
+Monitor team health (fixed interval: 1 minute — do NOT adjust). For each member spawned via `cafleet member create`:
 
 1. Run `cafleet --session-id <session-id> --json member list --agent-id <director-agent-id>` to get all members.
 2. Run `cafleet --session-id <session-id> --json poll --agent-id <director-agent-id> --since "<ISO 8601 timestamp of last check>"` to check for incoming messages. ACK any progress reports.

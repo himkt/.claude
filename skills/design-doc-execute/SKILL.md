@@ -566,8 +566,10 @@ When `round >= 5`, break the auto-loop and escalate to the user via `AskUserQues
 
 Use this as the `/loop` prompt for Step 7. Substitute the literal UUIDs and the literal PR number before passing the prompt to `/loop` — no shell variables.
 
+**Invocation form (mandatory):** `/loop 1m <prompt below>`. The `1m` argument is required — never omit it (that would enter dynamic/self-paced mode) and never substitute any other interval. See `Skill(cafleet-monitoring)` → "Interval enforcement — hard rules".
+
 ```
-Monitor team health AND PR review state (interval: 1 minute).
+Monitor team health AND PR review state (fixed interval: 1 minute — do NOT adjust).
 
 TEAM HEALTH:
 1. Run `cafleet --session-id <session-id> --json member list --agent-id <director-agent-id>`.
