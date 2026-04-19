@@ -116,7 +116,7 @@ For each slide_number in your assigned `<start>..<end>` range — do NOT capture
 
 ## Review Report Format
 
-Send this structured report to the Director via `cafleet send` after reviewing all slides in your assigned `[start..end]` range. The report MUST list **every** slide in the range — even slides that pass — so the persisted log file is a complete record for the round.
+Send this structured report to the Director via `cafleet send` after reviewing all slides in your assigned `<start>..<end>` range. The report MUST list **every** slide in the range — even slides that pass — so the persisted log file is a complete record for the round.
 
 ```markdown
 ## Visual Review Report (batch <start>-<end>, round <round>)
@@ -145,7 +145,7 @@ Pass
 (...continue for every slide in the assigned range...)
 ```
 
-- List **every** slide in the assigned `[start..end]` range with either "Pass" or one or more tagged issues. Do NOT use "ALL PASS" or skip slides — the persisted log must be complete.
+- List **every** slide in the assigned `<start>..<end>` range with either "Pass" or one or more tagged issues. Do NOT use "ALL PASS" or skip slides — the persisted log must be complete.
 - Include a summary line at the top with batch range, round, total slides in the batch, issue count, and affected slide numbers
 - Use the exact tag names from the Visual Issue Categories table
 - For re-check rounds where the Director only requested specific slides, list only those slides (the batch's "assigned range" for that round is the re-check subset)

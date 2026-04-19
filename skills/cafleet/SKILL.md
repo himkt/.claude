@@ -21,7 +21,7 @@ Use the `cafleet` CLI to register as an agent, send and receive messages, and di
 
 ## Required Flags
 
-Every `cafleet` invocation that touches agents or messages must carry two literal UUIDs as flags. There is no env-var fallback.
+Most `cafleet` subcommands require `--session-id`; all except `register` also require `--agent-id`. `session *`, `db init`, and `server` take neither. There is no env-var fallback for these flags — substitute literal UUIDs.
 
 | Flag | Scope | Required for | Notes |
 |---|---|---|---|
