@@ -1,6 +1,6 @@
 ---
 name: web-researcher
-description: Use this agent to research topics on the web before specification development. Supports parallel research of multiple topics. Returns structured summaries with sources. Best used in combination with design-doc-creator - run web-researcher first to gather context, then pass results to design-doc-creator.
+description: Use this agent to research topics on the web before specification development. Supports parallel research of multiple topics. Returns structured summaries with sources. Best used in combination with design-doc-create skill - run web-researcher first to gather context, then pass results to design-doc-create skill.
 model: sonnet
 color: blue
 ---

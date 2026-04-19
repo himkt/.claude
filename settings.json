@@ -2,7 +2,6 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "respectGitignore": false,
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_NO_FLICKER": "1"
   },
   "attribution": {
@@ -28,6 +27,7 @@
       "Bash(bun run agent-browser --session vr-batch-* errors *)",
       "Bash(bun run agent-browser --session vr-batch-* reload)",
       "Bash(bun run agent-browser close --all)",
+      "Bash(cafleet *)",
       "Bash(gh api repos/*/*/pulls/*/comments)",
       "Bash(gh api repos/*/*/pulls/*/comments *)",
       "Bash(gh api repos/*/*/pulls/*/reviews)",
@@ -71,6 +71,8 @@
       "Read(/plugins/**)",
       "Read(//tmp/claude-code/**)",
       "Read(~/.agent-browser/tmp)",
+      "Skill(cafleet)",
+      "Skill(cafleet-monitoring)",
       "Skill(create-figure)",
       "Skill(design-doc)",
       "Skill(github-cli)",
@@ -121,7 +123,8 @@
     "ask": [
       "Bash(git push)",
       "Bash(git push *)",
-      "Bash(uv sync)"
+      "Bash(uv sync)",
+      "Bash(cafleet --session-id * member send-input *)"
     ],
     "additionalDirectories": [
       "~/.claude"
@@ -169,8 +172,8 @@
   },
   "language": "Use professional English",
   "alwaysThinkingEnabled": true,
+  "effortLevel": "xhigh",
   "autoMemoryEnabled": false,
   "teammateMode": "tmux",
-  "autoInstallIdeExtension": false,
-  "effortLevel": "xhigh"
+  "autoInstallIdeExtension": false
 }
