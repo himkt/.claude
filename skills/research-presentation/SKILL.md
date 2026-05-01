@@ -1,37 +1,59 @@
 ---
 name: research-presentation
 description: Create a Slidev presentation and reading transcript from an existing research report folder. Reads report.md and researcher files for context, creates slides using /my-slidev skill and a reading transcript. Takes folder path as argument (e.g., topic-name). Do NOT use for research — use /research-report for that.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, TeamCreate, TeamDelete, SendMessage, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
 # Research Presentation
 
-Create a Slidev presentation and reading transcript from an existing research report folder. The Director spawns Presentation, Transcript, and per-batch Visual Reviewer members, reviews their output, and iterates until quality is met.
+Create a Slidev presentation and reading transcript from an existing research report folder using a four-role in-process agent team: Director (orchestrator), Presentation (slides), Transcript (narration), and per-batch Visual Reviewer (screenshot-based QA). The team iterates through content revision and visual review before presenting to the user.
 
 | Role | Identity | Does | Does NOT | Role definition |
 |:--|:--|:--|:--|:--|
-| **Director** | Main Claude | Create CAFleet session, spawn all members via `cafleet member create`, review all deliverables, demand revisions, run Slidev server lifecycle and `agent-browser close --all` safety net | Create slides/transcript, conduct research, modify report, run agent-browser browser-operation commands (except close --all) | [roles/director.md](roles/director.md) |
-| **Presentation** | Member agent (claude) | Create Slidev presentation from report using `/my-slidev` | Invent data, modify report, conduct research | [roles/presentation.md](roles/presentation.md) |
-| **Transcript** | Member agent (claude) | Create reading transcript with 1:1 slide correspondence | Invent data, modify report, conduct research | [roles/transcript.md](roles/transcript.md) |
-| **Visual Reviewer** | Member agent (claude) — one per batch | Capture screenshots/snapshots of all slides using the agent-browser CLI (`bun run agent-browser`) with a per-batch named session (`--session vr-batch-<start>`), identify visual issues including aesthetic quality, report findings to Director | Edit slide.md, modify report, fix issues directly | [roles/visual-reviewer.md](roles/visual-reviewer.md) |
+| **Director** | Main Claude | Create team, spawn teammates, review all deliverables, demand revisions, run Slidev server lifecycle and `agent-browser close --all` safety net | Create slides/transcript, conduct research, modify report, run agent-browser browser-operation commands (except close --all) | [roles/director.md](roles/director.md) |
+| **Presentation** | `slide-creator` teammate | Create Slidev presentation from report using `/my-slidev` | Invent data, modify report, conduct research | [roles/presentation.md](roles/presentation.md) |
+| **Transcript** | `general-purpose` teammate | Create reading transcript with 1:1 slide correspondence | Invent data, modify report, conduct research | [roles/transcript.md](roles/transcript.md) |
+| **Visual Reviewer** | `general-purpose` teammate — one per batch | Capture screenshots/snapshots of assigned slides using the agent-browser CLI (`bun run agent-browser`) with a per-batch named session (`--session vr-batch-<start>`), identify visual issues including aesthetic quality, report findings to Director | Edit slide.md, modify report, fix issues directly | [roles/visual-reviewer.md](roles/visual-reviewer.md) |
 
-## Prerequisites
+## Architecture
 
-The Director MUST be running inside a tmux session (required by `cafleet member create`). If `TMUX` is not set, abort with an explanatory message to the user before spawning anyone.
+The Director creates an in-process team with `TeamCreate` and spawns teammates with `Agent(team_name=..., name=...)`. All coordination goes through `SendMessage` (auto-delivered) and the shared task list.
 
-## CAFleet Primitives
+```
+User
+ +-- Director (main Claude — TeamCreate, Agent spawn, SendMessage orchestration)
+      +-- presentation (teammate: slide-creator — authors slide.md)
+      +-- transcript   (teammate: general-purpose — authors transcript.md)
+      +-- vr-batch-<start> (teammate: general-purpose — captures + reports on one slide batch)
+```
 
-| Purpose | CAFleet command |
-|---|---|
-| Create session + root Director placement | `cafleet session create --label "presentation-<topic-slug>"` — bootstraps the session + root Director + placement + Administrator in one transaction |
-| Spawn a member agent | `cafleet --session-id <session-id> member create --agent-id <director-agent-id> --name "..." --description "..." -- "<prompt>"` |
-| Director sends a message to a member | `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <member-agent-id> --text "..."` |
-| Member sends a message to the Director | `cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "..."` |
-| Monitor the team | `Skill(cafleet-monitoring)` `/loop` |
-| Shut down a member / tear down the team | `cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <member-agent-id>` per member, then `cafleet session delete <session-id>` |
-| Auto message delivery | Push notification injects `cafleet --session-id <session-id> poll --agent-id <recipient-agent-id>` into the member's tmux pane |
+- **Director ↔ User**: `AskUserQuestion` (approval, revision collection)
+- **Director ↔ presentation**: `SendMessage` (tagged feedback, realignment, revision loop)
+- **Director ↔ transcript**: `SendMessage` (finalized slide structure, tagged feedback)
+- **Director ↔ vr-batch-\***: `SendMessage` (batch assignment, re-check requests, close instruction)
+
+Teammates cannot talk to the user directly — the Director always relays.
 
 ## Director Process
+
+The Director's pipeline runs autonomously from Step 0 through Step 3, converges on a single user approval gate at Step 4, then cleans up at Step 5. Read the User Interaction Contract below before entering the steps — it defines the only two points at which the Director is permitted to originate `AskUserQuestion` calls.
+
+### User Interaction Contract
+
+The Director originates `AskUserQuestion` at exactly two kinds of points:
+
+1. **Step 4 — single post-pipeline approval gate.** After all pipeline deliverables exist — slides, transcript, AND visual review — the Director presents them to the user and collects approval or revision requests.
+2. **Teammate-escalated user delegation.** When a teammate `SendMessage`s a question that genuinely requires a user decision (per `Skill(agent-team-supervision)`'s user-delegation protocol), the Director relays it via `AskUserQuestion` and passes the answer back verbatim.
+
+The Director does NOT use `AskUserQuestion` to:
+
+- Ask whether to run, skip, or shorten any pipeline step. Steps 0–3 are obligatory and non-negotiable. Visual review in Step 3 is not an optional polish — it is a quality gate.
+- Offer "faster," "lighter," or "partial" variants of the pipeline.
+- Confirm the Director's own design choices (spawn counts, batch boundaries, tag usage, layout decisions).
+
+If a pipeline step fails for a technical reason the Director cannot resolve (e.g. the Slidev dev server refuses to start after the fallback chain), *then* escalate to the user via `AskUserQuestion` with concrete options — but escalation is a response to failure, not a planning shortcut.
+
+Step 5 (cleanup) is autonomous — no user prompt.
 
 ### Step 0: Validate Input (Director)
 
@@ -40,23 +62,23 @@ The Director MUST be running inside a tmux session (required by `cafleet member 
    - If skipped (absolute path): set `${FOLDER} = $ARGUMENTS`.
    - If base resolved: set `${FOLDER} = ${BASE}/researches/$ARGUMENTS`. Resolve to absolute path.
 3. Check that `${FOLDER}/report.md` exists. If not, error: "No report.md found in `${FOLDER}`. Run `/research-report` first to generate a report."
-4. Pass `${FOLDER}` as the resolved absolute path to all members in spawn prompts.
+4. Pass `${FOLDER}` as the resolved absolute path to all teammates in spawn prompts.
 
-### Step 1: Start Progress Monitor (Director — MANDATORY)
+### Step 1: Create Team, Start Monitor & Spawn Presentation + Transcript (Director)
 
-Load `Skill(cafleet-monitoring)` and follow its Monitoring Mandate. Set up a `/loop` monitor BEFORE spawning any member. The loop checks `${FOLDER}` for expected files (`slide.md`, `transcript.md`) and nudges stalled members via `cafleet send` and `cafleet member capture`. Keep it running until Step 6.
+Load `Skill(agent-team-supervision)` and `Skill(agent-team-monitoring)` — this skill spawns parallel teammates (Presentation + Transcript, and later VR batches), so the `/loop` monitor is mandatory.
 
-### Step 2: Create Session & Spawn Presentation + Transcript (Director)
+#### 1a. Create the team
 
-#### 2a. Create the CAFleet session and capture the root Director's `agent_id`
-
-```bash
-cafleet session create --label "presentation-<topic-slug>" --json
+```
+TeamCreate(team_name="present-<topic-slug>", description="Research presentation: <topic-slug>")
 ```
 
-Capture `session_id` and `director.agent_id` from the JSON response. Substitute them for `<session-id>` and `<director-agent-id>` in every subsequent command. **Do not store them in shell variables** — `permissions.allow` matches command strings literally, so every command must carry the literal UUIDs.
+#### 1b. Start the `/loop` monitor BEFORE the first `Agent` call
 
-#### 2b. Read role definitions
+Per `Skill(agent-team-monitoring)`, start the monitor before spawning so the first tick fires while spawning completes. Expected deliverables: `${FOLDER}/slide.md`, `${FOLDER}/transcript.md`. Active teammates will include `presentation`, `transcript`, and later `vr-batch-*`.
+
+#### 1c. Read role definitions
 
 Read the role files that will be embedded verbatim in spawn prompts:
 
@@ -64,11 +86,11 @@ Read the role files that will be embedded verbatim in spawn prompts:
 - `~/.claude/skills/research-presentation/roles/transcript.md`
 - `~/.claude/skills/research-presentation/roles/visual-reviewer.md`
 
-#### 2c. Spawn Presentation + Transcript members in parallel
+#### 1d. Spawn Presentation + Transcript in parallel
 
-Both work from `report.md` independently. After the slide deck is finalized (Step 3), the Director sends the final slide structure to the Transcript member for realignment.
+Both work from `report.md` independently. After the slide deck is finalized (Step 3), the Director sends the final slide structure to the Transcript teammate for realignment.
 
-**Presentation member spawn prompt:**
+**Presentation spawn prompt:**
 
 ```
 You are the Presentation Specialist in a research presentation team.
@@ -78,14 +100,9 @@ You are the Presentation Specialist in a research presentation team.
 </ROLE DEFINITION>
 
 Load these skills at startup:
-- Skill(cafleet) — for communication with the Director
 - Skill(my-slidev) — for Slidev authoring layouts and rules
 - Skill(create-figure) — if the report includes data that would render better as a chart
-- Also Read ~/.claude/agents/slide-creator.md for Slidev authoring methodology
 
-SESSION ID: <session-id>
-DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: {agent_id}
 TASK: Create a Slidev presentation from the approved research report.
 REPORT:           [INSERT <folder>/report.md]
 RESEARCHER FILES: [INSERT <folder>/[0-9][0-9]-research-*.md]
@@ -94,24 +111,25 @@ FIGURE BASE:      [INSERT <folder>]    (substitute literally for ${FIGURE_BASE}/
 OUTPUT:           [INSERT <folder>/slide.md]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
-- When you see cafleet poll output with a message from the Director, act on those instructions and ack the task.
+- You talk to the Director via SendMessage(to: "director", summary: "...", message: "...").
+- You do NOT talk to the user directly. The Director relays.
+- Messages from the Director arrive automatically — you do not poll.
 
 When complete, send the file path to the Director.
 ```
 
 Spawn with:
 
-```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
-  --name "Presentation" \
-  --description "Creates Slidev presentation from report" \
-  -- "<Presentation spawn prompt>"
+```
+Agent(
+  subagent_type="slide-creator",
+  team_name="present-<topic-slug>",
+  name="presentation",
+  prompt="<Presentation spawn prompt>"
+)
 ```
 
-Parse `agent_id` and substitute for `<presentation-agent-id>`.
-
-**Transcript member spawn prompt:**
+**Transcript spawn prompt:**
 
 ```
 You are the Transcript Specialist in a research presentation team.
@@ -120,63 +138,58 @@ You are the Transcript Specialist in a research presentation team.
 [Content of ~/.claude/skills/research-presentation/roles/transcript.md injected verbatim]
 </ROLE DEFINITION>
 
-Load these skills at startup:
-- Skill(cafleet) — for communication with the Director
-
-SESSION ID: <session-id>
-DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: {agent_id}
 TASK: Create a reading transcript from the approved research report.
 REPORT:   [INSERT <folder>/report.md]
 LANGUAGE: [INSERT language detected from report.md]
 OUTPUT:   [INSERT <folder>/transcript.md]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
-- When you see cafleet poll output with a message from the Director, act on those instructions and ack the task.
+- You talk to the Director via SendMessage(to: "director", summary: "...", message: "...").
+- You do NOT talk to the user directly. The Director relays.
+- Messages from the Director arrive automatically — you do not poll.
 
 When complete, send the file path to the Director.
 ```
 
 Spawn with:
 
-```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
-  --name "Transcript" \
-  --description "Creates reading transcript from report" \
-  -- "<Transcript spawn prompt>"
+```
+Agent(
+  subagent_type="general-purpose",
+  team_name="present-<topic-slug>",
+  name="transcript",
+  prompt="<Transcript spawn prompt>"
+)
 ```
 
-Parse `agent_id` and substitute for `<transcript-agent-id>`.
+### Step 2: Content Review & Revision Loop (Director)
 
-### Step 3: Content Review & Revision Loop (Director)
+Read the output files (`${FOLDER}/slide.md`, `${FOLDER}/transcript.md`) and review using the tag criteria in [roles/director.md](roles/director.md). Send tagged feedback via `SendMessage`; teammates revise and reply. See [roles/director.md](roles/director.md) for revision approach and iteration limits.
 
-Read the output files (`${FOLDER}/slide.md`, `${FOLDER}/transcript.md`) and review using the tag criteria in [roles/director.md](roles/director.md). Send tagged feedback via `cafleet send`; members revise and resubmit. See [roles/director.md](roles/director.md) for revision approach and iteration limits.
-
-```bash
-cafleet --session-id <session-id> send --agent-id <director-agent-id> \
-  --to <presentation-agent-id> --text "[SLIDE STRUCTURE] ... / [VISUAL] ... / ..."
+```
+SendMessage(to: "presentation", summary: "slide revisions", message: "[SLIDE STRUCTURE] ... / [VISUAL] ... / ...")
+SendMessage(to: "transcript", summary: "transcript revisions", message: "[FLOW] ... / [TIMING] ... / ...")
 ```
 
-### Step 4: Visual Review & Fix (Director)
+Once the slide deck is finalized, send the finalized slide structure to the Transcript teammate for 1:1 realignment.
 
-After the content revision loop completes, visually review the rendered presentation.
+### Step 3: Visual Review & Fix (Director)
+
+Once Step 2 converges on an approved slide deck and transcript, the Director runs the batched visual-review loop defined below. Per the User Interaction Contract, this step is a pipeline stage, not a decision — the Director does not call `AskUserQuestion` to decide whether to run it, skip it, or shorten it.
 
 **Server Startup (once):**
 
 **Working directory: project root** (the directory containing `node_modules/` and `skills/`). Do NOT cd to plugin source directories — they are source repos, not runnable installations.
 
-1. From the project root, run `bun install --frozen-lockfile` to ensure dependencies
-2. Start Slidev dev server (`run_in_background: true`):
-   - **macOS**: `script -q /dev/null bun run slidev --open false <folder>/slide.md`
-   - **Linux**: `script -qfc "bun run slidev --open false <folder>/slide.md" /dev/null`
+1. From the project root, run `bun install --frozen-lockfile` to ensure dependencies.
+2. Start the Slidev dev server (`run_in_background: true`): `mise run slidev <folder>/slide.md`
 3. Set `<server_url>` to the Slidev dev server URL (default: `http://localhost:3030`). Use this value when spawning Visual Reviewers.
 4. Create the persistent screenshots directory: write `<folder>/screenshots/.keep` (empty file) using the Write tool. This is a one-time operation per `/research-presentation` invocation; do NOT delete or wipe it on subsequent batches. agent-browser does not auto-create parent directories when given an explicit `screenshot <path>`, so this step is required for VR's per-slide capture to succeed.
-5. Director MUST NOT run `bun run agent-browser --session vr-batch-* open|snapshot|screenshot|wait|close` directly — agent-browser is exclusively for Visual Reviewers (the only exception is the `close --all` safety net in Step 6). The Director MAY run `console` and `errors` for diagnostics if needed (e.g., investigating a stuck VR), but should prefer letting the VR do it.
+5. The Director MUST NOT run `bun run agent-browser --session vr-batch-* open|snapshot|screenshot|wait|close` directly — agent-browser's browser-operation commands are exclusively for Visual Reviewers (the only exception is the `close --all` safety net in Step 5). The Director MAY run `console` and `errors` for diagnostics if needed (e.g., investigating a stuck VR), but should prefer letting the VR do it.
 
 **Batched Review Loop** (batch_size=10, fresh Visual Reviewer per batch to avoid context overflow):
 
-Run the loop serially: spawn one Visual Reviewer via `cafleet member create`, wait for its report via `cafleet poll`, run the fix-and-recheck sub-loop, shut it down with `cafleet member delete`, then advance to the next batch. Do not spawn multiple Visual Reviewers in parallel — fixes from one batch can affect later batches, and parallel agent-browser sessions race on the same Slidev dev server.
+Run the loop serially: spawn one VR teammate via `Agent(team_name=...)`, wait for its report, run the fix-and-recheck sub-loop, shut it down with a `shutdown_request` message, then advance to the next batch. Do not spawn multiple VRs in parallel — fixes from one batch can affect later batches, and parallel agent-browser sessions race on the same Slidev dev server.
 
 ```
 total_slides = count slides in slide.md
@@ -185,23 +198,23 @@ start = 1
 while start <= total_slides:
     end = min(start + 9, total_slides)
 
-    vr_round = 1                                # current VR round number; bumped on each re-check
-    spawn Visual Reviewer (cafleet member create --name VR-batch-<start>) with slides [start..end], ROUND=vr_round
+    vr_round = 1                               # current VR round number; bumped on each re-check
+    spawn VR teammate (name="vr-batch-<start>") with slides [start..end], ROUND=vr_round
     # spawn prompt MUST include `RESEARCH FOLDER: <folder>` and `ROUND: 1` lines so the VR
     # can build screenshot/report paths
 
-    while True:                                 # initial review (r1) + up to 2 re-checks (r2, r3)
-        wait for report from VR for round <vr_round> via cafleet poll
+    while True:                                # initial review (r1) + up to 2 re-checks (r2, r3)
+        wait for report from VR for round <vr_round> via SendMessage arrival
         if no issues: break
-        if vr_round >= 3: break                 # max 2 re-check rounds reached; remaining issues escalate to user in Step 5
-        route issues to Presentation member via cafleet send → fix
+        if vr_round >= 3: break                # max 2 re-check rounds reached; remaining issues escalate to user in Step 4
+        SendMessage(to: "presentation", ..., message: "<tagged issues>")  # fix
         vr_round += 1
-        send re-check request to VR via cafleet send with a `ROUND: <vr_round>` line
+        SendMessage(to: "vr-batch-<start>", ..., message: "ROUND: <vr_round>\nRe-check slides: <list>")
         # VR writes the next capture to `vr<start>-r<vr_round>-p<slide_number>.png` and
         # the next persisted report to `vr<start>-r<vr_round>.md`, preserving prior rounds
 
-    send `bun run agent-browser --session vr-batch-<start> close` instruction to Visual Reviewer via cafleet send  # MUST close the current batch session before shutdown
-    cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <vr-agent-id>
+    SendMessage(to: "vr-batch-<start>", ..., message: "Please close the agent-browser session (`bun run agent-browser --session vr-batch-<start> close`) before shutdown.")
+    SendMessage(to: "vr-batch-<start>", message: {"type": "shutdown_request"})
     start = end + 1
 ```
 
@@ -214,12 +227,6 @@ You are the Visual Reviewer in a research presentation team.
 [Content of ~/.claude/skills/research-presentation/roles/visual-reviewer.md injected verbatim]
 </ROLE DEFINITION>
 
-Load these skills at startup:
-- Skill(cafleet) — for communication with the Director
-
-SESSION ID: <session-id>
-DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: {agent_id}
 TASK: Visually verify the rendered Slidev presentation.
 SLIDE FILE:      [INSERT <folder>/slide.md]
 RESEARCH FOLDER: [INSERT <folder>]
@@ -229,57 +236,59 @@ CHECK SLIDES:    [INSERT <start> to <end>]
 ROUND:           [INSERT <round>]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
-- When you see cafleet poll output with a message from the Director, act on those instructions and ack the task.
+- You talk to the Director via SendMessage(to: "director", summary: "...", message: "...").
+- You do NOT talk to the user directly. The Director relays.
+- Messages from the Director arrive automatically — you do not poll.
 
-When complete, persist the report to <folder>/screenshots/vr<start>-r<round>.md and send it to the Director via cafleet send.
+When complete, persist the report to <folder>/screenshots/vr<start>-r<round>.md and send it to the Director via SendMessage.
 ```
 
 Spawn with:
 
-```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
-  --name "VR-batch-<start>" \
-  --description "Visual Reviewer for batch <start>-<end>" \
-  -- "<Visual Reviewer spawn prompt>"
+```
+Agent(
+  subagent_type="general-purpose",
+  team_name="present-<topic-slug>",
+  name="vr-batch-<start>",
+  prompt="<Visual Reviewer spawn prompt>"
+)
 ```
 
-### Step 5: User Approval & Revision Loop (Director)
+### Step 4: User Approval & Revision Loop (Director)
 
-Present deliverables (slides, transcript, preview URL) and request approval via `AskUserQuestion`. Report any known visual issues.
+This is the single post-pipeline approval gate defined in the User Interaction Contract. Only enter Step 4 after Step 3's visual-review loop has completed (all batches reviewed, fixes applied, re-check rounds exhausted or passing).
+
+Present deliverables (slides, transcript, preview URL) and request approval via `AskUserQuestion`. Report any known residual visual issues surfaced by Step 3 so the user can weigh them.
 
 If the user requests revisions:
 
-1. Triage feedback — slides → Presentation member, transcript → Transcript member
-2. Route feedback via `cafleet send` using tag-based format, members revise
-3. If slides changed, spawn a fresh Visual Reviewer for affected slides only (same serial pattern as Step 4)
-4. Re-present and request approval again
+1. Triage feedback — slides → `presentation`, transcript → `transcript`.
+2. Route feedback via `SendMessage` using tag-based format; teammates revise.
+3. If slides changed, spawn a fresh Visual Reviewer for affected slides only (same serial pattern as Step 3).
+4. Re-present and request approval again.
 
 No round limit — loop until approved.
 
-### Step 6: Finalize & Clean Up (Director)
+### Step 5: Finalize & Clean Up (Director)
 
-**Only enter after user approves in Step 5.**
+**Only enter after the user approves in Step 4.**
 
-1. Cancel the `/loop` monitor (`CronDelete` on the cron ID captured when the loop was created).
-2. If any Visual Reviewer is still running: send it the instruction `bun run agent-browser --session vr-batch-<start> close` via `cafleet send` BEFORE member delete.
-3. Shut down each member:
-   ```bash
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <vr-agent-id>
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <presentation-agent-id>
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <transcript-agent-id>
+1. Cancel the `/loop` monitor with `CronDelete`.
+2. If any Visual Reviewer is still running, instruct it to close its browser session first:
    ```
-4. After all members exit, Director runs the safety net:
+   SendMessage(to: "vr-batch-<start>", summary: "close browser", message: "Please run `bun run agent-browser --session vr-batch-<start> close` before shutdown.")
+   ```
+3. Shut down each teammate:
+   ```
+   SendMessage(to: "presentation", message: {"type": "shutdown_request"})
+   SendMessage(to: "transcript", message: {"type": "shutdown_request"})
+   SendMessage(to: "vr-batch-<start>", message: {"type": "shutdown_request"})   # if still alive
+   ```
+4. After all teammates exit, the Director runs the safety net:
    ```bash
    bun run agent-browser close --all
    ```
-5. Kill the Slidev dev server if still running (stop the background Bash task started at Step 4).
-6. Tear down the session:
-   ```bash
-   cafleet session delete <session-id>
-   # → Deleted session <session-id>. Deregistered N agents.
-   ```
-
-`session delete` soft-deletes the `sessions` row and physically deletes every associated `agent_placements` row while preserving all `tasks` rows for audit.
+5. Kill the Slidev dev server if still running (stop the background Bash task started at Step 3).
+6. `TeamDelete` — removes the team and task directories.
 
 $ARGUMENTS
