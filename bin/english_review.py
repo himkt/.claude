@@ -1,42 +1,41 @@
 #!/usr/bin/env python3
-"""English-review Stop hook. Samples 10% of sessions and appends suggestions to a daily log."""
+"""English-review Stop hook. Samples sessions, scores newly-added user messages since the last watermark, and stores results in SQLite."""
 
 import json
 import os
 import pathlib
 import random
 import re
+import sqlite3
 import subprocess
 import sys
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime
 
 SAMPLE_RATE = 0.1
 MODEL = "claude-opus-4-7"
-LOG_ROOT = pathlib.Path("/tmp/claude-english-review-hook-logs")
-LOG_DIR = LOG_ROOT / "logs"
-ERROR_LOG_DIR = LOG_ROOT / "errors"
-ERROR_LOG = ERROR_LOG_DIR / "errors.log"
+DB_DIR = pathlib.Path.home() / ".local" / "share" / "claude-code" / "english-review"
+DB_PATH = DB_DIR / "reviews.db"
+FORMAT_SPEC_PATH = pathlib.Path(__file__).resolve().parent.parent / "skills" / "english-review" / "format.md"
 NO_ENGLISH_SENTINEL = "NO_ENGLISH_CONTENT"
 
 _FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
 
 PROMPT_TEMPLATE = """\
-You are reviewing the user's English writing from a chat transcript. \
-Ignore the assistant's replies; focus only on the user-authored text below.
+Review the user's English writing from a chat transcript below. \
+Ignore the assistant's replies; focus only on the user-authored text.
 
-Review criteria:
-- Grammar and syntax errors
-- Naturalness and idiomatic phrasing
-- Word choice and precision
-- Clarity and concision
+Follow the output format defined in the spec below exactly. Do not add \
+preamble, commentary, or headers beyond what the spec allows.
 
-Output rules:
-- Output ONLY a markdown bullet list of concrete suggestions.
-- Each bullet: quote the original phrase in backticks, then suggest a revision and briefly say why.
-- If the transcript contains no English content worth reviewing (e.g., it is entirely in another language, or only trivial greetings), output exactly this single line and nothing else:
+--- FORMAT SPEC BEGINS ---
+{format_spec}
+--- FORMAT SPEC ENDS ---
+
+Additional rule for this run: if the user text contains no English worth \
+reviewing (entirely in another language, or only trivial greetings), output \
+exactly this single line and nothing else:
 {sentinel}
-- Do NOT add headers, preamble, or closing remarks. Bullets only.
 
 --- USER TEXT BEGINS ---
 {user_text}
@@ -48,9 +47,51 @@ SYSTEM_PROMPT = (
     "You have no tools available. Output only what the user asks for, in the format they specify."
 )
 
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    last_user_message_uuid TEXT NOT NULL,
+    review_markdown TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS session_progress (
+    session_id TEXT PRIMARY KEY,
+    last_scored_uuid TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS errors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT,
+    traceback TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+"""
 
-def extract_user_text(transcript_path: pathlib.Path) -> str:
+
+def open_db() -> sqlite3.Connection:
+    DB_DIR.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(DB_PATH, timeout=30)
+    conn.executescript(SCHEMA)
+    return conn
+
+
+def get_last_scored_uuid(conn: sqlite3.Connection, session_id: str) -> str | None:
+    row = conn.execute(
+        "SELECT last_scored_uuid FROM session_progress WHERE session_id = ?",
+        (session_id,),
+    ).fetchone()
+    return row[0] if row else None
+
+
+def extract_new_user_text(
+    transcript_path: pathlib.Path,
+    last_scored_uuid: str | None,
+) -> tuple[str, str | None]:
+    """Return (joined_user_text, last_uuid_seen) for user entries after the watermark."""
     parts: list[str] = []
+    last_uuid: str | None = None
+    skipping = last_scored_uuid is not None
     with transcript_path.open() as f:
         for line in f:
             line = line.strip()
@@ -60,24 +101,47 @@ def extract_user_text(transcript_path: pathlib.Path) -> str:
                 rec = json.loads(line)
             except json.JSONDecodeError:
                 continue
+            uuid = rec.get("uuid")
+            if skipping:
+                if uuid == last_scored_uuid:
+                    skipping = False
+                continue
             if rec.get("type") != "user":
+                continue
+            if rec.get("isSidechain"):
                 continue
             msg = rec.get("message") or {}
             content = msg.get("content")
+            chunk: list[str] = []
             if isinstance(content, str):
-                parts.append(content)
+                chunk.append(content)
             elif isinstance(content, list):
                 for block in content:
                     if isinstance(block, dict) and block.get("type") == "text":
                         text = block.get("text")
                         if isinstance(text, str):
-                            parts.append(text)
+                            chunk.append(text)
+            if not chunk:
+                continue
+            parts.append("\n".join(chunk))
+            if uuid:
+                last_uuid = uuid
+    if skipping:
+        return "", None
     joined = "\n\n".join(p for p in parts if p)
-    return _FENCE_RE.sub("[code omitted]", joined).strip()
+    return _FENCE_RE.sub("[code omitted]", joined).strip(), last_uuid
 
 
-def run_review(user_text: str) -> str:
-    prompt = PROMPT_TEMPLATE.format(sentinel=NO_ENGLISH_SENTINEL, user_text=user_text)
+def load_format_spec() -> str:
+    return FORMAT_SPEC_PATH.read_text(encoding="utf-8").strip()
+
+
+def run_review(user_text: str, format_spec: str) -> str:
+    prompt = PROMPT_TEMPLATE.format(
+        sentinel=NO_ENGLISH_SENTINEL,
+        format_spec=format_spec,
+        user_text=user_text,
+    )
     env = {**os.environ, "ENGLISH_REVIEW_HOOK_IN_PROGRESS": "1"}
     result = subprocess.run(
         [
@@ -100,29 +164,41 @@ def run_review(user_text: str) -> str:
     return result.stdout.strip()
 
 
-def append_entry(session_id: str, review: str) -> None:
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-    today = datetime.now(timezone.utc).date().isoformat()
-    log_path = LOG_DIR / f"{today}.md"
-    ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    header = f"## {ts} (session {session_id[:8]})\n\n"
-    entry = f"{header}{review}\n\n---\n\n"
-    with log_path.open("a", encoding="utf-8") as f:
-        f.write(entry)
+def insert_review(conn: sqlite3.Connection, session_id: str, last_uuid: str, review: str) -> None:
+    now = datetime.now().astimezone().isoformat(timespec="seconds")
+    conn.execute(
+        "INSERT INTO reviews (session_id, last_user_message_uuid, review_markdown, created_at) VALUES (?, ?, ?, ?)",
+        (session_id, last_uuid, review, now),
+    )
 
 
-def log_error() -> None:
+def upsert_progress(conn: sqlite3.Connection, session_id: str, last_uuid: str) -> None:
+    now = datetime.now().astimezone().isoformat(timespec="seconds")
+    conn.execute(
+        "INSERT INTO session_progress (session_id, last_scored_uuid, updated_at) VALUES (?, ?, ?) "
+        "ON CONFLICT(session_id) DO UPDATE SET last_scored_uuid = excluded.last_scored_uuid, updated_at = excluded.updated_at",
+        (session_id, last_uuid, now),
+    )
+
+
+def log_error(session_id: str | None) -> None:
     try:
-        ERROR_LOG_DIR.mkdir(parents=True, exist_ok=True)
-        with ERROR_LOG.open("a", encoding="utf-8") as f:
-            f.write(f"--- {datetime.now(timezone.utc).isoformat(timespec='seconds')} ---\n")
-            f.write(traceback.format_exc())
-            f.write("\n")
+        conn = open_db()
+        try:
+            now = datetime.now().astimezone().isoformat(timespec="seconds")
+            conn.execute(
+                "INSERT INTO errors (session_id, traceback, created_at) VALUES (?, ?, ?)",
+                (session_id, traceback.format_exc(), now),
+            )
+            conn.commit()
+        finally:
+            conn.close()
     except Exception:
-        pass  # last-resort swallow
+        pass  # last-resort swallow; the hook must never break the parent session
 
 
 def main() -> None:
+    session_id: str | None = None
     try:
         if os.environ.get("ENGLISH_REVIEW_HOOK_IN_PROGRESS"):
             return  # spawned by our own claude -p call; break the recursion
@@ -133,15 +209,27 @@ def main() -> None:
             return
         transcript_path = pathlib.Path(data["transcript_path"])
         session_id = data["session_id"]
-        user_text = extract_user_text(transcript_path)
-        if not user_text:
-            return
-        review = run_review(user_text)
-        if not review or review == NO_ENGLISH_SENTINEL:
-            return
-        append_entry(session_id, review)
+
+        conn = open_db()
+        try:
+            last_scored_uuid = get_last_scored_uuid(conn, session_id)
+            user_text, last_uuid = extract_new_user_text(transcript_path, last_scored_uuid)
+            if not user_text or not last_uuid:
+                return
+            format_spec = load_format_spec()
+            if not format_spec:
+                return
+            review = run_review(user_text, format_spec)
+            if review and review != NO_ENGLISH_SENTINEL:
+                insert_review(conn, session_id, last_uuid, review)
+            # Advance the watermark whether or not we produced a review,
+            # so the same passages aren't re-scored on the next Stop.
+            upsert_progress(conn, session_id, last_uuid)
+            conn.commit()
+        finally:
+            conn.close()
     except Exception:
-        log_error()
+        log_error(session_id)
     finally:
         sys.exit(0)
 

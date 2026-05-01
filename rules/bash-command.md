@@ -3,7 +3,7 @@
 Rules to ensure Bash commands match `permissions.allow` patterns in settings.json.
 Using shell operators breaks pattern matching and triggers user approval prompts that block work.
 
-- NEVER use `&&` or `;` to chain commands. Each command must be a separate Bash tool call
+- NEVER use `&&` or `;` to chain commands. Each command must be a separate Bash tool call. Pipes (`|`) are allowed
 - **ESPECIALLY NEVER `cd /path && command`** — this is the single most common violation. `cd` MUST be a separate Bash call. The working directory persists between Bash calls, so there is zero reason to chain
 - NEVER use redirects (`>`, `>>`, `<`). Use the Write tool for file output
 - NEVER use command substitution (`$()` or backticks) unless absolutely unavoidable

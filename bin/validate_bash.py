@@ -4,7 +4,7 @@ import json
 import re
 import sys
 
-_OPERATOR_PATTERN = re.compile(r"&&|>>|[;<>]")
+_OPERATOR_PATTERN = re.compile(r"&&|>>|[;<>$`]")
 
 
 def find_violation(command: str) -> str | None:

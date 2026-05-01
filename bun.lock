@@ -8,7 +8,7 @@
         "@slidev/cli": "^52.14.1",
         "@slidev/theme-default": "latest",
         "@slidev/theme-seriph": "latest",
-        "agent-browser": "^0.24.1",
+        "agent-browser": "^0.25.2",
         "vue": "^3.5.29",
       },
     },
@@ -536,7 +536,7 @@
 
     "acorn": ["acorn@8.16.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw=="],
 
-    "agent-browser": ["agent-browser@0.24.1", "", { "bin": { "agent-browser": "bin/agent-browser.js" } }, "sha512-csWJtYEQow52b+p93zVZfNrcNBwbxGCZDXDMNWl2ij2i0MFKubIzN+icUeX2/NrkZe5iIau8px+HQlxata2oPw=="],
+    "agent-browser": ["agent-browser@0.25.5", "", { "bin": { "agent-browser": "bin/agent-browser.js" } }, "sha512-i7ZHsnB0nZIfZoQj9xavTJNX9nckTVVcaaiWFAaOiEQgvGytzVjftA3PIdq0WiuGba8vsxsYH2XMHxs+9bJkIw=="],
 
     "alien-signals": ["alien-signals@3.1.2", "", {}, "sha512-d9dYqZTS90WLiU0I5c6DHj/HcKkF8ZyGN3G5x8wSbslulz70KOxaqCT0hQCo9KOyhVqzqGojvNdJXoTumZOtcw=="],
 

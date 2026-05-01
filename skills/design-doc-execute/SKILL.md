@@ -1,19 +1,19 @@
 ---
 name: design-doc-execute
 description: Implement features based on a design document with TDD cycle. Use when the user asks to implement or execute a design document. Takes document path as argument. Do NOT implement a design document by reading it and coding manually — always invoke this skill instead.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, Agent, TeamCreate, TeamDelete, SendMessage, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
 # Design Doc Execute
 
-Implement features based on a design document using up to four roles: Director (orchestrator), Programmer (implements), Tester (writes tests), and Verifier (E2E/integration testing). The Director judges which members to spawn based on the nature of the implementation tasks. For each step, the Tester writes unit tests first, the Director reviews and approves them, then the Programmer implements code to pass the tests. The Director also reviews the Programmer's implementation for code quality and design doc compliance before committing. After all TDD steps, the Verifier performs E2E/integration verification (Phase D) if spawned. After user approval, the Director runs the full publication flow: Step 6 pushes the feature branch and opens a PR with `@copilot` requested, Step 7 runs a cron-driven Copilot review loop that routes inline comments to the still-live Programmer / Tester and exits when Copilot approves or has been quiescent for 5 ticks, and Step 8 finalizes, commits the completion marker, pushes it (when the branch is tracked on origin), and tears the team down.
+Implement features based on a design document using up to four roles in an in-process agent team: Director (orchestrator), Programmer (implements), Tester (writes tests), and Verifier (E2E/integration testing). The Director judges which teammates to spawn based on the nature of the implementation tasks. For each step, the Tester writes unit tests first, the Director reviews and approves them, then the Programmer implements code to pass the tests. The Director also reviews the Programmer's implementation for code quality and design doc compliance before committing. After all TDD steps, the Verifier performs E2E/integration verification (Phase D) if spawned. After user approval, the Director runs the full publication flow: Step 6 pushes the feature branch and opens a PR with `@copilot` requested, Step 7 runs a cron-driven Copilot review loop that routes inline comments to the still-live Programmer / Tester and exits when Copilot approves or has been quiescent for 5 ticks, and Step 8 finalizes, commits the completion marker, pushes it (when the branch is tracked on origin), and tears the team down.
 
 | Role | Identity | Does | Does NOT | Role definition |
 |:--|:--|:--|:--|:--|
-| **Director** | Main Claude | Register with CAFleet, spawn members via `cafleet member create`, validate doc, assign steps, review tests against design doc, review implementation code for quality and compliance, commit after each phase, escalation arbitration, orchestrate TDD cycle | Write code, write tests | [roles/director.md](roles/director.md) |
-| **Programmer** | Member agent | Implement code to pass tests, run tests, report results via `cafleet send`, escalate test defects to Director, update design doc checkboxes and Progress counter | Write or modify tests, commit code, communicate with user directly | [roles/programmer.md](roles/programmer.md) |
-| **Tester** | Member agent | Read design doc, write unit tests per step, fix tests based on Director feedback, report to Director via `cafleet send` | Write implementation code, commit code, communicate with user directly | [roles/tester.md](roles/tester.md) |
-| **Verifier** | Member agent (optional) | E2E/integration testing, tool discovery, evidence collection (screenshots, logs, output), failure reporting with suggested fixes | Write code, write tests, commit, communicate with user directly | [roles/verifier.md](roles/verifier.md) |
+| **Director** | Main Claude | Create team, spawn teammates, validate doc, assign steps, review tests against design doc, review implementation code for quality and compliance, commit after each phase, escalation arbitration, orchestrate TDD cycle | Write code, write tests | [roles/director.md](roles/director.md) |
+| **Programmer** | `design-doc-executor` teammate | Implement code to pass tests, run tests, report results via `SendMessage`, escalate test defects to Director, update design doc checkboxes and Progress counter | Write or modify tests, commit code, communicate with user directly | [roles/programmer.md](roles/programmer.md) |
+| **Tester** | `design-doc-tester` teammate | Read design doc, write unit tests per step, fix tests based on Director feedback, report to Director via `SendMessage` | Write implementation code, commit code, communicate with user directly | [roles/tester.md](roles/tester.md) |
+| **Verifier** | `design-doc-verifier` teammate (optional) | E2E/integration testing, tool discovery, evidence collection (screenshots, logs, output), failure reporting with suggested fixes | Write code, write tests, commit, communicate with user directly | [roles/verifier.md](roles/verifier.md) |
 
 ## Additional resources
 
@@ -22,38 +22,27 @@ Implement features based on a design document using up to four roles: Director (
 
 ## Architecture
 
-The Director registers with a CAFleet session and spawns each needed member via `cafleet member create`. All coordination goes through the persistent message queue — every message is auditable via the admin WebUI.
+The Director creates an in-process team with `TeamCreate` and spawns each needed teammate with `Agent(team_name=..., name=...)`. All coordination goes through `SendMessage` (auto-delivered) and the shared task list.
 
 ```
 User
- +-- Director (main Claude -- cafleet session create, cafleet member create, orchestrates TDD cycle)
-      +-- Programmer (member agent -- implements code to pass tests)
-      +-- Tester (member agent -- writes unit tests per step)
-      +-- Verifier (member agent, optional -- E2E/integration testing)
+ +-- Director (main Claude — TeamCreate, Agent spawn, SendMessage orchestration)
+      +-- Programmer (teammate: design-doc-executor — implements code to pass tests)
+      +-- Tester (teammate: design-doc-tester — writes unit tests per step)
+      +-- Verifier (teammate: design-doc-verifier, optional — E2E/integration testing)
 ```
 
-- **Director ↔ Programmer**: `cafleet send` (step assignments, test results, code review feedback, escalation)
-- **Director ↔ Tester**: `cafleet send` (step assignments, test review feedback, test defect reports)
-- **Director ↔ Verifier**: `cafleet send` (verification assignments, results, failure routing)
+- **Director ↔ User**: `AskUserQuestion` (clarification relay, approval interaction, feedback collection)
+- **Director ↔ Programmer**: `SendMessage` (step assignments, test results, code review feedback, escalation)
+- **Director ↔ Tester**: `SendMessage` (step assignments, test review feedback, test defect reports)
+- **Director ↔ Verifier**: `SendMessage` (verification assignments, results, failure routing)
 - **Director**: git operations (commit after each phase — tests and implementation separately)
-- Members receive messages via push notification: the broker injects `cafleet --session-id <session-id> poll --agent-id <recipient-agent-id>` into the member's pane via `tmux send-keys`. The literal `<session-id>` and `<recipient-agent-id>` UUIDs are the session and target member UUIDs the broker has in scope, baked into the injected command string. `--session-id` is a global flag (placed **before** the subcommand); `--agent-id` is a per-subcommand option (placed **after** the subcommand name).
+
+Teammates cannot talk to the user directly — the Director always relays.
 
 ## Prerequisites
 
-- The Director MUST be running inside a tmux session (required by `cafleet member create`). If `TMUX` is not set, abort with an explanatory message to the user before spawning anyone.
-- `gh` must be authenticated for Steps 6 + 7. Lack of auth is NOT fatal — the Director checks `gh auth status` at Step 6a and falls back to Step 8 local-finalize, skipping the PR and Copilot review loop entirely. All other prerequisites (tmux, approved design doc, feature branch) remain unchanged.
-
-## CAFleet Primitives
-
-| Purpose | CAFleet command |
-|---|---|
-| Create session + root Director placement | `cafleet session create --label "execute-<slug>"` — bootstraps the session + root Director + placement + Administrator in one transaction (no separate `cafleet register` call needed for the Director) |
-| Spawn a member agent | `cafleet --session-id <session-id> member create --agent-id <director-agent-id> --name "..." --description "..." -- "<prompt>"` |
-| Director sends a message to a member | `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <programmer-agent-id> --text "..."` |
-| Member sends a message to the Director | `cafleet --session-id <session-id> send --agent-id <my-agent-id> --to <director-agent-id> --text "..."` |
-| Monitor the team | `Skill(cafleet-monitoring)` `/loop` |
-| Shut down a member / tear down the team | `cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <member-agent-id>` per member, then `cafleet session delete <session-id>` (soft-deletes the session and sweeps the root Director + Administrator + any surviving members in one transaction). The root Director cannot be deregistered via `cafleet deregister` — `session delete` is the only supported teardown. |
-| Auto message delivery | Push notification injects `cafleet --session-id <session-id> poll --agent-id <recipient-agent-id>` into member's tmux pane |
+- `gh` must be authenticated for Steps 6 + 7. Lack of auth is NOT fatal — the Director checks `gh auth status` at Step 6a and falls back to Step 8 local-finalize, skipping the PR and Copilot review loop entirely. All other prerequisites (approved design doc, feature branch) remain unchanged.
 
 ## Process
 
@@ -155,7 +144,7 @@ After resolution, the resolved path is used as the design document path for all 
 
 ### Step 2: Validate Design Document & Create Branch (Director)
 
-Before registering with CAFleet:
+Before creating the team:
 
 1. Read the design document completely.
 2. Check for `COMMENT(` markers using Grep. If found, resolve them directly: apply the requested changes and remove the markers. Verify with Grep that no `COMMENT(` markers remain before proceeding.
@@ -163,40 +152,17 @@ Before registering with CAFleet:
 4. Determine the step order and total number of steps.
 5. **Create a feature branch if on the default branch.** Get the default branch with `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'` and the current branch with `git branch --show-current`. If they match, use `AskUserQuestion` to propose the branch name `feat/<design-doc-slug>` and ask the user to approve before creating it. The user will create the branch themselves or approve the proposed name. If already on a non-default branch, skip this step.
 
-### Step 3: Register & Spawn Members (Director)
+### Step 3: Create Team & Spawn Teammates (Director)
 
-Load `Skill(cafleet)` and `Skill(cafleet-monitoring)`.
+Load `Skill(agent-team-supervision)` and `Skill(agent-team-monitoring)` and follow their protocols.
 
-#### 3a. Establish a CAFleet session and capture the root Director's `agent_id`
+#### 3a. Create the team
 
-`cafleet session create` (which must be run inside a tmux session) atomically creates the session and registers a root Director bound to the current tmux pane — there is no separate `cafleet register` step for the Director. Use `--json` so both IDs are machine-parseable:
-
-```bash
-cafleet session create --label "design-doc-execute-<slug>" --json
-# → {
-#     "session_id": "550e8400-e29b-41d4-a716-446655440000",
-#     "label": "design-doc-execute-<slug>",
-#     "created_at": "…",
-#     "administrator_agent_id": "…",
-#     "director": {
-#       "agent_id": "7ba91234-…",
-#       "name": "director",
-#       "description": "Root Director for this session",
-#       "registered_at": "…",
-#       "placement": { "director_agent_id": null, "tmux_session": "…", "tmux_window_id": "…", "tmux_pane_id": "…", "coding_agent": "unknown", "created_at": "…" }
-#     }
-#   }
+```
+TeamCreate(team_name="execute-<slug>", description="Design doc execution: <slug>")
 ```
 
-Capture `session_id` and `director.agent_id` from the JSON response. Substitute them for `<session-id>` and `<director-agent-id>` in every subsequent command. **Do not store them in shell variables** — `permissions.allow` matches command strings literally, so every command must carry the literal UUIDs. Remember: `--session-id` is a global flag that goes **before** the subcommand; `--agent-id` is a per-subcommand option that goes **after** the subcommand name.
-
-If you already have a running session (e.g. an outer orchestration), reuse its `session_id` and its root Director's `agent_id` instead of creating a new session. Do **not** attempt to register a second Director with `cafleet register --name Director` — the root Director from `session create` is the team lead; a second registration would just create an unrelated agent with no placement row.
-
-#### 3c. Start the monitoring `/loop`
-
-BEFORE spawning any member, follow `Skill(cafleet-monitoring)`'s Monitoring Mandate and start a `/loop` monitor at the 1-minute interval using the literal `<session-id>` and `<director-agent-id>` UUIDs. This is the **team-health loop** — it stays active through Steps 3–5 and, when Step 6 runs, is swapped (create-before-delete order in Step 7a) for the augmented team-health + PR-review loop. Whichever loop is active gets `CronDelete`d in Step 8's cleanup.
-
-#### 3d. Analyze implementation tasks to decide team composition
+#### 3b. Analyze implementation tasks to decide team composition
 
 Based on the design document steps (see [roles/director.md](roles/director.md) for the full decision matrix):
 
@@ -206,7 +172,11 @@ Based on the design document steps (see [roles/director.md](roles/director.md) f
 | Config/documentation only | Programmer only |
 | E2E verification needed (user-visible changes, CLI/UI/API) | + Verifier |
 
-#### 3e. Read role files
+#### 3c. Start the monitoring `/loop`
+
+BEFORE spawning any teammate, follow `Skill(agent-team-monitoring)`'s protocol and start a `/loop` monitor at a 1–3 minute interval (recommended: 1 minute). This is the **team-health loop** — it stays active through Steps 3–5 and, when Step 6 runs, is swapped (create-before-delete order in Step 7a) for the augmented team-health + PR-review loop. Whichever loop is active gets `CronDelete`d in Step 8's cleanup.
+
+#### 3d. Read role definitions
 
 Read the role files that will be embedded verbatim in spawn prompts:
 
@@ -214,7 +184,7 @@ Read the role files that will be embedded verbatim in spawn prompts:
 - `~/.claude/skills/design-doc-execute/roles/tester.md` (if Tester needed)
 - `~/.claude/skills/design-doc-execute/roles/verifier.md` (if Verifier needed)
 
-#### 3f. Spawn each member via `cafleet member create`
+#### 3e. Spawn the Programmer
 
 **Programmer spawn prompt:**
 
@@ -226,20 +196,17 @@ You are the Programmer in a design document execution team.
 </ROLE DEFINITION>
 
 Load these skills at startup:
-- Skill(cafleet) — for communication with the Director
 - Skill(design-doc) — for template and guidelines
 
-SESSION ID: <session-id>
-DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: {agent_id}     (substituted by `cafleet member create` via `str.format()`)
 DESIGN DOCUMENT: [INSERT DESIGN DOC PATH]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
-- When you see cafleet poll output with a message from the Director, act on those instructions.
+- You talk to the Director via SendMessage(to: "director", summary: "...", message: "...").
+- You do NOT talk to the user directly. The Director relays.
+- Messages from the Director arrive automatically — you do not poll.
 
 IMPORTANT: Do NOT commit code yourself. The Director handles all git operations.
-IMPORTANT: If blocked, send a message to the Director immediately instead of assuming.
+IMPORTANT: If blocked, SendMessage the Director immediately instead of assuming.
 IMPORTANT: Read and follow rules/bash-command.md for all Bash commands.
 
 Start by reading the design document. Then wait for the Director to assign your first step.
@@ -247,16 +214,18 @@ Start by reading the design document. Then wait for the Director to assign your 
 
 Spawn with:
 
-```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
-  --name "Programmer" \
-  --description "Implements code to pass tests per step" \
-  -- "<Programmer spawn prompt (embedded role content)>"
+```
+Agent(
+  subagent_type="design-doc-executor",
+  team_name="execute-<slug>",
+  name="programmer",
+  prompt="<Programmer spawn prompt>"
+)
 ```
 
-Parse `agent_id` from the JSON response and substitute it for `<programmer-agent-id>` in every subsequent command.
+#### 3f. Spawn the Tester (if needed)
 
-**Tester spawn prompt (if needed):**
+**Tester spawn prompt:**
 
 ```
 You are the Tester in a design document execution team.
@@ -266,21 +235,18 @@ You are the Tester in a design document execution team.
 </ROLE DEFINITION>
 
 Load these skills at startup:
-- Skill(cafleet) — for communication with the Director
 - Skill(design-doc) — for template and guidelines
 
-SESSION ID: <session-id>
-DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: {agent_id}     (substituted by `cafleet member create` via `str.format()`)
 DESIGN DOCUMENT: [INSERT DESIGN DOC PATH]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
-- When you see cafleet poll output with a message from the Director, act on those instructions.
+- You talk to the Director via SendMessage(to: "director", summary: "...", message: "...").
+- You do NOT talk to the user directly. The Director relays.
+- Messages from the Director arrive automatically — you do not poll.
 
 IMPORTANT: Do NOT commit code yourself. The Director handles all git operations.
 IMPORTANT: Do NOT write implementation code — only test code.
-IMPORTANT: If blocked, send a message to the Director immediately instead of assuming.
+IMPORTANT: If blocked, SendMessage the Director immediately instead of assuming.
 IMPORTANT: Read and follow rules/bash-command.md for all Bash commands.
 
 Start by reading the design document. Then wait for the Director to assign your first step.
@@ -288,16 +254,18 @@ Start by reading the design document. Then wait for the Director to assign your 
 
 Spawn with:
 
-```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
-  --name "Tester" \
-  --description "Writes unit tests per step" \
-  -- "<Tester spawn prompt (embedded role content)>"
+```
+Agent(
+  subagent_type="design-doc-tester",
+  team_name="execute-<slug>",
+  name="tester",
+  prompt="<Tester spawn prompt>"
+)
 ```
 
-Parse `agent_id` from the JSON response and substitute it for `<tester-agent-id>` in every subsequent command.
+#### 3g. Spawn the Verifier (if needed)
 
-**Verifier spawn prompt (if needed):**
+**Verifier spawn prompt:**
 
 ```
 You are the Verifier in a design document execution team.
@@ -307,20 +275,17 @@ You are the Verifier in a design document execution team.
 </ROLE DEFINITION>
 
 Load these skills at startup:
-- Skill(cafleet) — for communication with the Director
 - Skill(design-doc) — for template and guidelines
 
-SESSION ID: <session-id>
-DIRECTOR AGENT ID: <director-agent-id>
-YOUR AGENT ID: {agent_id}     (substituted by `cafleet member create` via `str.format()`)
 DESIGN DOCUMENT: [INSERT DESIGN DOC PATH]
 
 COMMUNICATION PROTOCOL:
-- Report to Director: cafleet --session-id <session-id> send --agent-id {agent_id} --to <director-agent-id> --text "your report"
-- When you see cafleet poll output with a message from the Director, act on those instructions.
+- You talk to the Director via SendMessage(to: "director", summary: "...", message: "...").
+- You do NOT talk to the user directly. The Director relays.
+- Messages from the Director arrive automatically — you do not poll.
 
 IMPORTANT: Do NOT commit code or modify implementation/test files.
-IMPORTANT: If blocked, send a message to the Director immediately instead of assuming.
+IMPORTANT: If blocked, SendMessage the Director immediately instead of assuming.
 IMPORTANT: Read and follow rules/bash-command.md for all Bash commands.
 
 Start by reading the design document and discovering available tools.
@@ -329,22 +294,14 @@ Then wait for the Director to assign your first verification task.
 
 Spawn with:
 
-```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
-  --name "Verifier" \
-  --description "E2E/integration testing and evidence collection" \
-  -- "<Verifier spawn prompt (embedded role content)>"
 ```
-
-Parse `agent_id` from the JSON response and substitute it for `<verifier-agent-id>` in every subsequent command.
-
-#### 3g. Verify members are live
-
-```bash
-cafleet --session-id <session-id> member list --agent-id <director-agent-id>
+Agent(
+  subagent_type="design-doc-verifier",
+  team_name="execute-<slug>",
+  name="verifier",
+  prompt="<Verifier spawn prompt>"
+)
 ```
-
-All spawned members must show `status: active` with a non-null `pane_id`. If any is missing or pending, retry the spawn before proceeding.
 
 See [roles/director.md](roles/director.md) for commit message conventions.
 
@@ -356,40 +313,32 @@ For each step in the design document:
 
 **Skip this phase entirely when the Tester was not spawned** (Programmer-only team composition for config/documentation-only steps). Proceed directly to Phase B and assign the step to the Programmer without a separate test-writing commit.
 
-1. **Assign**: Send the Tester the step number, description, and specification:
-   ```bash
-   cafleet --session-id <session-id> send --agent-id <director-agent-id> \
-     --to <tester-agent-id> --text "Step N: <description>. Spec: <…>. Write unit tests and report file paths when done."
-   ```
-2. **Wait for Tester report via `cafleet --session-id <session-id> poll --agent-id <director-agent-id>`**. If the test framework is ambiguous, ask the user via `AskUserQuestion` and relay the answer via `cafleet send`.
-3. **Review tests** against the design doc. Send feedback via `cafleet send` if issues found. Repeat until satisfied.
+1. **Assign**: `SendMessage(to: "tester", summary: "assign step N", message: "Step N: <description>. Spec: <…>. Write unit tests and report file paths when done.")`.
+2. **Wait** for the Tester's report message — it arrives automatically. If the test framework is ambiguous, the Tester will ask via `SendMessage`; relay to the user via `AskUserQuestion` and pass the answer back verbatim via `SendMessage`.
+3. **Review tests** against the design doc. Send feedback via `SendMessage(to: "tester", ...)` if issues found. Repeat until satisfied.
 4. **Commit tests** (separate commands, do NOT chain with `&&`):
    - `git add <test-files>`
    - `git commit -m "test: add tests for [feature description]"`
 
 #### Phase B: Implementation
 
-1. **Assign**: Send the Programmer the step number, description, and test file paths:
-   ```bash
-   cafleet --session-id <session-id> send --agent-id <director-agent-id> \
-     --to <programmer-agent-id> --text "Step N: <description>. Tests at: <paths>. Implement to pass all tests, update design doc checkboxes and Progress counter, then report."
-   ```
-2. **Wait for Programmer report via `cafleet --session-id <session-id> poll --agent-id <director-agent-id>`**. On suspected test defect, see [roles/director.md](roles/director.md) for the escalation protocol.
+1. **Assign**: `SendMessage(to: "programmer", summary: "assign step N", message: "Step N: <description>. Tests at: <paths>. Implement to pass all tests, update design doc checkboxes and Progress counter, then report.")`.
+2. **Wait** for the Programmer's report message — it arrives automatically. On suspected test defect, see [roles/director.md](roles/director.md) for the escalation protocol.
 3. **Programmer updates design doc**: Checkboxes, timestamps, and Progress counter.
 
 #### Phase C: Code Review (Director)
 
 1. **Review**: Verify code matches design doc, quality is acceptable, no unnecessary changes.
-2. **Feedback loop**: Send feedback via `cafleet send` if issues found. Programmer fixes, re-runs tests, re-reports via `cafleet send`. Repeat until satisfied.
+2. **Feedback loop**: Send feedback via `SendMessage(to: "programmer", ...)` if issues found. Programmer fixes, re-runs tests, re-reports via `SendMessage`. Repeat until satisfied.
 3. **Commit implementation** (separate commands, do NOT chain with `&&`):
    - `git add <files> <design-doc>`
    - `git commit -m "feat: [description of what was implemented]"`
 
 Repeat from Phase A for the next step. Always include the design document in the implementation commit.
 
-**Escalation Protocol (Test Defect):** If the Programmer reports a suspected test defect (implementation matches design doc but tests expect something different), the Director reads the design doc and test, then directs either the Tester to fix the test or the Programmer to adjust the implementation via `cafleet send`. 3-round limit before escalating to the user.
+**Escalation Protocol (Test Defect):** If the Programmer reports a suspected test defect (implementation matches design doc but tests expect something different), the Director reads the design doc and test, then directs either the Tester to fix the test or the Programmer to adjust the implementation via `SendMessage`. 3-round limit before escalating to the user.
 
-**On-Demand Verification**: Any member can request verification mid-task via `cafleet send` to the Director. The Director decides whether to route immediately or defer:
+**On-Demand Verification**: Any teammate can request verification mid-task via `SendMessage` to the Director. The Director decides whether to route immediately or defer:
 
 | Route immediately | Defer to Phase D |
 |:--|:--|
@@ -403,9 +352,9 @@ Repeat from Phase A for the next step. Always include the design document in the
 
 If the Verifier was spawned, assign verification:
 
-1. Send the Verifier the design document, completed steps, and relevant files via `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <verifier-agent-id> --text "..."`.
-2. Verifier discovers tools, executes E2E verification, captures evidence, reports results via `cafleet send`.
-3. **Route failures**: Implementation bugs → Programmer via `cafleet send`, test gaps → Tester via `cafleet send`, spec issues → user.
+1. `SendMessage(to: "verifier", summary: "E2E verification", message: "Design document: <path>. Completed steps: <list>. Relevant files: <list>. Please perform E2E/integration verification and report results with evidence.")`.
+2. Verifier discovers tools, executes E2E verification, captures evidence, reports results via `SendMessage`.
+3. **Route failures**: Implementation bugs → `SendMessage(to: "programmer", ...)`, test gaps → `SendMessage(to: "tester", ...)`, spec issues → user.
 4. Re-verify after fixes. Proceed to User Approval when all verifiable criteria pass.
 
 ### Step 5: User Approval (Director)
@@ -419,7 +368,7 @@ After all TDD steps complete but before finalization, present the implementation
 1. Read the `## Success Criteria` section from the design document.
 2. For each criterion, verify it is satisfied by inspecting the implementation (grep, read files, run tests as needed).
 3. Check off all satisfied criteria in the design document (`- [ ]` → `- [x]`).
-4. If any criterion is NOT satisfied, resolve it before proceeding to user approval — route to Programmer or Tester as needed via `cafleet send`.
+4. If any criterion is NOT satisfied, resolve it before proceeding to user approval — route to Programmer or Tester as needed via `SendMessage`.
 
 This step is **mandatory** and must not be skipped.
 
@@ -442,10 +391,10 @@ See [roles/director.md](roles/director.md) for user interaction rules (COMMENT h
 
 #### Revision Loop (COMMENT Marker-Based Feedback)
 
-When the user selects "Scan for COMMENT markers": scan changed files for `COMMENT(` markers. Classify by file location (see [roles/director.md](roles/director.md)) and route via `cafleet send`:
+When the user selects "Scan for COMMENT markers": scan changed files for `COMMENT(` markers. Classify by file location (see [roles/director.md](roles/director.md)) and route via `SendMessage`:
 - Design-doc COMMENTs → Director resolves directly (no routing).
-- Source-file COMMENTs → `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <programmer-agent-id> --text "..."`.
-- Test-file COMMENTs → `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <tester-agent-id> --text "..."`.
+- Source-file COMMENTs → `SendMessage(to: "programmer", ...)`.
+- Test-file COMMENTs → `SendMessage(to: "tester", ...)`.
 
 After all COMMENTs are resolved and verified, re-present to user.
 
@@ -457,7 +406,7 @@ No round limit — the loop continues until the user approves or aborts.
 
 1. Update design document Status to "Aborted", add Changelog entry.
 2. Commit (separate commands): `git add <design-doc>` then `git commit -m "docs: mark design doc as aborted"`
-3. Follow Shutdown Protocol (Step 8: cancel whichever `/loop` is active — team-health if Step 6 was skipped, augmented if Step 7 started — then delete members and run `cafleet session delete <session-id>` to tear down the session and sweep the root Director + Administrator).
+3. Follow Shutdown Protocol (Step 8: cancel whichever `/loop` is active — team-health if Step 6 was skipped, augmented if Step 7 started — then `SendMessage` shutdown requests to each teammate and `TeamDelete`).
 
 ### Step 6: Push & Create PR (Director)
 
@@ -483,7 +432,7 @@ After Step 5 Approve, the Director pushes the feature branch, opens a PR, and re
 
 ### Step 7: Copilot Review Loop (Director)
 
-Once the PR exists and Copilot has been invited, the Director runs a cron-driven review loop. The `cafleet-monitoring` team-health `/loop` is replaced by an **augmented** loop that keeps the team-health checks AND adds PR review polling.
+Once the PR exists and Copilot has been invited, the Director runs a cron-driven review loop. The team-health `/loop` is replaced by an **augmented** loop that keeps the team-health checks AND adds PR review polling.
 
 #### PR Review Loop State
 
@@ -511,7 +460,7 @@ On exit from Step 7 (any exit condition), keep the augmented loop running — St
 
 On each 1-minute wake-up, the Director runs — in order:
 
-1. **Team health** (unchanged from `cafleet-monitoring`): `member list` → `poll` → `member capture` fallback → nudge stalled members.
+1. **Team health** (unchanged from `agent-team-monitoring`): deliverable scan → `TaskList` inspection → directed `SendMessage` nudge for stalled teammates.
 2. **Fetch new PR reviews**: `gh pr view <pr-number> --json reviews` (GraphQL-shaped; fields are `author.login`, `state`, `submittedAt`, `body`) AND `gh api repos/<owner>/<repo>/pulls/<pr-number>/comments` (REST-shaped; fields are `user.login`, `body`, `path`, `line`, `created_at`).
 3. **Filter Copilot-authored entries**: keep items where the login field (`author.login` for `gh pr view` reviews, `user.login` for `gh api` inline comments) matches the regex `^copilot` (case-insensitive). Copilot reviews currently post under a login that begins with `copilot` — the exact slug varies by account plan, so a prefix match is the safe filter.
 4. **New-since-push filter**: keep items whose timestamp (`submittedAt` for reviews, `created_at` for inline comments) is strictly later than `last_push_ts`.
@@ -534,15 +483,15 @@ For each new inline comment, pick the owner by file-path pattern:
 
 | Path pattern | Owner | Route |
 |:--|:--|:--|
-| Design doc (`design-docs/**/design-doc.md`) | Director | Director applies directly — no `cafleet send` route |
-| Test file (e.g. `**/test_*.py`, `**/*_test.py`, `**/tests/**`) | Tester | `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <tester-agent-id> --text "Copilot review: <file>:<line> — <comment body>. Please address."` |
-| Any other source file | Programmer | `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <programmer-agent-id> --text "Copilot review: <file>:<line> — <comment body>. Please address."` |
+| Design doc (`design-docs/**/design-doc.md`) | Director | Director applies directly — no `SendMessage` route |
+| Test file (e.g. `**/test_*.py`, `**/*_test.py`, `**/tests/**`) | Tester | `SendMessage(to: "tester", summary: "Copilot test review", message: "Copilot review: <file>:<line> — <comment body>. Please address.")` |
+| Any other source file | Programmer | `SendMessage(to: "programmer", summary: "Copilot review", message: "Copilot review: <file>:<line> — <comment body>. Please address.")` |
 
 For review-level comments (body text not attached to a specific line), route by Director judgment: spec-level → Director resolves directly; implementation-level → Programmer; test-level → Tester.
 
 #### 7d. Fix, commit, push, re-request
 
-1. Wait for each routed member to report completion via `cafleet poll`. Members do NOT commit — the Director commits after each report.
+1. Wait for each routed teammate to report completion via `SendMessage`. Teammates do NOT commit — the Director commits after each report.
 2. Commit fixes per scope (each `git add` / `git commit` is its own Bash call, no `&&`):
    - Programmer fixes: `git commit -m "fix: address Copilot review - <short summary>"`
    - Tester fixes: `git commit -m "fix: address Copilot test review - <short summary>"`
@@ -564,29 +513,32 @@ When `round >= 5`, break the auto-loop and escalate to the user via `AskUserQues
 
 #### Augmented Loop Prompt
 
-Use this as the `/loop` prompt for Step 7. Substitute the literal UUIDs and the literal PR number before passing the prompt to `/loop` — no shell variables.
+Use this as the `/loop` prompt for Step 7. Substitute the literal PR number before passing the prompt to `/loop` — no shell variables.
 
-**Invocation form (mandatory):** `/loop 1m <prompt below>`. The `1m` argument is required — never omit it (that would enter dynamic/self-paced mode) and never substitute any other interval. See `Skill(cafleet-monitoring)` → "Interval enforcement — hard rules".
+**Invocation form (mandatory):** `/loop 1m <prompt below>`. The `1m` argument is required — never omit it (that would enter dynamic/self-paced mode) and never substitute any other interval. See `Skill(agent-team-monitoring)` for interval guidance.
 
 ```
-Monitor team health AND PR review state (fixed interval: 1 minute — do NOT adjust).
+Skill(agent-team-monitoring) — tick for team "execute-<slug>", plus PR review polling (fixed interval: 1 minute — do NOT adjust).
 
-TEAM HEALTH:
-1. Run `cafleet --session-id <session-id> --json member list --agent-id <director-agent-id>`.
-2. Run `cafleet --session-id <session-id> --json poll --agent-id <director-agent-id> --since "<ISO 8601 timestamp of last check>"`. ACK progress reports.
-3. For each member that has not sent a message since last check, run `cafleet --session-id <session-id> member capture --agent-id <director-agent-id> --member-id <member-agent-id> --lines 200`.
-4. Nudge stalled members via `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <member-agent-id> --text "Report your progress now. If blocked, state what is blocking you."`.
+Expected deliverables: <list>
+Active teammates: programmer, tester (if spawned), verifier (if spawned)
+
+TEAM HEALTH (per Skill(agent-team-monitoring)):
+1. Deliverable scan: check expected files/paths.
+2. TaskList inspection: look for in_progress tasks with stale updates.
+3. Directed nudge: SendMessage the owner of any stalled task with a specific, actionable message.
+4. Escalate to user after 2 consecutive stalled ticks on the same task.
 
 PR REVIEW:
 5. Run `gh pr view <pr-number> --json reviews` (GraphQL shape: `author.login`, `state`, `submittedAt`, `body`).
 6. Run `gh api repos/<owner>/<repo>/pulls/<pr-number>/comments` (REST shape: `user.login`, `body`, `path`, `line`, `created_at`).
-7. Filter to entries where the appropriate login field (`author.login` for GraphQL reviews, `user.login` for REST inline comments) starts with `copilot` (case-insensitive) and the appropriate timestamp (`submittedAt` / `created_at`) > `<last-push-timestamp>`.
+7. Filter to entries where the appropriate login field starts with `copilot` (case-insensitive) and the timestamp is strictly later than `<last-push-timestamp>`.
 8. If the most recent Copilot-authored entry in `reviews` has `state == "APPROVED"`: signal Step 7 exit (success).
 9. If filter returned 0 entries for 5 consecutive ticks: signal Step 7 exit (quiescent).
-10. If filter returned ≥ 1 entries: classify by file path and dispatch via `cafleet --session-id <session-id> send --agent-id <director-agent-id> --to <member-agent-id> --text "Copilot review: <file>:<line> — <body>. Please address."`.
+10. If filter returned ≥ 1 entries: classify by file path and route via SendMessage(to: "<teammate>", summary: "Copilot review", message: "Copilot review: <file>:<line> — <body>. Please address.").
 
 ESCALATION:
-11. If any member has been nudged 2 times with no progress, escalate to the user.
+11. If any teammate has been nudged 2 times with no progress, escalate to the user.
 12. If `round >= 5`, escalate to the user with the Continue / Finalize-now / Other prompt.
 ```
 
@@ -607,14 +559,14 @@ ESCALATION:
 
 #### User Interjection During Step 7
 
-`/loop` firings keep arriving while the user is speaking to the Director. The Director obeys the project's "Stop means stop" rule (`.claude/rules/skill-discovery.md`): when the user signals halt (explicit "stop", "wait", profanity / frustration, repeated rejection of tool calls), the Director:
+`/loop` firings keep arriving while the user is speaking to the Director. The Director obeys the project's "Stop means stop" rule: when the user signals halt (explicit "stop", "wait", profanity / frustration, repeated rejection of tool calls), the Director:
 
-1. Stops dispatching new `cafleet send` / `git commit` / `git push` / `gh` actions immediately.
+1. Stops dispatching new `SendMessage` / `git commit` / `git push` / `gh` actions immediately.
 2. Acknowledges the user briefly and waits for explicit instructions.
 3. Treats subsequent `/loop` firings as notification-only — runs the PR review poll for situational awareness but does NOT route comments, commit, or push until the user re-engages with a specific instruction.
 4. Does NOT silently tear the team down — the state stays paused so the user can resume or explicitly abort.
 
-If the user explicitly aborts, follow the Abort Flow (update doc Status → "Aborted", commit, run Shutdown Protocol). Step 7's cleanup is identical to Step 8's cleanup — `CronDelete` the augmented loop, delete members, run `cafleet session delete`.
+If the user explicitly aborts, follow the Abort Flow (update doc Status → "Aborted", commit, run Shutdown Protocol). Step 7's cleanup is identical to Step 8's cleanup — `CronDelete` the augmented loop, `SendMessage` shutdown to each teammate, `TeamDelete`.
 
 ### Step 8: Finalize & Clean Up (Director)
 
@@ -628,17 +580,13 @@ Runs after Step 7 exits, or directly after Step 5 when Step 6 was skipped (gh no
    - Non-zero exit (Step 6 was skipped before the `git push -u`): skip the push. The docs commit stays local.
    - The Director does NOT re-request Copilot review on this final docs commit — docs status changes are not worth another review round.
 5. `CronDelete` the currently active `/loop` monitor — whichever cron ID is recorded: team-health (from Step 3c) if Step 6 was skipped, augmented (from Step 7) otherwise.
-6. Delete each spawned member:
-   ```bash
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <programmer-agent-id>
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <tester-agent-id>      # if spawned
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <verifier-agent-id>    # if spawned
+6. Shut down each spawned teammate:
    ```
-7. Tear down the session (this also deregisters the root Director and the Administrator — `cafleet deregister --agent-id <director-agent-id>` is rejected with `Error: cannot deregister the root Director; use 'cafleet session delete' instead.`):
-   ```bash
-   cafleet session delete <session-id>
-   # → Deleted session <session-id>. Deregistered N agents.
+   SendMessage(to: "programmer", message: {"type": "shutdown_request"})
+   SendMessage(to: "tester", message: {"type": "shutdown_request"})        # if spawned
+   SendMessage(to: "verifier", message: {"type": "shutdown_request"})      # if spawned
    ```
+7. After all teammates have shut down, call `TeamDelete` to remove the team and task directories.
 8. **Report to the user**: include the PR URL (if Step 6 created one), the review-round summary (rounds used, exit reason: approved / quiescent / round-limit / skipped), and any skipped-step reasons.
 
-`session delete` soft-deletes the `sessions` row and physically deletes every associated `agent_placements` row while preserving all `tasks` rows for audit — the message history remains inspectable in the admin WebUI (subject to the WebUI's soft-delete filtering behavior).
+$ARGUMENTS
