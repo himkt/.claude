@@ -118,7 +118,7 @@ Both work from `report.md` independently. After the slide deck is finalized (Ste
 You are the Presentation Specialist in a research presentation team (CAFleet-native).
 
 <ROLE DEFINITION>
-[Content of ~/.claude/skills/research-presentation/roles/presentation.md injected verbatim, with literal braces doubled]
+[Content of ~/.claude/skills/research-presentation/roles/presentation.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
 </ROLE DEFINITION>
 
 Load these skills at startup:
@@ -135,7 +135,7 @@ TASK: Create a Slidev presentation from the approved research report.
 REPORT:           [INSERT <folder>/report.md]
 RESEARCHER FILES: [INSERT <folder>/[0-9][0-9]-research-*.md]
 LANGUAGE:         [INSERT language detected from report.md]
-FIGURE BASE:      [INSERT <folder>]    (substitute literally for ${FIGURE_BASE}/${BASE} in create-figure)
+FIGURE BASE:      [INSERT <folder>]    (substitute literally for the FIGURE_BASE / BASE placeholders in create-figure)
 OUTPUT:           [INSERT <folder>/slide.md]
 
 COMMUNICATION PROTOCOL:
@@ -162,7 +162,7 @@ Capture the printed `agent_id` and substitute it for `<presentation-agent-id>` i
 You are the Transcript Specialist in a research presentation team (CAFleet-native).
 
 <ROLE DEFINITION>
-[Content of ~/.claude/skills/research-presentation/roles/transcript.md injected verbatim, with literal braces doubled]
+[Content of ~/.claude/skills/research-presentation/roles/transcript.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
 </ROLE DEFINITION>
 
 Load these skills at startup:
@@ -257,8 +257,11 @@ while start <= total_slides:
         # VR writes the next capture to `vr<start>-r<vr_round>-p<slide_number>.png` and
         # the next persisted report to `vr<start>-r<vr_round>.md`, preserving prior rounds
 
+    # Explicit close handshake before delete: the VR cannot reliably run extra commands after /exit.
+    cafleet --session-id <session-id> message send --agent-id <director-agent-id> \
+        --to <vr-batch-agent-id> --text "CLOSE: run `bun run agent-browser --session vr-batch-<start> close`, then reply 'closed'."
+    wait for the VR's "closed" confirmation via cafleet message poll
     cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <vr-batch-agent-id>
-    # /exit triggers the VR's pre-exit hook to close its agent-browser session before the pane closes
     start = end + 1
 ```
 
@@ -268,7 +271,7 @@ while start <= total_slides:
 You are the Visual Reviewer in a research presentation team (CAFleet-native).
 
 <ROLE DEFINITION>
-[Content of ~/.claude/skills/research-presentation/roles/visual-reviewer.md injected verbatim, with literal braces doubled]
+[Content of ~/.claude/skills/research-presentation/roles/visual-reviewer.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
 </ROLE DEFINITION>
 
 Load these skills at startup:
@@ -325,13 +328,13 @@ No round limit — loop until approved.
 Follow the Shutdown Protocol in `Skill(cafleet)` § *Shutdown Protocol*. Order matters — every step before `cafleet session delete` must complete first.
 
 1. **Cancel the `/loop` monitor** with `CronDelete <job-id>`. The cron must stop firing BEFORE any member is deleted; a cron that keeps polling a tearing-down session spams `Error: session is deleted`.
-2. **Delete every member** — Presentation, Transcript, and any active VR batch:
+2. **Delete every member** — Presentation, Transcript, and any active VR batch. For any active VR batch, run the explicit close handshake first (Director sends `CLOSE:` via `cafleet message send`, VR runs `bun run agent-browser --session vr-batch-<start> close` and replies `closed`), THEN run `cafleet member delete`. Once all VR browser sessions are closed:
    ```bash
    cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <presentation-agent-id>
    cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <transcript-agent-id>
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <vr-batch-agent-id>   # if still alive
+   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <vr-batch-agent-id>   # if still alive — only after the close handshake
    ```
-   Each call sends `/exit` and waits up to 15 s. The VR's role file instructs it to run `bun run agent-browser --session vr-batch-<start> close` as a pre-exit hook so its browser session closes cleanly before the pane closes.
+   Each call sends `/exit` and waits up to 15 s for the pane's `claude` process to exit. Do not rely on `/exit` to trigger any post-shutdown action — additional commands are not guaranteed to run after `/exit` arrives.
 3. **Verify the roster is empty**: `cafleet --session-id <session-id> member list --agent-id <director-agent-id>` must return zero members.
 4. **Run the agent-browser safety net** to close any orphan browser sessions left behind:
    ```bash

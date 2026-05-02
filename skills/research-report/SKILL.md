@@ -121,7 +121,7 @@ Read the role files that will be embedded verbatim in spawn prompts:
 You are the Manager in a research report team (CAFleet-native).
 
 <ROLE DEFINITION>
-[Content of ~/.claude/skills/research-report/roles/manager.md injected verbatim, with literal braces doubled per Template safety]
+[Content of ~/.claude/skills/research-report/roles/manager.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
 </ROLE DEFINITION>
 
 Load these skills at startup:
@@ -169,7 +169,7 @@ After assessing the topic, the Manager may send the Director one or more Scout s
 You are a Scout Researcher in a research team (CAFleet-native).
 
 <ROLE DEFINITION>
-[Content of ~/.claude/skills/research-report/roles/scout.md injected verbatim, with literal braces doubled]
+[Content of ~/.claude/skills/research-report/roles/scout.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
 </ROLE DEFINITION>
 
 Load these skills at startup:
@@ -237,7 +237,7 @@ The Manager's `TaskCreate` calls also serve as the authoritative list of sub-top
 You are a Research Specialist in a research team (CAFleet-native).
 
 <ROLE DEFINITION>
-[Content of ~/.claude/skills/research-report/roles/researcher.md injected verbatim, with literal braces doubled]
+[Content of ~/.claude/skills/research-report/roles/researcher.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
 </ROLE DEFINITION>
 
 Load these skills at startup:
