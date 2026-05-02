@@ -1,7 +1,7 @@
 ---
 name: research-report
 description: Create a comprehensive research report with folder-based output. Researchers write findings to individual files, the Manager compiles report.md, and the Director reviews. Output goes to researches/<topic-slug>/. After report approval, offers to chain into /research-presentation for slides and transcript. Teammates must always load skills using the Skill tool, not by reading skill files directly. Do NOT do a quick web search and summarize — invoke this skill for thorough, multi-source research.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, Agent, TeamCreate, TeamDelete, SendMessage, TaskCreate, TaskUpdate, TaskList, TaskGet
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
 # Research Report
@@ -21,22 +21,24 @@ Generate comprehensive research reports using a multi-layer in-process agent tea
 
 ## Architecture
 
-The Director creates an in-process team with `TeamCreate`, spawns the Manager, and spawns every Scout and Researcher with `Agent(team_name=..., name=...)`. All coordination goes through `SendMessage` (auto-delivered) and a shared task list.
+The Director is the root agent of a CAFleet session — bootstrapped automatically by `cafleet session create` — and spawns every member via `cafleet --session-id <session-id> member create --agent-id <director-agent-id>`. All inter-agent coordination flows through the CAFleet message broker (`cafleet message send` + auto-delivered tmux push notifications) and a shared task list.
 
-```
+```text
 User
- +-- Director (main Claude — TeamCreate, Agent spawn, SendMessage orchestration)
-      +-- Manager (teammate: general-purpose — compiles the report)
-      +-- Scout 1..N (teammates: Explore — spawned by Director on Manager's request)
-      +-- Researcher 1..N (teammates: web-researcher — spawned by Director on Manager's request)
+ +-- Director (main Claude — runs cafleet session create, cafleet member create, drives the loop)
+      +-- manager (claude pane — compiles report, decomposes topic)
+      +-- scout-<NN> (claude pane — landscape mapping; reads ~/.claude/agents/web-researcher.md at startup)
+      +-- researcher-<NN> (claude pane — deep investigation; reads ~/.claude/agents/web-researcher.md at startup)
 ```
 
-- **Director ↔ User**: `AskUserQuestion` (final report presentation, feedback collection)
-- **Director ↔ Manager**: `SendMessage` (spawn requests, review feedback, shutdown)
-- **Director ↔ Scouts / Researchers**: `SendMessage` (assignment relays, findings reports, revision requests)
-- **Manager → Director**: spawn requests via `SendMessage` for Scouts and Researchers
+- **Director ↔ User**: `AskUserQuestion` (final report presentation, feedback collection, language disambiguation when escalated by a member)
+- **Director ↔ manager**: `cafleet message send` (spawn requests, review feedback)
+- **Director ↔ scout-* / researcher-***: `cafleet message send` (assignment relays, findings reports, revision requests)
+- **Manager → Director**: spawn requests via `cafleet message send` (Director executes `cafleet member create` on receipt)
 
-Teammates cannot talk to the user directly — the Director always relays. Teammates cannot talk to each other directly either — Manager requests are always mediated by the Director (Manager → Director → Scout/Researcher, and Scout/Researcher → Director → Manager).
+Members cannot talk to the user directly — the Director always relays. Members cannot talk to each other directly either — Manager requests are always mediated by the Director (Manager → Director → Scout/Researcher, and Scout/Researcher → Director → Manager).
+
+> **Literal-UUID flag rule** — `permissions.allow` matches Bash invocations as literal command strings, so substitute the UUIDs printed by `cafleet session create` and `cafleet member create` directly into every `cafleet ...` call. Never store IDs in shell variables. `--session-id` is a global flag (placed BEFORE the subcommand); `--agent-id` is a per-subcommand option (placed AFTER the subcommand name). See `Skill(cafleet)` for the full convention.
 
 ## Process
 
@@ -49,9 +51,23 @@ Before creating the team, determine where output files will be saved.
 3. Create the output directory.
 4. Pass `${OUTPUT_DIR}` as the resolved absolute path to the Manager and all Researchers/Scouts in their spawn prompts.
 
+### Step 0a: Environment Precheck (Director — MANDATORY)
+
+Run `cafleet doctor` to confirm the Director is inside a tmux session with valid pane identifiers (a hard requirement of `cafleet member create`). On non-zero exit, abort and surface the error to the user — do NOT attempt raw `tmux` probes as a workaround.
+
+### Step 0b: Bootstrap CAFleet Session (Director — MANDATORY)
+
+`cafleet session create` atomically creates the session, registers a root Director bound to the current tmux pane, and seeds the built-in Administrator. Capture both UUIDs from the JSON response and substitute them as literal strings into every subsequent `cafleet ...` call (never shell variables — `permissions.allow` matches command strings literally).
+
+```bash
+cafleet session create --label "research-<topic-slug>" --json
+```
+
+Capture `session_id` and `director.agent_id` from the response. Treat `session_id` as `<session-id>` and `director.agent_id` as `<director-agent-id>` for the rest of this skill.
+
 ### Step 1: Start Progress Monitor (Director — MANDATORY)
 
-Load `Skill(agent-team-supervision)` and `Skill(agent-team-monitoring)`. Start a `/loop` monitor BEFORE the first `Agent(team_name=...)` call so the first tick fires while spawning completes.
+Load `Skill(cafleet)` and `Skill(cafleet-monitoring)`. Start a `/loop` monitor at a 1-minute interval BEFORE the first `cafleet member create` call so the first tick fires while the Manager is spawning. Use the cafleet-monitoring template with the literal `<session-id>` and `<director-agent-id>` UUIDs substituted in.
 
 The loop must check `${OUTPUT_DIR}` for these expected deliverables:
 
@@ -59,24 +75,20 @@ The loop must check `${OUTPUT_DIR}` for these expected deliverables:
 - `00-scout-*.md` — Scout landscape/discovery notes (one or more files may exist)
 - `NN-research-*.md` — Researcher findings files for delegated sub-topics (`NN` is the assigned number; one or more files may exist)
 
-Readiness/stall rules (apply per `Skill(agent-team-monitoring)`):
+Readiness/stall rules (apply per `Skill(cafleet-monitoring)`):
 
 - After Scouts/Researchers have been spawned and tasks have been assigned, expect at least one `00-scout-*.md` or `NN-research-*.md` file to appear within a couple of ticks.
 - Do not consider the workflow ready for Step 5 until `report.md` exists.
-- If a teammate owns an `in_progress` task but their deliverable file is missing past the expected milestone, run the health-check sequence (`TaskList` inspection → directed `SendMessage` nudge → user escalation) from `Skill(agent-team-monitoring)`.
+- If a member owns an `in_progress` task but their deliverable file is missing past the expected milestone, run the 2-stage health-check from `Skill(cafleet-monitoring)`: `cafleet message poll` → `cafleet member capture --lines 200` → directed `cafleet message send` nudge → user escalation.
 - Keep the monitor running until Step 8.
 
-### Step 2: Create Team & Spawn Manager (Director)
+### Step 2: Spawn Manager (Director)
 
-Load `Skill(agent-team-supervision)` and follow its spawn protocol.
+Load `Skill(cafleet)` and follow its spawn protocol.
 
-#### 2a. Create the team
+#### 2a. Shared task list
 
-```
-TeamCreate(team_name="research-<topic-slug>", description="Research report: <topic-slug>")
-```
-
-This creates the shared task list at `~/.claude/tasks/research-<topic-slug>/` that the team will use for coordination.
+The harness task tools (`TaskCreate / TaskUpdate / TaskList / TaskGet`) remain the work-coordination substrate — they are unchanged from the in-process model. The on-disk task store at `~/.claude/tasks/research-<topic-slug>/` is created on the first `TaskCreate` call (typically by the Manager when decomposing the topic). No explicit team-bootstrap step is required.
 
 #### 2b. Read role definitions
 
@@ -86,19 +98,26 @@ Read the role files that will be embedded verbatim in spawn prompts:
 - `~/.claude/skills/research-report/roles/scout.md`
 - `~/.claude/skills/research-report/roles/researcher.md`
 
+> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. Any literal `{` or `}` in the embedded role content (e.g., JSON examples, format-string examples) MUST be doubled to `{{` / `}}` before injection. Single braces that match a kwarg name will be substituted; everything else raises a KeyError at spawn time.
+
 #### 2c. Spawn the Manager
 
 **Manager spawn prompt:**
 
 ```
-You are the Manager in a research report team.
+You are the Manager in a research report team (CAFleet-native).
 
 <ROLE DEFINITION>
-[Content of ~/.claude/skills/research-report/roles/manager.md injected verbatim]
+[Content of ~/.claude/skills/research-report/roles/manager.md injected verbatim, with literal braces doubled per Template safety]
 </ROLE DEFINITION>
 
 Load these skills at startup:
-- Skill(agent-team-supervision) — for team/message fundamentals (idle semantics, shutdown)
+- Skill(cafleet) — for the broker primitives, literal-UUID flag convention, and bash-via-Director routing
+
+SESSION ID: {session_id}
+DIRECTOR AGENT ID: {director_agent_id}
+DIRECTOR NAME: {director_name}
+YOUR AGENT ID: {agent_id}
 
 CURRENT DATE: [INSERT today's date]
 USER REQUEST: [INSERT user's original request in full]
@@ -106,86 +125,89 @@ OUTPUT DIRECTORY: [INSERT ${OUTPUT_DIR}]
 LANGUAGE: [INSERT user's language preference if specified]
 
 COMMUNICATION PROTOCOL:
-- You talk to the Director via SendMessage(to: "director", summary: "...", message: "...").
+- Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
+- When you see cafleet message poll output with a message from the Director, ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id> and act on the instructions.
 - You do NOT talk to Scouts or Researchers directly. The Director spawns them and relays their findings.
-- Messages from the Director arrive automatically — you do not poll.
-- The team shares a task list (TaskList / TaskGet / TaskUpdate). Use it to track sub-topic assignments.
+- The team shares a harness task list (TaskList / TaskGet / TaskUpdate). Use it to track sub-topic assignments — these tools are unchanged from the harness.
 
-To request Scouts or Researchers, SendMessage the Director specifying: role (Scout or Researcher), scope, search angles, and output file path. The Director will spawn them and relay their completion reports back to you.
+To request Scouts or Researchers, send the Director a cafleet message specifying: role (Scout or Researcher), scope, search angles, and output file path. The Director will spawn them via `cafleet member create` and relay their completion reports back to you.
 
 Your first compiled report will be reviewed critically by the Director. Aim for highest quality on the first attempt.
 ```
 
 Spawn with:
 
+```bash
+cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
+  --name "manager" \
+  --description "Compiles the research report" \
+  -- "<Manager spawn prompt with embedded role content (literal braces doubled)>"
 ```
-Agent(
-  subagent_type="general-purpose",
-  team_name="research-<topic-slug>",
-  name="manager",
-  prompt="<Manager spawn prompt with embedded role content>"
-)
-```
+
+Capture the printed `agent_id` and substitute it for `<manager-agent-id>` in every subsequent `cafleet` call that targets the Manager.
 
 ### Step 3: Knowledge Bootstrapping — Scout Phase (Director, on Manager's request)
 
-After assessing the topic, the Manager may send the Director one or more Scout spawn requests via `SendMessage`. For each request, the Director spawns a Scout.
+After assessing the topic, the Manager may send the Director one or more Scout spawn requests via `cafleet message send`. For each request, the Director spawns a Scout.
 
 **Scout spawn prompt:**
 
 ```
-You are a Scout Researcher in a research team.
+You are a Scout Researcher in a research team (CAFleet-native).
 
 <ROLE DEFINITION>
-[Content of ~/.claude/skills/research-report/roles/scout.md injected verbatim]
+[Content of ~/.claude/skills/research-report/roles/scout.md injected verbatim, with literal braces doubled]
 </ROLE DEFINITION>
 
 Load these skills at startup:
-- Skill(agent-team-supervision) — for team/message fundamentals
+- Skill(cafleet) — for the broker primitives and bash-via-Director routing
 - Also Read ~/.claude/agents/web-researcher.md for the detailed research methodology
   (Discovery Phase, query formulation, synthesis, output format)
+
+SESSION ID: {session_id}
+DIRECTOR AGENT ID: {director_agent_id}
+DIRECTOR NAME: {director_name}
+YOUR AGENT ID: {agent_id}
 
 CURRENT DATE: [INSERT today's date]
 YOUR ASSIGNMENT: [landscape scope and what areas to map]
 OUTPUT FILE: [INSERT <resolved-path>/00-scout-<topic>.md]
 
 COMMUNICATION PROTOCOL:
-- You talk to the Director via SendMessage(to: "director", summary: "...", message: "...").
-- Messages from the Director arrive automatically.
+- Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
+- When you see cafleet message poll output with a message from the Director, ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id> and act on the instructions.
 
-Write findings to the output file, then SendMessage the Director with a completion summary. The Director will relay your findings to the Manager.
+Write findings to the output file, then send the Director a completion summary. The Director will relay your findings to the Manager.
 ```
 
 Spawn with:
 
-```
-Agent(
-  subagent_type="Explore",
-  team_name="research-<topic-slug>",
-  name="scout-<NN>",
-  prompt="<Scout spawn prompt>"
-)
+```bash
+cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
+  --name "scout-<NN>" \
+  --description "Landscape scout" \
+  -- "<Scout spawn prompt>"
 ```
 
-(Use `scout` if only one; `scout-1`, `scout-2`, ... for multiple.)
+(Use `scout` if only one; `scout-1`, `scout-2`, ... for multiple.) Capture the printed `agent_id` for each Scout and substitute it into subsequent `cafleet message send` calls targeting that Scout.
 
 **Scout-Manager loop (relayed through Director):**
 
-1. Manager sends Director a Scout spawn request (`SendMessage`).
-2. Director spawns the Scout via `Agent(team_name=..., name="scout-<NN>")`.
-3. Scout investigates, writes findings to the output file, `SendMessage(to: "director")` with a completion report.
-4. Director relays the Scout's output file path (and any summary text) to the Manager via `SendMessage`.
+1. Manager sends Director a Scout spawn request via `cafleet message send`.
+2. Director spawns the Scout via `cafleet member create`.
+3. Scout investigates, writes findings to the output file, sends the Director a completion report via `cafleet message send`.
+4. Director relays the Scout's output file path (and any summary text) to the Manager via `cafleet message send`.
 5. Manager reads the Scout file and may send a follow-up request (either targeted re-scouting, a new Scout, or proceed to decomposition).
 
 **Safety cap**: Maximum 3 Scout-Manager iterations (request → investigate → review = one iteration). After 3 iterations, the Manager must proceed to topic decomposition with the knowledge gathered so far.
 
 ### Step 4: Spawn Researchers (Director, on Manager's request)
 
-After decomposing the topic, the Manager sends the Director one or more Researcher spawn requests via `SendMessage`.
+After decomposing the topic, the Manager sends the Director one or more Researcher spawn requests via `cafleet message send`.
 
 #### 4a. Create tasks for each sub-topic (Manager, before spawn requests)
 
-With multiple Researchers running in parallel, coordination goes through the **shared task list** — not just through spawn prompts. The Manager MUST create one task per sub-topic BEFORE asking the Director to spawn the Researcher for it.
+With multiple Researchers running in parallel, coordination goes through the **shared harness task list** — not just through spawn prompts. The Manager MUST create one task per sub-topic BEFORE asking the Director to spawn the Researcher for it.
 
 - The Manager calls `TaskCreate` for each sub-topic. Task content describes the sub-topic, scope, and the expected output file path (e.g., `<resolved-path>/01-research-<subtopic>.md`).
 - Tasks start unowned. When a Researcher is spawned and given their assignment, they claim their assigned task by calling `TaskUpdate(taskId, owner: "researcher-<NN>")` and marking it `in_progress`.
@@ -199,16 +221,21 @@ The Manager's `TaskCreate` calls also serve as the authoritative list of sub-top
 **Researcher spawn prompt:**
 
 ```
-You are a Research Specialist in a research team.
+You are a Research Specialist in a research team (CAFleet-native).
 
 <ROLE DEFINITION>
-[Content of ~/.claude/skills/research-report/roles/researcher.md injected verbatim]
+[Content of ~/.claude/skills/research-report/roles/researcher.md injected verbatim, with literal braces doubled]
 </ROLE DEFINITION>
 
 Load these skills at startup:
-- Skill(agent-team-supervision) — for team/message fundamentals
+- Skill(cafleet) — for the broker primitives and bash-via-Director routing
 - Also Read ~/.claude/agents/web-researcher.md for the detailed research methodology
   (Discovery Phase, query formulation, synthesis, output format)
+
+SESSION ID: {session_id}
+DIRECTOR AGENT ID: {director_agent_id}
+DIRECTOR NAME: {director_name}
+YOUR AGENT ID: {agent_id}
 
 CURRENT DATE: [INSERT today's date]
 YOUR NAME: researcher-<NN>
@@ -217,44 +244,45 @@ YOUR TASK ID: [INSERT the taskId the Manager created for this sub-topic]
 OUTPUT FILE: [INSERT <resolved-path>/NN-research-<subtopic>.md]
 
 COMMUNICATION PROTOCOL:
-- You talk to the Director via SendMessage(to: "director", summary: "...", message: "...").
-- Messages from the Director arrive automatically.
+- Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
+- When you see cafleet message poll output with a message from the Director, ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id> and act on the instructions.
 - On start, claim your task: TaskUpdate(taskId: YOUR TASK ID, owner: "researcher-<NN>", status: "in_progress").
 - On completion, mark your task completed: TaskUpdate(taskId: YOUR TASK ID, status: "completed").
 
-Write findings to the output file, then SendMessage the Director with a completion summary. The Director will relay findings and any follow-up questions between you and the Manager.
+Write findings to the output file, then send the Director a completion summary. The Director will relay findings and any follow-up questions between you and the Manager.
 ```
 
 Spawn with:
 
-```
-Agent(
-  subagent_type="web-researcher",
-  team_name="research-<topic-slug>",
-  name="researcher-<NN>",
-  prompt="<Researcher spawn prompt>"
-)
+```bash
+cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
+  --name "researcher-<NN>" \
+  --description "Researcher for sub-topic <slug>" \
+  -- "<Researcher spawn prompt>"
 ```
 
 The Director repeats this step whenever the Manager requests additional Researchers (for coverage gaps, failed investigations, or revision-driven re-research). Any new Researcher must first have a task created by the Manager; the Director includes the `taskId` in the spawn prompt.
 
-### Step 5: Review & Revision Loop (Director ↔ Manager, via `SendMessage`)
+### Step 5: Review & Revision Loop (Director ↔ Manager, via `cafleet message send`)
 
 When the Manager delivers the compiled `report.md`:
 
 1. The Director reads `${OUTPUT_DIR}/report.md` and reviews it critically against the checklist in [roles/director.md](roles/director.md).
-2. The Director sends tagged feedback to the Manager via `SendMessage`:
+2. The Director sends tagged feedback to the Manager:
+   ```bash
+   cafleet --session-id <session-id> message send --agent-id <director-agent-id> \
+     --to <manager-agent-id> \
+     --text "review feedback round <N>: [FACTUAL ERROR] ... / [GAP] ... / ..."
    ```
-   SendMessage(to: "manager", summary: "review feedback round <N>", message: "[FACTUAL ERROR] ... / [GAP] ... / ...")
-   ```
-3. The Manager revises the report (requesting additional Researchers from the Director as needed) and `SendMessage`s a completion message back.
-4. Repeat until the Director judges quality is sufficient. Aim for 2–3 rounds maximum.
+3. The Manager revises the report (requesting additional Researchers from the Director as needed) and sends a completion message back via `cafleet message send`.
+4. Each polled inbound message MUST be `ack`ed via `cafleet --session-id <session-id> message ack --agent-id <director-agent-id> --task-id <task-id>` after acting on it. Un-acked messages stay in `INPUT_REQUIRED` and re-surface on every subsequent `message poll` cycle.
+5. Repeat until the Director judges quality is sufficient. Aim for 2–3 rounds maximum.
 
-If the Manager asks the Director a question that is really a user decision (e.g. language choice, scope trade-off), the Director MUST relay via `AskUserQuestion` per the user-delegation protocol in `Skill(agent-team-supervision)`. Never decide on the user's behalf.
+If the Manager asks the Director a question that is really a user decision (e.g. language choice, scope trade-off), the Director MUST relay via `AskUserQuestion` and pass the user's verbatim answer back via `cafleet message send`. Never decide on the user's behalf.
 
 ### Step 6: Present to User (Director)
 
-Present the approved report to the user via `AskUserQuestion` with: a summary of findings (2–3 sentences), file paths (report, scout files, researcher files), known limitations, and a request for feedback. If the user provides feedback, route it to the Manager via `SendMessage`, re-review, and re-present. Repeat until the user approves.
+Present the approved report to the user via `AskUserQuestion` with: a summary of findings (2–3 sentences), file paths (report, scout files, researcher files), known limitations, and a request for feedback. If the user provides feedback, route it to the Manager via `cafleet message send`, re-review, and re-present. Repeat until the user approves.
 
 ### Step 7: Offer Presentation Chaining (Director)
 
@@ -262,17 +290,32 @@ After user approval, offer to create a presentation via `AskUserQuestion` (adapt
 
 ### Step 8: Finalize & Clean Up (Director)
 
-Follow the cleanup protocol in `Skill(agent-team-supervision)`:
+Follow the Shutdown Protocol in `Skill(cafleet)` § *Shutdown Protocol*. Order matters — every step before `cafleet session delete` must complete first, otherwise crons fire against dead members or orphan `claude` processes linger.
 
-1. Cancel the `/loop` monitor with `CronDelete`.
-2. Shut down each teammate:
+1. **Cancel the `/loop` monitor** with `CronDelete <job-id>`. The cron must stop firing BEFORE any member is deleted; a cron that keeps polling a tearing-down session spams `Error: session is deleted` and races with member-delete.
+2. **Delete every member** in dependency order — Researchers first, then any active Scout, then the Manager:
+   ```bash
+   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <researcher-agent-id>
+   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <scout-agent-id>
+   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <manager-agent-id>
    ```
-   SendMessage(to: "researcher-<NN>", message: {"type": "shutdown_request"})   # for each researcher
-   SendMessage(to: "scout-<NN>", message: {"type": "shutdown_request"})         # for each scout (if any still active)
-   SendMessage(to: "manager", message: {"type": "shutdown_request"})
+   Each call sends `/exit` to the pane and waits up to 15 s for it to close. On exit 2 (timeout), the pane buffer tail is printed on stderr — inspect with `cafleet member capture`, answer any prompt with `cafleet member send-input`, then re-run. As a last resort, rerun with `--force` to skip the wait and kill-pane immediately.
+3. **Verify the roster is empty**:
+   ```bash
+   cafleet --session-id <session-id> member list --agent-id <director-agent-id>
    ```
-3. After all teammates have shut down, call `TeamDelete` to remove the team and task directories.
+   If anyone remains, repeat step 2 for that member.
+4. **Delete the session**:
+   ```bash
+   cafleet session delete <session-id>
+   ```
+   This soft-deletes the session and deregisters the root Director, Administrator, and any surviving members in one transaction.
+5. **Confirm**:
+   ```bash
+   cafleet session list
+   ```
+   The current session must not appear (soft-deleted sessions are hidden).
 
-`TeamDelete` fails while any teammate is still active, so order matters: shutdown first, then delete.
+Do NOT use raw `tmux kill-pane` or `tmux send-keys` at any point — `cafleet member delete` and `cafleet member capture` / `cafleet member send-input` are the only supported teardown and recovery primitives.
 
 $ARGUMENTS
