@@ -6,14 +6,14 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, TaskCre
 
 # Research Report
 
-Generate comprehensive research reports using a multi-layer in-process agent team: Director → Manager → Scouts/Researchers. Every member of the team carries serious accountability for the quality of the final deliverable, and the team iterates relentlessly until the report meets the highest standard. After the report is approved, the Director offers to chain into `/research-presentation` for slides and transcript.
+Generate comprehensive research reports using a multi-layer CAFleet-orchestrated team: Director → Manager → Scouts/Researchers. Every member carries serious accountability for the quality of the final deliverable, and the team iterates relentlessly until the report meets the highest standard. After the report is approved, the Director offers to chain into `/research-presentation` for slides and transcript.
 
 | Role | Identity | Does | Does NOT | Role definition |
 |:--|:--|:--|:--|:--|
-| **Director** | Main Claude | Create team, spawn all teammates, relay Manager requests, review all deliverables, present to user | Write the report, decompose topics, conduct research | [roles/director.md](roles/director.md) |
-| **Manager** | `general-purpose` teammate | Run orientation searches for landscape understanding and topic decomposition, request Scout/Researcher spawning from the Director, aggregate Scout and Researcher findings, compile report, revise | Conduct deep investigation — all substantive research MUST be delegated to Researchers | [roles/manager.md](roles/manager.md) |
-| **Scout** | `Explore` teammate | Landscape mapping — broad discovery to expand knowledge before decomposition | Collect facts for the report, write report sections | [roles/scout.md](roles/scout.md) |
-| **Researcher** | `web-researcher` teammate | Search exhaustively, collect facts with sources, filter misinformation, write findings to assigned file | Synthesize or write report sections | [roles/researcher.md](roles/researcher.md) |
+| **Director** | Main Claude | Bootstrap CAFleet session, spawn all members, relay Manager requests, review all deliverables, present to user | Write the report, decompose topics, conduct research | [roles/director.md](roles/director.md) |
+| **Manager** | claude pane (member) | Run orientation searches for landscape understanding and topic decomposition, request Scout/Researcher spawning from the Director, aggregate Scout and Researcher findings, compile report, revise | Conduct deep investigation — all substantive research MUST be delegated to Researchers | [roles/manager.md](roles/manager.md) |
+| **Scout** | claude pane (member, reads `~/.claude/agents/web-researcher.md` at startup) | Landscape mapping — broad discovery to expand knowledge before decomposition | Collect facts for the report, write report sections | [roles/scout.md](roles/scout.md) |
+| **Researcher** | claude pane (member, reads `~/.claude/agents/web-researcher.md` at startup) | Search exhaustively, collect facts with sources, filter misinformation, write findings to assigned file | Synthesize or write report sections | [roles/researcher.md](roles/researcher.md) |
 
 ## Additional resources
 
@@ -98,7 +98,9 @@ Read the role files that will be embedded verbatim in spawn prompts:
 - `~/.claude/skills/research-report/roles/scout.md`
 - `~/.claude/skills/research-report/roles/researcher.md`
 
-> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. Any literal `{` or `}` in the embedded role content (e.g., JSON examples, format-string examples) MUST be doubled to `{{` / `}}` before injection. Single braces that match a kwarg name will be substituted; everything else raises a KeyError at spawn time.
+> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. Any literal `{` or `}` in the embedded role content MUST be doubled to `{{` / `}}` before injection — otherwise `str.format()` raises `KeyError` at spawn time.
+>
+> Apply the doubling mechanically. Read each role file, then pipe the raw text through `sed -e 's/{/{{/g; s/}/}}/g'` and only re-introduce single-brace tokens for the four kwargs cafleet itself substitutes (`{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`). Do NOT eyeball this — manual brace-counting is the most common failure mode.
 
 #### 2c. Spawn the Manager
 

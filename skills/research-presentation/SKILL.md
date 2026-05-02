@@ -6,7 +6,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, TaskCreate, TaskUpdate, Task
 
 # Research Presentation
 
-Create a Slidev presentation and reading transcript from an existing research report folder using a four-role in-process agent team: Director (orchestrator), Presentation (slides), Transcript (narration), and per-batch Visual Reviewer (screenshot-based QA). The team iterates through content revision and visual review before presenting to the user.
+Create a Slidev presentation and reading transcript from an existing research report folder using a four-role CAFleet-orchestrated team: Director (orchestrator), Presentation (slides), Transcript (narration), and per-batch Visual Reviewer (screenshot-based QA). The team iterates through content revision and visual review before presenting to the user.
 
 | Role | Identity | Does | Does NOT | Role definition |
 |:--|:--|:--|:--|:--|
@@ -93,7 +93,9 @@ Read the role files that will be embedded verbatim in spawn prompts:
 - `~/.claude/skills/research-presentation/roles/transcript.md`
 - `~/.claude/skills/research-presentation/roles/visual-reviewer.md`
 
-> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. Any literal `{` or `}` in the embedded role content (e.g., JSON examples, format-string examples) MUST be doubled to `{{` / `}}` before injection.
+> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. Any literal `{` or `}` in the embedded role content (e.g., JSON examples, format-string examples like the `{Narration text...}` placeholder in `roles/transcript.md`) MUST be doubled to `{{` / `}}` before injection — otherwise `str.format()` raises `KeyError` at spawn time.
+>
+> Apply the doubling mechanically. Read each role file, then pipe the raw text through `sed -e 's/{/{{/g; s/}/}}/g'` and only re-introduce single-brace tokens for the four kwargs cafleet itself substitutes (`{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`). Do NOT eyeball this — manual brace-counting is the most common failure mode.
 
 #### 1d. Spawn Presentation + Transcript in parallel
 
