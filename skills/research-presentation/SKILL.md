@@ -24,7 +24,7 @@ This skill drives every inter-agent call through the `cafleet` CLI via the harne
 - `Bash(cafleet --session-id * *)` — every session-scoped call (member create, message send/poll/ack, member list, member delete, member capture, member exec, member ping, member send-input)
 - `Bash(cafleet session delete *)` — teardown (no `--session-id` flag — positional arg)
 - `Bash(cafleet session list)` — final confirmation that the session is gone (no `--session-id` flag)
-- `Skill(cafleet)`, `Skill(cafleet-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt. These come from the `cafleet@cafleet` plugin (declared under `enabledPlugins` in `~/.claude/settings.json` and provisioned via the cafleet marketplace). Install the plugin before invoking this skill.
+- `Skill(cafleet)`, `Skill(cafleet-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt. These come from the `cafleet@cafleet` plugin, which must be declared under `enabledPlugins` in the project `settings.json` (this repository is the user's `~/.claude` directory, so `settings.json` at the repo root **is** the user-level config). The plugin is **not** enabled by default in the checked-in `settings.json` — operators must add it (and the cafleet `Bash(...)` allow patterns above) before invoking this skill, otherwise every cafleet call triggers an interactive permission prompt and skill loads will fail.
 
 The cafleet binary itself must be installed and on `PATH` (verify with `cafleet doctor`).
 
