@@ -30,7 +30,7 @@ The cafleet binary itself must be installed and on `PATH` (verify with `cafleet 
 
 ## Architecture
 
-The Director is the root agent of a CAFleet session — bootstrapped automatically by `cafleet session create` — and spawns every member via `cafleet --session-id <session-id> member create --agent-id <director-agent-id>`. All inter-agent coordination flows through the CAFleet message broker (`cafleet message send` + auto-delivered tmux push notifications).
+The Director is the root agent of a CAFleet session — bootstrapped automatically by `cafleet session create` — and spawns every member via `cafleet --session-id [session-id] member create --agent-id [director-agent-id]`. All inter-agent coordination flows through the CAFleet message broker (`cafleet message send` + auto-delivered tmux push notifications).
 
 ```text
 User
@@ -87,7 +87,7 @@ Load `Skill(cafleet)` and `Skill(cafleet-monitoring)` — this skill spawns para
 
 ```bash
 cafleet doctor
-cafleet --json session create --label "present-<topic-slug>"
+cafleet --json session create --label "present-[topic-slug]"
 ```
 
 `cafleet doctor` confirms the Director is inside a tmux session (a hard requirement of `cafleet member create`). On non-zero exit, abort and surface the error to the user — do NOT attempt raw `tmux` probes as a workaround.
@@ -96,7 +96,7 @@ cafleet --json session create --label "present-<topic-slug>"
 
 #### 1b. Start the `/loop` monitor BEFORE the first `cafleet member create` call
 
-Per `Skill(cafleet-monitoring)`, start a 1-minute interval monitor before spawning so the first tick fires while spawning completes. Use the cafleet-monitoring template with literal `<session-id>` and `<director-agent-id>` substituted in. Expected deliverables: `${FOLDER}/slide.md`, `${FOLDER}/transcript.md`. Active members will include `presentation`, `transcript`, and later `vr-batch-*`.
+Per `Skill(cafleet-monitoring)`, start a 1-minute interval monitor before spawning so the first tick fires while spawning completes. Use the cafleet-monitoring template with literal `[session-id]` and `[director-agent-id]` substituted in. Expected deliverables: `${FOLDER}/slide.md`, `${FOLDER}/transcript.md`. Active members will include `presentation`, `transcript`, and later `vr-batch-*`.
 
 #### 1c. Read role definitions
 
@@ -148,7 +148,7 @@ When complete, send the file path to the Director via cafleet message send.
 Spawn with:
 
 ```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
+cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "presentation" \
   --description "Authors slide.md" \
   -- "<Presentation spawn prompt>"
@@ -188,7 +188,7 @@ When complete, send the file path to the Director via cafleet message send.
 Spawn with:
 
 ```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
+cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "transcript" \
   --description "Authors transcript.md" \
   -- "<Transcript spawn prompt>"
@@ -199,16 +199,16 @@ cafleet --session-id <session-id> --json member create --agent-id <director-agen
 Read the output files (`${FOLDER}/slide.md`, `${FOLDER}/transcript.md`) and review using the tag criteria in [roles/director.md](roles/director.md). Send tagged feedback via `cafleet message send`; members revise and reply. See [roles/director.md](roles/director.md) for revision approach and iteration limits.
 
 ```bash
-cafleet --session-id <session-id> message send --agent-id <director-agent-id> \
+cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
   --to <presentation-agent-id> \
   --text "slide revisions: [SLIDE STRUCTURE] ... / [VISUAL] ... / ..."
 
-cafleet --session-id <session-id> message send --agent-id <director-agent-id> \
+cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
   --to <transcript-agent-id> \
   --text "transcript revisions: [FLOW] ... / [TIMING] ... / ..."
 ```
 
-Each polled inbound message MUST be `ack`ed via `cafleet --session-id <session-id> message ack --agent-id <director-agent-id> --task-id <task-id>` after acting on it.
+Each polled inbound message MUST be `ack`ed via `cafleet --session-id [session-id] message ack --agent-id [director-agent-id] --task-id <task-id>` after acting on it.
 
 Once the slide deck is finalized, send the finalized slide structure to the Transcript member for 1:1 realignment.
 
@@ -249,19 +249,19 @@ while start <= total_slides:
         wait for report from VR for round <vr_round> via cafleet message poll arrival
         if no issues: break
         if vr_round >= 3: break                # max 2 re-check rounds reached; remaining issues escalate to user in Step 4
-        cafleet --session-id <session-id> message send --agent-id <director-agent-id> \
+        cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
             --to <presentation-agent-id> --text "<tagged issues>"   # fix
         vr_round += 1
-        cafleet --session-id <session-id> message send --agent-id <director-agent-id> \
+        cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
             --to <vr-batch-agent-id> --text "ROUND: <vr_round>\nRe-check slides: <list>"
         # VR writes the next capture to `vr<start>-r<vr_round>-p<slide_number>.png` and
         # the next persisted report to `vr<start>-r<vr_round>.md`, preserving prior rounds
 
     # Explicit close handshake before delete: the VR cannot reliably run extra commands after /exit.
-    cafleet --session-id <session-id> message send --agent-id <director-agent-id> \
+    cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
         --to <vr-batch-agent-id> --text "CLOSE: run `bun run agent-browser --session vr-batch-<start> close`, then reply 'closed'."
     wait for the VR's "closed" confirmation via cafleet message poll
-    cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <vr-batch-agent-id>
+    cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <vr-batch-agent-id>
     start = end + 1
 ```
 
@@ -300,7 +300,7 @@ When complete, persist the report to <folder>/screenshots/vr<start>-r<round>.md 
 Spawn with:
 
 ```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
+cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "vr-batch-<start>" \
   --description "Visual Reviewer for slides <start>..<end>" \
   -- "<Visual Reviewer spawn prompt>"
@@ -330,18 +330,18 @@ Follow the Shutdown Protocol in `Skill(cafleet)` § *Shutdown Protocol*. Order m
 1. **Cancel the `/loop` monitor** with `CronDelete <job-id>`. The cron must stop firing BEFORE any member is deleted; a cron that keeps polling a tearing-down session spams `Error: session is deleted`.
 2. **Delete every member** — Presentation, Transcript, and any active VR batch. For any active VR batch, run the explicit close handshake first (Director sends `CLOSE:` via `cafleet message send`, VR runs `bun run agent-browser --session vr-batch-<start> close` and replies `closed`), THEN run `cafleet member delete`. Once all VR browser sessions are closed:
    ```bash
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <presentation-agent-id>
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <transcript-agent-id>
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <vr-batch-agent-id>   # if still alive — only after the close handshake
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <presentation-agent-id>
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <transcript-agent-id>
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <vr-batch-agent-id>   # if still alive — only after the close handshake
    ```
    Each call sends `/exit` and waits up to 15 s for the pane's `claude` process to exit. Do not rely on `/exit` to trigger any post-shutdown action — additional commands are not guaranteed to run after `/exit` arrives.
-3. **Verify the roster is empty**: `cafleet --session-id <session-id> member list --agent-id <director-agent-id>` must return zero members.
+3. **Verify the roster is empty**: `cafleet --session-id [session-id] member list --agent-id [director-agent-id]` must return zero members.
 4. **Run the agent-browser safety net** to close any orphan browser sessions left behind:
    ```bash
    bun run agent-browser close --all
    ```
 5. **Kill the Slidev dev server** if still running (stop the background Bash task started at Step 3).
-6. **Delete the session**: `cafleet session delete <session-id>` (positional, no `--session-id` flag). Soft-deletes the session and deregisters the root Director and Administrator atomically.
+6. **Delete the session**: `cafleet session delete [session-id]` (positional, no `--session-id` flag). Soft-deletes the session and deregisters the root Director and Administrator atomically.
 7. **Confirm**: `cafleet session list` — the current session must not appear (soft-deleted sessions are hidden).
 
 Do NOT use raw `tmux kill-pane` or `tmux send-keys` at any point — `cafleet member delete` is the only supported teardown primitive.

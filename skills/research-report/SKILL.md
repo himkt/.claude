@@ -34,7 +34,7 @@ The cafleet binary itself must be installed and on `PATH` (verify with `cafleet 
 
 ## Architecture
 
-The Director is the root agent of a CAFleet session — bootstrapped automatically by `cafleet session create` — and spawns every member via `cafleet --session-id <session-id> member create --agent-id <director-agent-id>`. All inter-agent coordination flows through the CAFleet message broker (`cafleet message send` + auto-delivered tmux push notifications) and a shared task list.
+The Director is the root agent of a CAFleet session — bootstrapped automatically by `cafleet session create` — and spawns every member via `cafleet --session-id [session-id] member create --agent-id [director-agent-id]`. All inter-agent coordination flows through the CAFleet message broker (`cafleet message send` + auto-delivered tmux push notifications) and a shared task list.
 
 ```text
 User
@@ -76,11 +76,11 @@ Run `cafleet doctor` to confirm the Director is inside a tmux session with valid
 cafleet --json session create --label "research-[topic-slug]"
 ```
 
-Capture `session_id` and `director.agent_id` from the response. Treat `session_id` as `<session-id>` and `director.agent_id` as `<director-agent-id>` for the rest of this skill.
+Capture `session_id` and `director.agent_id` from the response. Treat `session_id` as `[session-id]` and `director.agent_id` as `[director-agent-id]` for the rest of this skill.
 
 ### Step 1: Start Progress Monitor (Director — MANDATORY)
 
-Load `Skill(cafleet)` and `Skill(cafleet-monitoring)`. Start a `/loop` monitor at a 1-minute interval BEFORE the first `cafleet member create` call so the first tick fires while the Manager is spawning. Use the cafleet-monitoring template with the literal `<session-id>` and `<director-agent-id>` UUIDs substituted in.
+Load `Skill(cafleet)` and `Skill(cafleet-monitoring)`. Start a `/loop` monitor at a 1-minute interval BEFORE the first `cafleet member create` call so the first tick fires while the Manager is spawning. Use the cafleet-monitoring template with the literal `[session-id]` and `[director-agent-id]` UUIDs substituted in.
 
 The loop must check `${OUTPUT_DIR}` for these expected deliverables:
 
@@ -139,7 +139,7 @@ LANGUAGE: [INSERT user's language preference if specified]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
-- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `<task-id>` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id>, then act on the instructions.
+- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `[task-id]` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id [task-id], then act on the instructions.
 - You do NOT talk to Scouts or Researchers directly. The Director spawns them and relays their findings.
 - The team shares a harness task list (TaskList / TaskGet / TaskUpdate). Use it to track sub-topic assignments.
 
@@ -151,13 +151,13 @@ Your first compiled report will be reviewed critically by the Director. Aim for 
 Spawn with:
 
 ```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
+cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "manager" \
   --description "Compiles the research report" \
   -- "<Manager spawn prompt with embedded role content (literal braces doubled)>"
 ```
 
-Capture the printed `agent_id` and substitute it for `<manager-agent-id>` in every subsequent `cafleet` call that targets the Manager.
+Capture the printed `agent_id` and substitute it for `[manager-agent-id]` in every subsequent `cafleet` call that targets the Manager.
 
 ### Step 3: Knowledge Bootstrapping — Scout Phase (Director, on Manager's request)
 
@@ -188,7 +188,7 @@ OUTPUT FILE: [INSERT <resolved-path>/00-scout-<topic>.md]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
-- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `<task-id>` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id>, then act on the instructions.
+- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `[task-id]` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id [task-id], then act on the instructions.
 
 Write findings to the output file, then send the Director a completion summary. The Director will relay your findings to the Manager.
 ```
@@ -196,7 +196,7 @@ Write findings to the output file, then send the Director a completion summary. 
 Spawn with:
 
 ```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
+cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "scout-<NN>" \
   --description "Landscape scout" \
   -- "<Scout spawn prompt>"
@@ -258,7 +258,7 @@ OUTPUT FILE: [INSERT <resolved-path>/NN-research-<subtopic>.md]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
-- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `<task-id>` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id>, then act on the instructions.
+- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `[task-id]` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id [task-id], then act on the instructions.
 - On start, claim your task: TaskUpdate(taskId: YOUR TASK ID, owner: "researcher-<NN>", status: "in_progress").
 - On completion, mark your task completed: TaskUpdate(taskId: YOUR TASK ID, status: "completed").
 
@@ -268,7 +268,7 @@ Write findings to the output file, then send the Director a completion summary. 
 Spawn with:
 
 ```bash
-cafleet --session-id <session-id> --json member create --agent-id <director-agent-id> \
+cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "researcher-<NN>" \
   --description "Researcher for sub-topic <slug>" \
   -- "<Researcher spawn prompt>"
@@ -283,12 +283,12 @@ When the Manager delivers the compiled `report.md`:
 1. The Director reads `${OUTPUT_DIR}/report.md` and reviews it critically against the checklist in [roles/director.md](roles/director.md).
 2. The Director sends tagged feedback to the Manager:
    ```bash
-   cafleet --session-id <session-id> message send --agent-id <director-agent-id> \
-     --to <manager-agent-id> \
+   cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
+     --to [manager-agent-id] \
      --text "review feedback round <N>: [FACTUAL ERROR] ... / [GAP] ... / ..."
    ```
 3. The Manager revises the report (requesting additional Researchers from the Director as needed) and sends a completion message back via `cafleet message send`.
-4. Each polled inbound message MUST be `ack`ed via `cafleet --session-id <session-id> message ack --agent-id <director-agent-id> --task-id <task-id>` after acting on it. Un-acked messages stay in `INPUT_REQUIRED` and re-surface on every subsequent `message poll` cycle.
+4. Each polled inbound message MUST be `ack`ed via `cafleet --session-id [session-id] message ack --agent-id [director-agent-id] --task-id [task-id]` after acting on it. Un-acked messages stay in `INPUT_REQUIRED` and re-surface on every subsequent `message poll` cycle.
 5. Repeat until the Director judges quality is sufficient. Aim for 2–3 rounds maximum.
 
 If the Manager asks the Director a question that is really a user decision (e.g. language choice, scope trade-off), the Director MUST relay via `AskUserQuestion` and pass the user's verbatim answer back via `cafleet message send`. Never decide on the user's behalf.
@@ -308,19 +308,19 @@ Follow the Shutdown Protocol in `Skill(cafleet)` § *Shutdown Protocol*. Order m
 1. **Cancel the `/loop` monitor** with `CronDelete <job-id>`. The cron must stop firing BEFORE any member is deleted; a cron that keeps polling a tearing-down session spams `Error: session is deleted` and races with member-delete.
 2. **Delete every member** in dependency order — Researchers first, then any active Scout, then the Manager:
    ```bash
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <researcher-agent-id>
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <scout-agent-id>
-   cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <manager-agent-id>
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <researcher-agent-id>
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <scout-agent-id>
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [manager-agent-id]
    ```
    Each call sends `/exit` to the pane and waits up to 15 s for it to close. On exit 2 (timeout), the pane buffer tail is printed on stderr — inspect with `cafleet member capture`, answer any prompt with `cafleet member send-input`, then re-run. As a last resort, rerun with `--force` to skip the wait and kill-pane immediately.
 3. **Verify the roster is empty**:
    ```bash
-   cafleet --session-id <session-id> member list --agent-id <director-agent-id>
+   cafleet --session-id [session-id] member list --agent-id [director-agent-id]
    ```
    If anyone remains, repeat step 2 for that member.
 4. **Delete the session**:
    ```bash
-   cafleet session delete <session-id>
+   cafleet session delete [session-id]
    ```
    This soft-deletes the session and deregisters the root Director, Administrator, and any surviving members in one transaction.
 5. **Confirm**:
