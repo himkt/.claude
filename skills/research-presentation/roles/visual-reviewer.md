@@ -77,7 +77,7 @@ Parse `slide.md` and count `\n---\n` separators that are **not** part of the YAM
 
 ### Prohibited Commands
 
-- `agent-browser wait *` — breaks the Slidev page. If you need to wait, use shell `sleep N` (substitute a literal integer, e.g., `sleep 2`).
+- `agent-browser wait` for element selectors (e.g., `wait .selector`) — these subcommands can leave the Slidev page in a broken state. The two `wait` forms the Director's server-readiness procedure expects you to use are allowed: `wait --load networkidle` (after `open`, for initial page load) and `wait N` (where `N` is a literal millisecond integer, used between readiness retries). For all other waits, use shell `sleep N` (literal integer seconds, e.g., `sleep 2`).
 - `agent-browser eval *` — prohibited in the VR role. Screenshot is the source of truth.
 
 ### Per-Slide Capture
