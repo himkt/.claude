@@ -67,7 +67,7 @@ Include transition phrases to the next slide where appropriate.}
 
 Your work proceeds in two phases:
 
-1. **Initial phase (parallel with the Presentation teammate):** Draft a preliminary narration based on the report's section structure. Use the report's organization as a provisional slide outline since the final slide deck may not be ready yet.
+1. **Initial phase (parallel with the Presentation member):** Draft a preliminary narration based on the report's section structure. Use the report's organization as a provisional slide outline since the final slide deck may not be ready yet.
 2. **Alignment phase (after the slide deck is finalized):** The Director sends you the finalized slide structure via `cafleet message send`. Realign your narration to match the actual slides — adjust headings, ordering, and content to achieve exact 1:1 correspondence.
 
 ## The Iterative Improvement Loop

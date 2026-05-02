@@ -64,7 +64,7 @@ Step 5 (cleanup) is autonomous — no user prompt.
    - If skipped (absolute path): set `${FOLDER} = $ARGUMENTS`.
    - If base resolved: set `${FOLDER} = ${BASE}/researches/$ARGUMENTS`. Resolve to absolute path.
 3. Check that `${FOLDER}/report.md` exists. If not, error: "No report.md found in `${FOLDER}`. Run `/research-report` first to generate a report."
-4. Pass `${FOLDER}` as the resolved absolute path to all teammates in spawn prompts.
+4. Pass `${FOLDER}` as the resolved absolute path to all members in spawn prompts.
 
 ### Step 1: Bootstrap CAFleet Session, Start Monitor & Spawn Presentation + Transcript (Director)
 

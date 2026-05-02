@@ -44,7 +44,7 @@ Substitute the literal `<session-id>`, `<my-agent-id>`, and `<director-agent-id>
 
 Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/<topic-slug>/00-scout-<topic>.md`). This file is your primary deliverable.
 
-- **The output directory already exists.** The Director creates it before spawning any teammates. Do NOT create directories — write files directly to the existing path.
+- **The output directory already exists.** The Director creates it before spawning any members. Do NOT create directories — write files directly to the existing path.
 - **Write your complete findings to the assigned file.** Use the output format defined below. The file must be self-contained — anyone reading it should understand the landscape without needing your messages.
 - **The file is the deliverable; the `cafleet message send` to the Director is the notification.** After writing the file, send the Director a completion report that briefly summarizes key findings. The file must be self-contained.
 - **Overwrite on re-investigation.** If the Director (relaying a Manager request) sends you back for targeted follow-up or to explore a specific area, overwrite your original file with the updated findings. Do not create a new version file. The file path stays the same throughout the scouting lifecycle.

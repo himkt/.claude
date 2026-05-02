@@ -95,11 +95,11 @@ Read every screenshot in `<folder>/screenshots/vr<start>-r<round>-p<N>.png` (or 
 
 ## Report Modification Policy
 
-This skill operates on a finalized report. The Director does **not** modify the report itself. If the Presentation teammate requests report changes, escalate to the user:
+This skill operates on a finalized report. The Director does **not** modify the report itself. If the Presentation member requests report changes, escalate to the user:
 
 ```
 presentation → Director: "I need section X reorganized because..."
-Director → User: "The presentation teammate suggests modifying report.md: [reason].
+Director → User: "The presentation member suggests modifying report.md: [reason].
                   Please edit the report and re-run, or I can proceed with the current structure."
 ```
 

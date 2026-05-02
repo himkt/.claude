@@ -65,7 +65,7 @@ If any check is ambiguous, state the ambiguity explicitly rather than guessing.
 
 Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/<topic-slug>/NN-research-<subtopic>.md`). This file is your primary deliverable.
 
-- **The output directory already exists.** The Director creates it before spawning any teammates. Do NOT create directories — write files directly to the existing path.
+- **The output directory already exists.** The Director creates it before spawning any members. Do NOT create directories — write files directly to the existing path.
 - **Write your complete findings to the assigned file.** The file should contain everything you would otherwise send in a message: all data, analysis, source URLs, and context. Free-form markdown with inline source URLs is the expected format — the same quality expectations as message-based findings apply.
 - **The file is the deliverable; the `cafleet message send` to the Director is the notification.** After writing the file, send the Director a brief completion report that summarizes key findings. The file must be self-contained.
 - **Overwrite on re-investigation.** If the Director (relaying the Manager) sends you back for revisions or additional research, overwrite your original file with the updated findings. Do not create a new version file (e.g., `01-research-subtopic-v2.md`). The file path stays the same throughout the investigation lifecycle. When re-opened for revision, flip your task back to `in_progress` via `TaskUpdate`, then back to `completed` when done.

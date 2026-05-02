@@ -88,7 +88,7 @@ Load `Skill(cafleet)` and follow its spawn protocol.
 
 #### 2a. Shared task list
 
-The harness task tools (`TaskCreate / TaskUpdate / TaskList / TaskGet`) remain the work-coordination substrate — they are unchanged from the in-process model. The on-disk task store at `~/.claude/tasks/research-<topic-slug>/` is created on the first `TaskCreate` call (typically by the Manager when decomposing the topic). No explicit team-bootstrap step is required.
+The harness task tools (`TaskCreate / TaskUpdate / TaskList / TaskGet`) are the work-coordination substrate. The on-disk task store at `~/.claude/tasks/research-<topic-slug>/` is created on the first `TaskCreate` call (typically by the Manager when decomposing the topic). No explicit team-bootstrap step is required.
 
 #### 2b. Read role definitions
 
@@ -130,7 +130,7 @@ COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
 - When you see cafleet message poll output with a message from the Director, ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id> and act on the instructions.
 - You do NOT talk to Scouts or Researchers directly. The Director spawns them and relays their findings.
-- The team shares a harness task list (TaskList / TaskGet / TaskUpdate). Use it to track sub-topic assignments — these tools are unchanged from the harness.
+- The team shares a harness task list (TaskList / TaskGet / TaskUpdate). Use it to track sub-topic assignments.
 
 To request Scouts or Researchers, send the Director a cafleet message specifying: role (Scout or Researcher), scope, search angles, and output file path. The Director will spawn them via `cafleet member create` and relay their completion reports back to you.
 
