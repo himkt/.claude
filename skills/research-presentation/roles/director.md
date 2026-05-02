@@ -142,7 +142,7 @@ Follow `Skill(cafleet-monitoring)` for the health-check sequence (`cafleet membe
 Run the canonical teardown per `Skill(cafleet)` § *Shutdown Protocol*:
 
 1. Cancel every active `/loop` monitor via `CronDelete <job-id>` BEFORE deleting any member.
-2. Delete each member — Presentation, Transcript, and any active VR batch:
+2. Delete each member — Presentation, Transcript, and any active VR batch. The `--member-id` flag takes the target member's `agent_id` UUID (the value `cafleet member create` printed at spawn — the same identifier you use as `--to <member-agent-id>` in `cafleet message send`):
    ```bash
    cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <presentation-agent-id>
    cafleet --session-id <session-id> member delete --agent-id <director-agent-id> --member-id <transcript-agent-id>

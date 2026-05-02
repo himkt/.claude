@@ -17,7 +17,16 @@ Create a Slidev presentation and reading transcript from an existing research re
 
 ## Prerequisites
 
-This skill drives every inter-agent call through the `cafleet` CLI via the harness `Bash` tool. The repository's `~/.claude/settings.json` `permissions.allow` list MUST include patterns that match the literal `cafleet --session-id <session-uuid> ...` invocations the Director will issue, otherwise every call triggers a per-invocation permission prompt that interrupts the agent loop. At minimum, allow `Bash(cafleet --session-id * *)`, `Bash(cafleet doctor)`, `Bash(cafleet --json session create *)`, and `Bash(cafleet session delete *)`. The cafleet binary itself must be installed and on `PATH` (verify with `cafleet doctor`).
+This skill drives every inter-agent call through the `cafleet` CLI via the harness `Bash` tool. The repository's `~/.claude/settings.json` `permissions.allow` list MUST include patterns that match every literal `cafleet ...` invocation the Director will issue, otherwise every call triggers a per-invocation permission prompt that interrupts the agent loop. At minimum, allow:
+
+- `Bash(cafleet doctor)` — environment precheck
+- `Bash(cafleet --json session create *)` — bootstrap (Step 1a)
+- `Bash(cafleet --session-id * *)` — every session-scoped call (member create, message send/poll/ack, member list, member delete, member capture, member exec, member ping, member send-input)
+- `Bash(cafleet session delete *)` — teardown (no `--session-id` flag — positional arg)
+- `Bash(cafleet session list)` — final confirmation that the session is gone (no `--session-id` flag)
+- `Skill(cafleet)`, `Skill(cafleet-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt
+
+The cafleet binary itself must be installed and on `PATH` (verify with `cafleet doctor`).
 
 ## Architecture
 
