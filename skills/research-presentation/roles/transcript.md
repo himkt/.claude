@@ -52,13 +52,13 @@ Calibrate narration length per slide based on the slide's content density. No ex
 
 ## Slide 1: <Slide Title>
 
-{Narration text for this slide. Written in natural spoken language.
+<Narration text for this slide. Written in natural spoken language.
 Should expand on bullet points without reading them verbatim.
-Include transition phrases to the next slide where appropriate.}
+Include transition phrases to the next slide where appropriate.>
 
 ## Slide 2: <Slide Title>
 
-{Narration text...}
+<Narration text...>
 
 ...
 ```

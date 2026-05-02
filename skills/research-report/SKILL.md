@@ -1,6 +1,6 @@
 ---
 name: research-report
-description: Create a comprehensive research report with folder-based output. Researchers write findings to individual files, the Manager compiles report.md, and the Director reviews. Output goes to researches/<topic-slug>/. After report approval, offers to chain into /research-presentation for slides and transcript. Teammates must always load skills using the Skill tool, not by reading skill files directly. Do NOT do a quick web search and summarize — invoke this skill for thorough, multi-source research.
+description: Create a comprehensive research report with folder-based output. Researchers write findings to individual files, the Manager compiles report.md, and the Director reviews. Output goes to researches/<topic-slug>/. After report approval, offers to chain into /research-presentation for slides and transcript. Members must always load skills using the Skill tool, not by reading skill files directly. Do NOT do a quick web search and summarize — invoke this skill for thorough, multi-source research.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
@@ -111,9 +111,7 @@ Read the role files that will be embedded verbatim in spawn prompts:
 - `~/.claude/skills/research-report/roles/scout.md`
 - `~/.claude/skills/research-report/roles/researcher.md`
 
-> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. Any literal `{` or `}` in the embedded role content MUST be doubled to `{{` / `}}` before injection — otherwise `str.format()` raises `KeyError` at spawn time.
->
-> Apply the doubling at spawn-prompt assembly time, in the Director's own working memory: read the role-file content with the `Read` tool, then do `text.replace("{", "{{").replace("}", "}}")` mentally as you build the spawn prompt string before passing it to `cafleet member create`. Only re-introduce single-brace tokens for the four kwargs cafleet itself substitutes (`{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`). Do NOT shell out to `sed` / `awk` — those are blocked by this repo's Bash validator and `permissions.deny`. Do NOT eyeball this — manual brace-counting is the most common failure mode.
+> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. The role docs in this skill use `<...>` / `[...]` notation everywhere placeholders appear, so the embedded role content contains no literal `{` or `}` and no escaping is needed. The only single-brace tokens in the spawn prompt are the four kwargs cafleet itself substitutes: `{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`. If you ever add a `{` or `}` to a role doc (a JSON example, a format-string example), double it to `{{` / `}}` before embedding — `str.format()` raises `KeyError` at spawn time otherwise. Do NOT shell out to `sed` / `awk` — those are blocked by this repo's Bash validator and `permissions.deny`.
 
 #### 2c. Spawn the Manager
 
