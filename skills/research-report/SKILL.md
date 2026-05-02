@@ -28,7 +28,7 @@ This skill drives every inter-agent call through the `cafleet` CLI via the harne
 - `Bash(cafleet --session-id * *)` — every session-scoped call (member create, message send/poll/ack, member list, member delete, member capture, member exec, member ping, member send-input)
 - `Bash(cafleet session delete *)` — teardown (no `--session-id` flag — positional arg)
 - `Bash(cafleet session list)` — final confirmation that the session is gone (no `--session-id` flag)
-- `Skill(cafleet)`, `Skill(cafleet-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt
+- `Skill(cafleet)`, `Skill(cafleet-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt. These come from the `cafleet@cafleet` plugin (declared under `enabledPlugins` in `~/.claude/settings.json` and provisioned via the cafleet marketplace). Install the plugin before invoking this skill.
 
 The cafleet binary itself must be installed and on `PATH` (verify with `cafleet doctor`).
 
@@ -121,7 +121,7 @@ Read the role files that will be embedded verbatim in spawn prompts:
 You are the Manager in a research report team (CAFleet-native).
 
 [ROLE DEFINITION]
-[Content of ~/.claude/skills/research-report/roles/manager.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
+[Content of ~/.claude/skills/research-report/roles/manager.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
 [/ROLE DEFINITION]
 
 Load these skills at startup:
@@ -169,7 +169,7 @@ After assessing the topic, the Manager may send the Director one or more Scout s
 You are a Scout Researcher in a research team (CAFleet-native).
 
 [ROLE DEFINITION]
-[Content of ~/.claude/skills/research-report/roles/scout.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
+[Content of ~/.claude/skills/research-report/roles/scout.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
 [/ROLE DEFINITION]
 
 Load these skills at startup:
@@ -237,7 +237,7 @@ The Manager's `TaskCreate` calls also serve as the authoritative list of sub-top
 You are a Research Specialist in a research team (CAFleet-native).
 
 [ROLE DEFINITION]
-[Content of ~/.claude/skills/research-report/roles/researcher.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
+[Content of ~/.claude/skills/research-report/roles/researcher.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
 [/ROLE DEFINITION]
 
 Load these skills at startup:

@@ -77,7 +77,7 @@ Parse `slide.md` and count `\n---\n` separators that are **not** part of the YAM
 
 ### Prohibited Commands
 
-- `agent-browser wait *` — breaks the Slidev page. If you need to wait, use shell `sleep [n]`.
+- `agent-browser wait *` — breaks the Slidev page. If you need to wait, use shell `sleep N` (substitute a literal integer, e.g., `sleep 2`).
 - `agent-browser eval *` — prohibited in the VR role. Screenshot is the source of truth.
 
 ### Per-Slide Capture
