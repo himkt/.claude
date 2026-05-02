@@ -33,7 +33,7 @@ cafleet --session-id <session-id> message send --agent-id <my-agent-id> \
 
 Substitute the literal `<session-id>`, `<my-agent-id>`, and `<director-agent-id>` UUIDs that were baked into your spawn prompt. Never use shell variables — `permissions.allow` matches command strings literally.
 
-**Receiving messages.** When the Director sends you a message, the broker keystrokes `cafleet --session-id <session-id> message poll --agent-id <my-agent-id>` into your pane via tmux push notification, so the keystroke arrives as your next turn. After acting on the polled message, ack it via `cafleet --session-id <session-id> message ack --agent-id <my-agent-id> --task-id <task-id>`. Un-acked messages re-surface on every subsequent `message poll` cycle.
+**Receiving messages.** When the Director sends you a message, the broker keystrokes `cafleet --session-id <session-id> message poll --agent-id <my-agent-id>` into your pane via tmux push notification, so the keystroke arrives as your next turn. Every entry in the poll output carries an `id:` line — that UUID is the `<task-id>`. After acting on the polled message, ack it via `cafleet --session-id <session-id> message ack --agent-id <my-agent-id> --task-id <task-id>`. Un-acked messages re-surface on every subsequent `message poll` cycle.
 
 **Pane silence is normal.** After sending a message you sit at the prompt until the Director replies. That is the expected flow — do not try to "check in" or send status pings. Work resumes when a new message arrives.
 

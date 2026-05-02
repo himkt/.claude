@@ -129,7 +129,7 @@ OUTPUT:           [INSERT <folder>/slide.md]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
-- When you see cafleet message poll output with a message from the Director, ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id> and act on the instructions.
+- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `<task-id>` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id>, then act on the instructions.
 
 When complete, send the file path to the Director via cafleet message send.
 ```
@@ -169,7 +169,7 @@ OUTPUT:   [INSERT <folder>/transcript.md]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
-- When you see cafleet message poll output with a message from the Director, ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id> and act on the instructions.
+- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `<task-id>` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id>, then act on the instructions.
 
 When complete, send the file path to the Director via cafleet message send.
 ```
@@ -278,7 +278,7 @@ ROUND:           [INSERT <round>]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
-- When you see cafleet message poll output with a message from the Director, ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id> and act on the instructions.
+- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `<task-id>` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id>, then act on the instructions.
 
 When complete, persist the report to <folder>/screenshots/vr<start>-r<round>.md and send it to the Director via cafleet message send.
 ```

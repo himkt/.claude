@@ -128,7 +128,7 @@ LANGUAGE: [INSERT user's language preference if specified]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
-- When you see cafleet message poll output with a message from the Director, ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id> and act on the instructions.
+- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `<task-id>` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id>, then act on the instructions.
 - You do NOT talk to Scouts or Researchers directly. The Director spawns them and relays their findings.
 - The team shares a harness task list (TaskList / TaskGet / TaskUpdate). Use it to track sub-topic assignments.
 
@@ -177,7 +177,7 @@ OUTPUT FILE: [INSERT <resolved-path>/00-scout-<topic>.md]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
-- When you see cafleet message poll output with a message from the Director, ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id> and act on the instructions.
+- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `<task-id>` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id>, then act on the instructions.
 
 Write findings to the output file, then send the Director a completion summary. The Director will relay your findings to the Manager.
 ```
@@ -247,7 +247,7 @@ OUTPUT FILE: [INSERT <resolved-path>/NN-research-<subtopic>.md]
 
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
-- When you see cafleet message poll output with a message from the Director, ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id> and act on the instructions.
+- When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `<task-id>` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id <task-id>, then act on the instructions.
 - On start, claim your task: TaskUpdate(taskId: YOUR TASK ID, owner: "researcher-<NN>", status: "in_progress").
 - On completion, mark your task completed: TaskUpdate(taskId: YOUR TASK ID, status: "completed").
 

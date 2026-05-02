@@ -26,7 +26,7 @@ cafleet --session-id <session-id> message send --agent-id <director-agent-id> \
   --text "<instructions, feedback, or relayed content>"
 ```
 
-**Polling and ack-ing inbound messages.** When a member sends you a message, the broker auto-fires `cafleet message poll --agent-id <director-agent-id>` into your pane via tmux push notification, so the keystroke arrives as your next turn. After acting on the polled message, ack it via `cafleet --session-id <session-id> message ack --agent-id <director-agent-id> --task-id <task-id>` — un-acked messages stay in `INPUT_REQUIRED` and re-surface on every subsequent `message poll` cycle.
+**Polling and ack-ing inbound messages.** When a member sends you a message, the broker auto-fires `cafleet --session-id <session-id> message poll --agent-id <director-agent-id>` into your pane via tmux push notification, so the keystroke arrives as your next turn. Every entry in the poll output carries an `id:` line — that UUID is the `<task-id>`. After acting on the polled message, ack it via `cafleet --session-id <session-id> message ack --agent-id <director-agent-id> --task-id <task-id>` — un-acked messages stay in `INPUT_REQUIRED` and re-surface on every subsequent `message poll` cycle.
 
 **Pane silence is not a stall.** A member going quiet after sending a message is the expected between-turn state per `Skill(cafleet)`. Do not nudge a member simply because their pane is idle — only nudge when their inactivity blocks your next step.
 
