@@ -19,6 +19,10 @@ Generate comprehensive research reports using a multi-layer CAFleet-orchestrated
 
 - For the report format specification, see [template.md](template.md)
 
+## Prerequisites
+
+This skill drives every inter-agent call through the `cafleet` CLI via the harness `Bash` tool. The repository's `~/.claude/settings.json` `permissions.allow` list MUST include patterns that match the literal `cafleet --session-id <session-uuid> ...` invocations the Director will issue, otherwise every call triggers a per-invocation permission prompt that interrupts the agent loop. At minimum, allow `Bash(cafleet --session-id * *)`, `Bash(cafleet doctor)`, `Bash(cafleet --json session create *)`, and `Bash(cafleet session delete *)`. The cafleet binary itself must be installed and on `PATH` (verify with `cafleet doctor`).
+
 ## Architecture
 
 The Director is the root agent of a CAFleet session — bootstrapped automatically by `cafleet session create` — and spawns every member via `cafleet --session-id <session-id> member create --agent-id <director-agent-id>`. All inter-agent coordination flows through the CAFleet message broker (`cafleet message send` + auto-delivered tmux push notifications) and a shared task list.
@@ -60,7 +64,7 @@ Run `cafleet doctor` to confirm the Director is inside a tmux session with valid
 `cafleet session create` atomically creates the session, registers a root Director bound to the current tmux pane, and seeds the built-in Administrator. Capture both UUIDs from the JSON response and substitute them as literal strings into every subsequent `cafleet ...` call (never shell variables — `permissions.allow` matches command strings literally).
 
 ```bash
-cafleet session create --label "research-<topic-slug>" --json
+cafleet --json session create --label "research-<topic-slug>"
 ```
 
 Capture `session_id` and `director.agent_id` from the response. Treat `session_id` as `<session-id>` and `director.agent_id` as `<director-agent-id>` for the rest of this skill.
@@ -100,7 +104,7 @@ Read the role files that will be embedded verbatim in spawn prompts:
 
 > **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. Any literal `{` or `}` in the embedded role content MUST be doubled to `{{` / `}}` before injection — otherwise `str.format()` raises `KeyError` at spawn time.
 >
-> Apply the doubling mechanically. Read each role file, then pipe the raw text through `sed -e 's/{/{{/g; s/}/}}/g'` and only re-introduce single-brace tokens for the four kwargs cafleet itself substitutes (`{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`). Do NOT eyeball this — manual brace-counting is the most common failure mode.
+> Apply the doubling at spawn-prompt assembly time, in the Director's own working memory: read the role-file content with the `Read` tool, then do `text.replace("{", "{{").replace("}", "}}")` mentally as you build the spawn prompt string before passing it to `cafleet member create`. Only re-introduce single-brace tokens for the four kwargs cafleet itself substitutes (`{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`). Do NOT shell out to `sed` / `awk` — those are blocked by this repo's Bash validator and `permissions.deny`. Do NOT eyeball this — manual brace-counting is the most common failure mode.
 
 #### 2c. Spawn the Manager
 

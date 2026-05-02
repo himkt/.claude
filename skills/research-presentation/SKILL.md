@@ -15,6 +15,10 @@ Create a Slidev presentation and reading transcript from an existing research re
 | **Transcript** | claude pane | Create reading transcript with 1:1 slide correspondence | Invent data, modify report, conduct research | [roles/transcript.md](roles/transcript.md) |
 | **Visual Reviewer** | claude pane — one per batch | Capture screenshots/snapshots of assigned slides using the agent-browser CLI (`bun run agent-browser`) with a per-batch named session (`--session vr-batch-<start>`), identify visual issues including aesthetic quality, report findings to Director | Edit slide.md, modify report, fix issues directly | [roles/visual-reviewer.md](roles/visual-reviewer.md) |
 
+## Prerequisites
+
+This skill drives every inter-agent call through the `cafleet` CLI via the harness `Bash` tool. The repository's `~/.claude/settings.json` `permissions.allow` list MUST include patterns that match the literal `cafleet --session-id <session-uuid> ...` invocations the Director will issue, otherwise every call triggers a per-invocation permission prompt that interrupts the agent loop. At minimum, allow `Bash(cafleet --session-id * *)`, `Bash(cafleet doctor)`, `Bash(cafleet --json session create *)`, and `Bash(cafleet session delete *)`. The cafleet binary itself must be installed and on `PATH` (verify with `cafleet doctor`).
+
 ## Architecture
 
 The Director is the root agent of a CAFleet session — bootstrapped automatically by `cafleet session create` — and spawns every member via `cafleet --session-id <session-id> member create --agent-id <director-agent-id>`. All inter-agent coordination flows through the CAFleet message broker (`cafleet message send` + auto-delivered tmux push notifications).
@@ -74,7 +78,7 @@ Load `Skill(cafleet)` and `Skill(cafleet-monitoring)` — this skill spawns para
 
 ```bash
 cafleet doctor
-cafleet session create --label "present-<topic-slug>" --json
+cafleet --json session create --label "present-<topic-slug>"
 ```
 
 `cafleet doctor` confirms the Director is inside a tmux session (a hard requirement of `cafleet member create`). On non-zero exit, abort and surface the error to the user — do NOT attempt raw `tmux` probes as a workaround.
@@ -95,7 +99,7 @@ Read the role files that will be embedded verbatim in spawn prompts:
 
 > **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. Any literal `{` or `}` in the embedded role content (e.g., JSON examples, format-string examples like the `{Narration text...}` placeholder in `roles/transcript.md`) MUST be doubled to `{{` / `}}` before injection — otherwise `str.format()` raises `KeyError` at spawn time.
 >
-> Apply the doubling mechanically. Read each role file, then pipe the raw text through `sed -e 's/{/{{/g; s/}/}}/g'` and only re-introduce single-brace tokens for the four kwargs cafleet itself substitutes (`{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`). Do NOT eyeball this — manual brace-counting is the most common failure mode.
+> Apply the doubling at spawn-prompt assembly time, in the Director's own working memory: read the role-file content with the `Read` tool, then do `text.replace("{", "{{").replace("}", "}}")` mentally as you build the spawn prompt string before passing it to `cafleet member create`. Only re-introduce single-brace tokens for the four kwargs cafleet itself substitutes (`{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`). Do NOT shell out to `sed` / `awk` — those are blocked by this repo's Bash validator and `permissions.deny`. Do NOT eyeball this — manual brace-counting is the most common failure mode.
 
 #### 1d. Spawn Presentation + Transcript in parallel
 
