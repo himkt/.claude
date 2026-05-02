@@ -70,14 +70,41 @@ Follow the **Color Discipline** and **Usage Rules** sections in `techniques/high
 - **Max 3 per slide.** More than 3 → move data to a table or chart.
 - **Semantic color**: positive (green), negative (red), neutral (blue), caution (orange). Ask "is this good or bad for the audience?"
 
+## Single-Line Bullet Rule
+
+**Every top-level bullet must fit on a single visible line.** Wrapped multi-line top-level bullets are a critical defect, flagged by the Visual Reviewer as `[MULTILINE_BULLET]`.
+
+If a bullet's natural text would wrap to a second line, **refactor structurally — do NOT rely on shrinking the font.**
+
+Refactor pattern:
+
+```markdown
+<!-- BAD: a long single bullet that wraps to 2 visible lines -->
+- Reasoning-as-product era opened with o1-preview (Sep 2024) and propagated to every major lab within twelve months [5]
+
+<!-- GOOD: parent + nested sub-bullets -->
+- Reasoning-as-product era
+  - Opened with o1-preview (Sep 2024)
+  - Propagated to every major lab within twelve months [5]
+```
+
+How to find the split:
+
+- Look for an em-dash, en-dash, colon, or comma that divides the bullet into a "lead phrase" + "detail clause(s)". The lead becomes the parent; each detail clause becomes a sub-bullet.
+- If the bullet has no natural split, shorten by trimming non-essential phrases. Preserve all citation numbers and key facts.
+- A small `fontSize` reduction (e.g. 80 → 70) is acceptable as a *secondary* lever when the result remains comfortably readable, but the primary fix path is restructuring.
+
+Sub-bullets ARE allowed to wrap once if necessary, but prefer single-line sub-bullets too.
+
 ## Text Wrapping Prevention
 
 Bad text wrapping (mid-word splits, orphan fragments, citation numbers alone on a line) is a critical defect. After writing each slide, mentally check whether any line would end with a short orphan. Fix with these tools, in order of preference:
 
-1. **`fontSize` prop** — add `fontSize: "16px"` (or smaller) to the slide's frontmatter to shrink all text and fit more per line. This is the safest fix because it doesn't change content.
-2. **Split into multiple slides** — if a slide has too much text to fit at any readable font size, split it into two slides. Do not cram.
+1. **Refactor to nested bullets** — if a top-level bullet wraps, break it into a parent + nested sub-bullets per the Single-Line Bullet Rule above. This is the preferred fix for multi-line bullets.
+2. **Split into multiple slides** — if a slide has too much content even after restructuring, split it into two slides. Do not cram.
 3. **Non-breaking characters** — use `&nbsp;` between a word and its citation `[N]`, or U+2011 `‑` within compound terms, to keep units together.
-4. **Minor text adjustments** — rephrase to shift where the line breaks, but do NOT shorten text to the point of losing information.
+4. **`fontSize` prop** — only as a secondary lever once the structural fixes above have been applied. Stay above the readability floor — a presentation that requires squinting fails the user.
+5. **Minor text adjustments** — rephrase to shift where the line breaks, but do NOT shorten text to the point of losing information.
 
 Citation numbers (`[N]`) must NEVER appear alone on a line. Use `&nbsp;` between the last word and its citation: `テキスト&nbsp;[46]`.
 

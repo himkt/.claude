@@ -44,6 +44,7 @@ Substitute the literal `[session-id]`, `[my-agent-id]`, and `[director-agent-id]
 | `[RENDER_ERROR]` | General rendering failure | Error message displayed, or slide blank |
 | `[CONSOLE_ERROR]` | Browser console error or uncaught page error detected via the Diagnostic Escalation procedure (`agent-browser console` / `errors`). Distinct from `[RENDER_ERROR]`, which covers visually observable breakage. | "Uncaught TypeError: Cannot read property 'foo' of undefined at slide-7.vue:42" |
 | `[TEXT_WRAPPING]` | **Critical defect.** Text breaks at a wrong boundary or leaves an orphan fragment. See detailed checking procedure below. | "9-13B" → "9-" + "13B"; "ダウンロー" + "ド"; "[46]" alone on a line; "を実証 [47]" as a 2-word orphan line |
+| `[MULTILINE_BULLET]` | **Critical defect.** A top-level bullet wraps to a 2nd visible line. Every top-level bullet must fit on a single visible line — if the text is too long, it must be refactored into a parent bullet plus nested sub-bullets, NOT left to wrap. | A 2-line bullet "Reasoning-as-product era opened with o1-preview (Sep 2024) and propagated to every major lab within twelve months [5]" → must be refactored into "Reasoning-as-product era" with sub-bullets for each clause. |
 
 ### TEXT_WRAPPING Deep Check Procedure (MANDATORY for every slide)
 
@@ -68,6 +69,25 @@ For each text element (bullet, label, paragraph, table cell, stats-grid label, A
 - Line break after a complete clause or sentence.
 
 **Remediation hint**: Fix by using `fontSize` prop to shrink text until it fits, non-breaking characters (U+2011 `‑`, `&nbsp;`) to keep units together, or shortening text. Do NOT treat citation numbers as independent elements — they must stay attached to the preceding text.
+
+### MULTILINE_BULLET Check Procedure (MANDATORY for every bullets/bullets-sm slide)
+
+**This is a critical defect distinct from `[TEXT_WRAPPING]`.** Where TEXT_WRAPPING flags *bad* line breaks within a wrapped bullet, MULTILINE_BULLET flags *any* wrapping of a top-level bullet at all.
+
+For each top-level bullet on a `layout: bullets` or `layout: bullets-sm` slide:
+
+1. Count how many visible lines the bullet occupies in the screenshot.
+2. If the bullet occupies **more than 1 line**, file `[MULTILINE_BULLET]`.
+3. Sub-bullets (nested under a parent bullet) ARE allowed to wrap once if necessary, but the preferred form is still single-line — flag a sub-bullet only when it wraps to 3+ lines.
+
+**FAIL example**: `Reasoning-as-product era opened with o1-preview (Sep 2024) and propagated to every major lab within twelve months [5]` rendered across 2 lines.
+
+**Remediation hint**: The fix is *always structural*, never a fontSize reduction below readability. The Presentation Specialist should refactor `Lead phrase — detail A, detail B [N]` into:
+- Lead phrase
+  - detail A
+  - detail B [N]
+
+A small fontSize adjustment (e.g. 80 → 70) is acceptable when the resulting text remains comfortably readable, but the primary fix path is restructuring.
 
 ## Screenshot Capture Process
 
