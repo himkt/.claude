@@ -154,7 +154,7 @@ Spawn with:
 cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "manager" \
   --description "Compiles the research report" \
-  -- "<Manager spawn prompt with embedded role content (literal braces doubled)>"
+  -- "[Manager spawn prompt with embedded role content (literal braces doubled)]"
 ```
 
 Capture the printed `agent_id` and substitute it for `[manager-agent-id]` in every subsequent `cafleet` call that targets the Manager.
@@ -199,7 +199,7 @@ Spawn with:
 cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "scout-<NN>" \
   --description "Landscape scout" \
-  -- "<Scout spawn prompt>"
+  -- "[Scout spawn prompt]"
 ```
 
 (Use `scout` if only one; `scout-1`, `scout-2`, ... for multiple.) Capture the printed `agent_id` for each Scout and substitute it into subsequent `cafleet message send` calls targeting that Scout.
@@ -271,7 +271,7 @@ Spawn with:
 cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "researcher-NN" \
   --description "Researcher for sub-topic <slug>" \
-  -- "<Researcher spawn prompt>"
+  -- "[Researcher spawn prompt]"
 ```
 
 The Director repeats this step whenever the Manager requests additional Researchers (for coverage gaps, failed investigations, or revision-driven re-research). Any new Researcher must first have a task created by the Manager; the Director includes the `taskId` in the spawn prompt.

@@ -22,7 +22,7 @@ All Director-to-member messages use `cafleet message send`. Members are addresse
 ```bash
 cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
   --to [member-agent-id] \
-  --text "<tagged feedback or assignment>"
+  --text "[tagged feedback or assignment]"
 ```
 
 **Polling and ack-ing inbound messages.** When a member sends you a message, the broker auto-fires `cafleet --session-id [session-id] message poll --agent-id [director-agent-id]` into your pane via tmux push notification. Every entry in the poll output carries an `id:` line — that UUID is the cafleet message-task id (called `<task-id>` because cafleet internally models messages as tasks; **distinct from** the harness `taskId` you use with `TaskCreate / TaskUpdate`). After acting on the polled message, ack it via `cafleet --session-id [session-id] message ack --agent-id [director-agent-id] --task-id <task-id>` — un-acked messages stay in `INPUT_REQUIRED` and re-surface on every subsequent poll cycle.

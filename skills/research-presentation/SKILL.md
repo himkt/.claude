@@ -151,7 +151,7 @@ Spawn with:
 cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "presentation" \
   --description "Authors slide.md" \
-  -- "<Presentation spawn prompt>"
+  -- "[Presentation spawn prompt]"
 ```
 
 Capture the printed `agent_id` and substitute it for `[presentation-agent-id]` in subsequent `cafleet message send` calls.
@@ -191,7 +191,7 @@ Spawn with:
 cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "transcript" \
   --description "Authors transcript.md" \
-  -- "<Transcript spawn prompt>"
+  -- "[Transcript spawn prompt]"
 ```
 
 ### Step 2: Content Review & Revision Loop (Director)
@@ -303,7 +303,7 @@ Spawn with:
 cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
   --name "vr-batch-<start>" \
   --description "Visual Reviewer for slides <start>..<end>" \
-  -- "<Visual Reviewer spawn prompt>"
+  -- "[Visual Reviewer spawn prompt]"
 ```
 
 ### Step 4: User Approval & Revision Loop (Director)
