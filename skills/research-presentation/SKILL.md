@@ -117,9 +117,9 @@ Both work from `report.md` independently. After the slide deck is finalized (Ste
 ```
 You are the Presentation Specialist in a research presentation team (CAFleet-native).
 
-<ROLE DEFINITION>
+[ROLE DEFINITION]
 [Content of ~/.claude/skills/research-presentation/roles/presentation.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
-</ROLE DEFINITION>
+[/ROLE DEFINITION]
 
 Load these skills at startup:
 - Skill(cafleet) — for the broker primitives and bash-via-Director routing
@@ -161,9 +161,9 @@ Capture the printed `agent_id` and substitute it for `<presentation-agent-id>` i
 ```
 You are the Transcript Specialist in a research presentation team (CAFleet-native).
 
-<ROLE DEFINITION>
+[ROLE DEFINITION]
 [Content of ~/.claude/skills/research-presentation/roles/transcript.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
-</ROLE DEFINITION>
+[/ROLE DEFINITION]
 
 Load these skills at startup:
 - Skill(cafleet) — for the broker primitives and bash-via-Director routing
@@ -270,9 +270,9 @@ while start <= total_slides:
 ```
 You are the Visual Reviewer in a research presentation team (CAFleet-native).
 
-<ROLE DEFINITION>
+[ROLE DEFINITION]
 [Content of ~/.claude/skills/research-presentation/roles/visual-reviewer.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
-</ROLE DEFINITION>
+[/ROLE DEFINITION]
 
 Load these skills at startup:
 - Skill(cafleet) — for the broker primitives and bash-via-Director routing

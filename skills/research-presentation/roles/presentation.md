@@ -16,14 +16,14 @@ You do NOT speak to the user directly. All coordination flows through the Direct
 **Sending a message to the Director** (completion reports, data-accuracy escalations, report-change requests):
 
 ```bash
-cafleet --session-id <session-id> message send --agent-id <my-agent-id> \
-  --to <director-agent-id> \
-  --text "<your report or question>"
+cafleet --session-id [session-id] message send --agent-id [my-agent-id] \
+  --to [director-agent-id] \
+  --text "[your report or question]"
 ```
 
-Substitute the literal `<session-id>`, `<my-agent-id>`, and `<director-agent-id>` UUIDs from your spawn prompt. Never use shell variables.
+Substitute the literal `[session-id]`, `[my-agent-id]`, and `[director-agent-id]` UUIDs from your spawn prompt. Never use shell variables.
 
-**Receiving messages.** When the Director sends you a message, the broker keystrokes `cafleet --session-id <session-id> message poll --agent-id <my-agent-id>` into your pane via tmux push notification. Every entry in the poll output carries an `id:` line — that UUID is the `<task-id>`. After acting on the polled message, ack it via `cafleet --session-id <session-id> message ack --agent-id <my-agent-id> --task-id <task-id>`.
+**Receiving messages.** When the Director sends you a message, the broker keystrokes `cafleet --session-id [session-id] message poll --agent-id [my-agent-id]` into your pane via tmux push notification. Every entry in the poll output carries an `id:` line — that UUID is the `[task-id]`. After acting on the polled message, ack it via `cafleet --session-id [session-id] message ack --agent-id [my-agent-id] --task-id [task-id]`.
 
 ## Layout Selection
 
@@ -66,7 +66,7 @@ Pick the right format — don't default to bullets or bar charts.
 
 Follow the **Color Discipline** and **Usage Rules** sections in `techniques/highlight.md`. Key rules:
 
-- **Always use `<Highlight>`** for colored numbers and keywords. Never use `<span class="c-...">`.
+- **Always use the `Highlight` component** for colored numbers and keywords (Vue tag form `[Highlight]...[/Highlight]` in slide.md). Never use `span class="c-..."` markup directly.
 - **Max 3 per slide.** More than 3 → move data to a table or chart.
 - **Semantic color**: positive (green), negative (red), neutral (blue), caution (orange). Ask "is this good or bad for the audience?"
 

@@ -19,14 +19,14 @@ You do NOT speak to the Manager directly. All coordination flows through the Dir
 **Sending a message to the Director** (completion reports, questions):
 
 ```bash
-cafleet --session-id <session-id> message send --agent-id <my-agent-id> \
-  --to <director-agent-id> \
-  --text "<your report or question>"
+cafleet --session-id [session-id] message send --agent-id [my-agent-id] \
+  --to [director-agent-id] \
+  --text "[your report or question]"
 ```
 
-Substitute the literal `<session-id>`, `<my-agent-id>`, and `<director-agent-id>` UUIDs from your spawn prompt. Never use shell variables.
+Substitute the literal `[session-id]`, `[my-agent-id]`, and `[director-agent-id]` UUIDs from your spawn prompt. Never use shell variables.
 
-**Receiving messages.** When the Director sends you a message, the broker keystrokes `cafleet --session-id <session-id> message poll --agent-id <my-agent-id>` into your pane via tmux push notification. Every entry in the poll output carries an `id:` line — that UUID is the `<task-id>`. After acting on the polled message, ack it via `cafleet --session-id <session-id> message ack --agent-id <my-agent-id> --task-id <task-id>`.
+**Receiving messages.** When the Director sends you a message, the broker keystrokes `cafleet --session-id [session-id] message poll --agent-id [my-agent-id]` into your pane via tmux push notification. Every entry in the poll output carries an `id:` line — that UUID is the `[task-id]`. After acting on the polled message, ack it via `cafleet --session-id [session-id] message ack --agent-id [my-agent-id] --task-id [task-id]`.
 
 **Pane silence is normal.** After writing your file and sending a completion report you sit at the prompt. That is the expected flow — you are waiting for the Director to either relay a targeted Manager follow-up or signal that scouting is done. Do not send status pings.
 
@@ -42,7 +42,7 @@ Substitute the literal `<session-id>`, `<my-agent-id>`, and `<director-agent-id>
 
 ## File Output
 
-Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/<topic-slug>/00-scout-<topic>.md`). This file is your primary deliverable.
+Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/[topic-slug]/00-scout-[topic].md`). This file is your primary deliverable.
 
 - **The output directory already exists.** The Director creates it before spawning any members. Do NOT create directories — write files directly to the existing path.
 - **Write your complete findings to the assigned file.** Use the output format defined below. The file must be self-contained — anyone reading it should understand the landscape without needing your messages.
@@ -54,28 +54,28 @@ Your spawn prompt includes an `OUTPUT FILE` path (e.g., `researches/<topic-slug>
 Structure your findings as markdown with the following sections:
 
 ```markdown
-# Scout Report: <topic>
+# Scout Report: [topic]
 
 ## Key Areas Identified
-<!-- Major sub-areas, branches, or facets of the topic -->
+[comment: Major sub-areas, branches, or facets of the topic]
 
 ## Recent Developments
-<!-- What's new or changed recently — use date-anchored findings -->
+[comment: What's new or changed recently — use date-anchored findings]
 
 ## Important Terminology
-<!-- Field-specific vocabulary, acronyms, and concepts the team should know -->
+[comment: Field-specific vocabulary, acronyms, and concepts the team should know]
 
 ## Cross-Category Entities
-<!-- Companies, projects, standards, or people that span multiple sub-areas. Flag these so the Manager can avoid fragmenting them across too many Researchers -->
+[comment: Companies, projects, standards, or people that span multiple sub-areas. Flag these so the Manager can avoid fragmenting them across too many Researchers]
 
 ## Recommended Investigation Angles
-<!-- Specific sub-topics or questions that deserve Researcher-level deep dives -->
+[comment: Specific sub-topics or questions that deserve Researcher-level deep dives]
 
 ## Open Questions
-<!-- Unresolved debates, gaps in available information, areas needing clarification -->
+[comment: Unresolved debates, gaps in available information, areas needing clarification]
 
 ## Sources
-<!-- Key URLs consulted during scouting -->
+[comment: Key URLs consulted during scouting]
 ```
 
 ## Interaction Protocol

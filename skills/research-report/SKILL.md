@@ -1,6 +1,6 @@
 ---
 name: research-report
-description: Create a comprehensive research report with folder-based output. Researchers write findings to individual files, the Manager compiles report.md, and the Director reviews. Output goes to researches/<topic-slug>/. After report approval, offers to chain into /research-presentation for slides and transcript. Members must always load skills using the Skill tool, not by reading skill files directly. Do NOT do a quick web search and summarize — invoke this skill for thorough, multi-source research.
+description: Create a comprehensive research report with folder-based output. Researchers write findings to individual files, the Manager compiles report.md, and the Director reviews. Output goes to researches/[topic-slug]/. After report approval, offers to chain into /research-presentation for slides and transcript. Members must always load skills using the Skill tool, not by reading skill files directly. Do NOT do a quick web search and summarize — invoke this skill for thorough, multi-source research.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
@@ -60,7 +60,7 @@ Members cannot talk to the user directly — the Director always relays. Members
 Before creating the team, determine where output files will be saved.
 
 1. Load `Skill(base-dir)` and follow its procedure. (The topic argument is not a path, so the absolute-path skip rule does not apply.)
-2. Compute: `${OUTPUT_DIR} = ${BASE}/researches/<topic-slug>/`
+2. Compute: `${OUTPUT_DIR} = ${BASE}/researches/[topic-slug]/`
 3. Create the output directory.
 4. Pass `${OUTPUT_DIR}` as the resolved absolute path to the Manager and all Researchers/Scouts in their spawn prompts.
 
@@ -73,7 +73,7 @@ Run `cafleet doctor` to confirm the Director is inside a tmux session with valid
 `cafleet session create` atomically creates the session, registers a root Director bound to the current tmux pane, and seeds the built-in Administrator. Capture both UUIDs from the JSON response and substitute them as literal strings into every subsequent `cafleet ...` call (never shell variables — `permissions.allow` matches command strings literally).
 
 ```bash
-cafleet --json session create --label "research-<topic-slug>"
+cafleet --json session create --label "research-[topic-slug]"
 ```
 
 Capture `session_id` and `director.agent_id` from the response. Treat `session_id` as `<session-id>` and `director.agent_id` as `<director-agent-id>` for the rest of this skill.
@@ -101,7 +101,7 @@ Load `Skill(cafleet)` and follow its spawn protocol.
 
 #### 2a. Shared task list
 
-The harness task tools (`TaskCreate / TaskUpdate / TaskList / TaskGet`) are the work-coordination substrate. The on-disk task store at `~/.claude/tasks/research-<topic-slug>/` is created on the first `TaskCreate` call (typically by the Manager when decomposing the topic). No explicit team-bootstrap step is required.
+The harness task tools (`TaskCreate / TaskUpdate / TaskList / TaskGet`) are the work-coordination substrate. The on-disk task store at `~/.claude/tasks/research-[topic-slug]/` is created on the first `TaskCreate` call (typically by the Manager when decomposing the topic). No explicit team-bootstrap step is required.
 
 #### 2b. Read role definitions
 
@@ -120,9 +120,9 @@ Read the role files that will be embedded verbatim in spawn prompts:
 ```
 You are the Manager in a research report team (CAFleet-native).
 
-<ROLE DEFINITION>
+[ROLE DEFINITION]
 [Content of ~/.claude/skills/research-report/roles/manager.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
-</ROLE DEFINITION>
+[/ROLE DEFINITION]
 
 Load these skills at startup:
 - Skill(cafleet) — for the broker primitives, literal-UUID flag convention, and bash-via-Director routing
@@ -168,9 +168,9 @@ After assessing the topic, the Manager may send the Director one or more Scout s
 ```
 You are a Scout Researcher in a research team (CAFleet-native).
 
-<ROLE DEFINITION>
+[ROLE DEFINITION]
 [Content of ~/.claude/skills/research-report/roles/scout.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
-</ROLE DEFINITION>
+[/ROLE DEFINITION]
 
 Load these skills at startup:
 - Skill(cafleet) — for the broker primitives and bash-via-Director routing
@@ -236,9 +236,9 @@ The Manager's `TaskCreate` calls also serve as the authoritative list of sub-top
 ```
 You are a Research Specialist in a research team (CAFleet-native).
 
-<ROLE DEFINITION>
+[ROLE DEFINITION]
 [Content of ~/.claude/skills/research-report/roles/researcher.md injected verbatim. The cafleet kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` stay single-braced; only escape `{` / `}` characters that originate inside the role doc itself (per Template safety)]
-</ROLE DEFINITION>
+[/ROLE DEFINITION]
 
 Load these skills at startup:
 - Skill(cafleet) — for the broker primitives and bash-via-Director routing
