@@ -15,7 +15,8 @@
 
   /* Neutral */
   --c-text: oklch(20.5% 0 0);                     /* neutral-900 */
-  --c-text-secondary: oklch(55.6% 0 0);           /* neutral-500 */
+  --c-text-secondary: oklch(37% 0 0);             /* neutral-700 — sub-bullets keep clear hierarchy without going washed-out */
+  --c-text-muted: oklch(55.6% 0 0);               /* neutral-500 — for footnotes / captions / page numbers */
   --c-bg: #fff;                                    /* white */
   --c-border: oklch(87% 0 0);                     /* neutral-300 */
 

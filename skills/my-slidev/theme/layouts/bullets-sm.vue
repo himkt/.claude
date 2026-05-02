@@ -30,7 +30,7 @@ defineProps({
 .bullets-sm-header {
   background: transparent;
   border-left: 4px solid var(--c-primary);
-  padding: 16px 48px 16px 44px;
+  padding: 14px 48px 14px 44px;
   flex: 0 0 auto;
   min-height: 10%;
   display: flex;
@@ -39,9 +39,10 @@ defineProps({
 
 .bullets-sm-header :deep(h1) {
   font-weight: 800;
-  font-size: 24px;
+  font-size: 26px;
   color: var(--c-text);
   margin: 0;
+  line-height: 1.15;
 }
 
 .bullets-sm-content {
@@ -63,6 +64,20 @@ defineProps({
 
 .bullets-sm-content :deep(li::before) {
   display: none;
+}
+
+/* Nested sub-bullets in bullets-sm: lighter, smaller, tighter spacing, gently indented */
+.bullets-sm-content :deep(li ul) {
+  padding-left: 1em;
+  margin-top: 3px;
+}
+
+.bullets-sm-content :deep(li li) {
+  font-weight: 400;
+  font-size: 0.9em;
+  color: var(--c-text-secondary);
+  margin-bottom: 3px;
+  line-height: 1.3;
 }
 
 .page-number {
