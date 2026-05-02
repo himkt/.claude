@@ -91,15 +91,15 @@ Design for a 30–60 minute presentation, budgeting approximately 1.5–2 minute
 
 ## Data Accuracy Escalation
 
-If a data point raises concern, send a `SendMessage` to the Director before including it. Do NOT silently omit or modify.
+If a data point raises concern, send a `cafleet message send` to the Director before including it. Do NOT silently omit or modify.
 
 ## Report Modifications
 
-Do NOT modify the report. Send a `SendMessage` to the Director if changes are needed.
+Do NOT modify the report. Send a `cafleet message send` to the Director if changes are needed.
 
 ## Revision Tags
 
-The Director provides feedback with these tags via `SendMessage`:
+The Director provides feedback with these tags via `cafleet message send`:
 
 | Tag | Meaning |
 |-----|---------|
@@ -111,8 +111,8 @@ The Director provides feedback with these tags via `SendMessage`:
 | `[GAP]` | Missing content |
 | `[REDUNDANCY]` | Repeated information |
 
-Fix each issue, re-verify data accuracy, and report the updated file path back to the Director via `SendMessage`.
+Fix each issue, re-verify data accuracy, and report the updated file path back to the Director via `cafleet message send`.
 
 ## Shutdown
 
-If you receive a `{"type": "shutdown_request"}` message, respond with `{"type": "shutdown_response", "request_id": "<id>", "approve": true}` — your process will terminate.
+You are terminated by the Director via `cafleet member delete`, which sends `/exit` to your pane and waits up to 15 s. When `/exit` arrives your `claude` process exits — no message-level handshake is required.

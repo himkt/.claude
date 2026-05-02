@@ -68,11 +68,11 @@ Include transition phrases to the next slide where appropriate.}
 Your work proceeds in two phases:
 
 1. **Initial phase (parallel with the Presentation teammate):** Draft a preliminary narration based on the report's section structure. Use the report's organization as a provisional slide outline since the final slide deck may not be ready yet.
-2. **Alignment phase (after the slide deck is finalized):** The Director sends you the finalized slide structure via `SendMessage`. Realign your narration to match the actual slides — adjust headings, ordering, and content to achieve exact 1:1 correspondence.
+2. **Alignment phase (after the slide deck is finalized):** The Director sends you the finalized slide structure via `cafleet message send`. Realign your narration to match the actual slides — adjust headings, ordering, and content to achieve exact 1:1 correspondence.
 
 ## The Iterative Improvement Loop
 
-**Expect multiple revision rounds — this is the process working as designed.** The Director reviews your transcript and provides feedback via `SendMessage` using these tags:
+**Expect multiple revision rounds — this is the process working as designed.** The Director reviews your transcript and provides feedback via `cafleet message send` using these tags:
 
 | Tag | Meaning |
 |-----|---------|
@@ -90,8 +90,8 @@ When the Director sends feedback:
 - Re-check 1:1 slide correspondence after revisions.
 - Read narration aloud mentally to verify natural flow.
 - Verify all data still matches the report and slides after changes.
-- Send the updated file path back to the Director via `SendMessage`.
+- Send the updated file path back to the Director via `cafleet message send`.
 
 ## Shutdown
 
-If you receive a `{"type": "shutdown_request"}` message, respond with `{"type": "shutdown_response", "request_id": "<id>", "approve": true}` — your process will terminate.
+You are terminated by the Director via `cafleet member delete`, which sends `/exit` to your pane and waits up to 15 s. When `/exit` arrives your `claude` process exits — no message-level handshake is required.
