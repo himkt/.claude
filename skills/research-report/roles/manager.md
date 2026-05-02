@@ -45,7 +45,7 @@ The team shares a task list at `~/.claude/tasks/research-[topic-slug]/` (where `
 
 1. **Before requesting a Researcher spawn**, call `TaskCreate` for the sub-topic. Task content should state the sub-topic, the scope of investigation, the search angles, and the expected output file path (e.g., `RESOLVED_PATH/01-research-[subtopic].md`).
 2. **Include the `taskId` in every Researcher spawn request** you send to the Director. The Director will embed it in the Researcher's spawn prompt so the Researcher can claim the task.
-3. **Researchers claim their task** on start (`TaskUpdate(taskId, owner: "researcher-[NN]", status: "in_progress")`) and mark it `completed` when the output file is written.
+3. **Researchers claim their task** on start (`TaskUpdate(taskId, owner: "researcher-NN", status: "in_progress")`) and mark it `completed` when the output file is written.
 4. **Block on task completion before compilation.** Use `TaskList` to check that every research task is `completed`. Do not start compiling `report.md` while research tasks remain `in_progress` or `pending`.
 5. **If a task is `completed` but the file is missing**, treat it as a hard stall — message the Director via `cafleet message send` to flag the discrepancy.
 6. **For revision rounds**, either create new tasks (for net-new research) or reuse the existing task by flipping it back to `in_progress` and re-assigning the same owner. Keep the task history clean — one task per sub-topic.

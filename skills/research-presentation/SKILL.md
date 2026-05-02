@@ -154,7 +154,7 @@ cafleet --session-id [session-id] --json member create --agent-id [director-agen
   -- "<Presentation spawn prompt>"
 ```
 
-Capture the printed `agent_id` and substitute it for `<presentation-agent-id>` in subsequent `cafleet message send` calls.
+Capture the printed `agent_id` and substitute it for `[presentation-agent-id]` in subsequent `cafleet message send` calls.
 
 **Transcript spawn prompt:**
 
@@ -200,11 +200,11 @@ Read the output files (`${FOLDER}/slide.md`, `${FOLDER}/transcript.md`) and revi
 
 ```bash
 cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
-  --to <presentation-agent-id> \
+  --to [presentation-agent-id] \
   --text "slide revisions: [SLIDE STRUCTURE] ... / [VISUAL] ... / ..."
 
 cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
-  --to <transcript-agent-id> \
+  --to [transcript-agent-id] \
   --text "transcript revisions: [FLOW] ... / [TIMING] ... / ..."
 ```
 
@@ -243,25 +243,25 @@ while start <= total_slides:
     spawn VR member via cafleet member create (name="vr-batch-<start>") with slides [start..end], ROUND=vr_round
     # spawn prompt MUST include `RESEARCH FOLDER: <folder>` and `ROUND: 1` lines so the VR
     # can build screenshot/report paths
-    # capture the printed agent_id as <vr-batch-agent-id> for subsequent message send / member delete
+    # capture the printed agent_id as [vr-batch-agent-id] for subsequent message send / member delete
 
     while True:                                # initial review (r1) + up to 2 re-checks (r2, r3)
         wait for report from VR for round <vr_round> via cafleet message poll arrival
         if no issues: break
         if vr_round >= 3: break                # max 2 re-check rounds reached; remaining issues escalate to user in Step 4
         cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
-            --to <presentation-agent-id> --text "<tagged issues>"   # fix
+            --to [presentation-agent-id] --text "<tagged issues>"   # fix
         vr_round += 1
         cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
-            --to <vr-batch-agent-id> --text "ROUND: <vr_round>\nRe-check slides: <list>"
+            --to [vr-batch-agent-id] --text "ROUND: <vr_round>\nRe-check slides: <list>"
         # VR writes the next capture to `vr<start>-r<vr_round>-p<slide_number>.png` and
         # the next persisted report to `vr<start>-r<vr_round>.md`, preserving prior rounds
 
     # Explicit close handshake before delete: the VR cannot reliably run extra commands after /exit.
     cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
-        --to <vr-batch-agent-id> --text "CLOSE: run `bun run agent-browser --session vr-batch-<start> close`, then reply 'closed'."
+        --to [vr-batch-agent-id] --text "CLOSE: run `bun run agent-browser --session vr-batch-<start> close`, then reply 'closed'."
     wait for the VR's "closed" confirmation via cafleet message poll
-    cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <vr-batch-agent-id>
+    cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [vr-batch-agent-id]
     start = end + 1
 ```
 
@@ -330,9 +330,9 @@ Follow the Shutdown Protocol in `Skill(cafleet)` § *Shutdown Protocol*. Order m
 1. **Cancel the `/loop` monitor** with `CronDelete <job-id>`. The cron must stop firing BEFORE any member is deleted; a cron that keeps polling a tearing-down session spams `Error: session is deleted`.
 2. **Delete every member** — Presentation, Transcript, and any active VR batch. For any active VR batch, run the explicit close handshake first (Director sends `CLOSE:` via `cafleet message send`, VR runs `bun run agent-browser --session vr-batch-<start> close` and replies `closed`), THEN run `cafleet member delete`. Once all VR browser sessions are closed:
    ```bash
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <presentation-agent-id>
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <transcript-agent-id>
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <vr-batch-agent-id>   # if still alive — only after the close handshake
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [presentation-agent-id]
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [transcript-agent-id]
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [vr-batch-agent-id]   # if still alive — only after the close handshake
    ```
    Each call sends `/exit` and waits up to 15 s for the pane's `claude` process to exit. Do not rely on `/exit` to trigger any post-shutdown action — additional commands are not guaranteed to run after `/exit` arrives.
 3. **Verify the roster is empty**: `cafleet --session-id [session-id] member list --agent-id [director-agent-id]` must return zero members.
