@@ -2,8 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "respectGitignore": false,
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CLAUDE_CODE_NO_FLICKER": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "attribution": {
     "commit": ""
@@ -30,8 +29,15 @@
       "Bash(bun run agent-browser --session vr-batch-* errors *)",
       "Bash(bun run agent-browser --session vr-batch-* reload)",
       "Bash(bun run agent-browser close --all)",
+      "Bash(cafleet doctor)",
+      "Bash(cafleet --json doctor)",
+      "Bash(cafleet --json session create *)",
+      "Bash(cafleet --session-id * *)",
+      "Bash(cafleet session delete *)",
+      "Bash(cafleet session list)",
       "Bash(gh api repos/*/*/pulls/*/comments)",
       "Bash(gh api repos/*/*/pulls/*/comments *)",
+      "Bash(gh api repos/*/*/pulls/*/comments/* *)",
       "Bash(gh api repos/*/*/pulls/*/reviews)",
       "Bash(gh api repos/*/*/pulls/*/reviews *)",
       "Bash(gh api repos/*/*/pulls/*/reviews/* *)",
@@ -75,6 +81,8 @@
       "Read(~/.agent-browser/tmp)",
       "Skill(agent-team-monitoring)",
       "Skill(agent-team-supervision)",
+      "Skill(cafleet)",
+      "Skill(cafleet-monitoring)",
       "Skill(create-figure)",
       "Skill(design-doc)",
       "Skill(github-cli)",
@@ -174,19 +182,14 @@
     "command": "~/.claude/bin/status.py"
   },
   "enabledPlugins": {
-    "external-skills@himkt-marketplace": true
+    "external-skills@himkt-marketplace": true,
+    "cafleet@cafleet": true
   },
   "extraKnownMarketplaces": {
     "himkt-marketplace": {
       "source": {
         "source": "github",
         "repo": "himkt/himkt-marketplace"
-      }
-    },
-    "cafleet": {
-      "source": {
-        "source": "directory",
-        "path": "/home/himkt/work/himkt/cafleet"
       }
     }
   },
