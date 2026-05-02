@@ -144,9 +144,9 @@ Run the canonical teardown per `Skill(cafleet)` § *Shutdown Protocol*:
 1. Cancel every active `/loop` monitor via `CronDelete <job-id>` BEFORE deleting any member.
 2. Delete each member — Presentation, Transcript, and any active VR batch. The `--member-id` flag takes the target member's `agent_id` UUID (the value `cafleet member create` printed at spawn — the same identifier you use as `--to [member-agent-id]` in `cafleet message send`). For any active VR batch, run the explicit close handshake first per the VR role contract: send a `CLOSE:` message via `cafleet message send`, wait for the VR's `closed` reply, then run `cafleet member delete`. Do not rely on `/exit` to trigger any post-shutdown action — once `/exit` arrives, additional commands are not guaranteed to run.
    ```bash
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <presentation-agent-id>
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <transcript-agent-id>
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <vr-batch-agent-id>   # if still alive — only after the close handshake
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [presentation-agent-id]
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [transcript-agent-id]
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [vr-batch-agent-id]   # if still alive — only after the close handshake
    ```
    Each call sends `/exit` and waits up to 15 s for the pane's `claude` process to exit.
 3. Verify the roster is empty: `cafleet --session-id [session-id] member list --agent-id [director-agent-id]` must return zero members.

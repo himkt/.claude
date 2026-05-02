@@ -41,7 +41,7 @@ User
  +-- Director (main Claude — runs cafleet session create, cafleet member create, drives the loop)
       +-- manager (claude pane — compiles report, decomposes topic)
       +-- scout-<NN> (claude pane — landscape mapping; reads ~/.claude/agents/web-researcher.md at startup)
-      +-- researcher-<NN> (claude pane — deep investigation; reads ~/.claude/agents/web-researcher.md at startup)
+      +-- researcher-NN (claude pane — deep investigation; reads ~/.claude/agents/web-researcher.md at startup)
 ```
 
 - **Director ↔ User**: `AskUserQuestion` (final report presentation, feedback collection, language disambiguation when escalated by a member)
@@ -223,7 +223,7 @@ After decomposing the topic, the Manager sends the Director one or more Research
 With multiple Researchers running in parallel, coordination goes through the **shared harness task list** — not just through spawn prompts. The Manager MUST create one task per sub-topic BEFORE asking the Director to spawn the Researcher for it.
 
 - The Manager calls `TaskCreate` for each sub-topic. Task content describes the sub-topic, scope, and the expected output file path (e.g., `<resolved-path>/01-research-<subtopic>.md`).
-- Tasks start unowned. When a Researcher is spawned and given their assignment, they claim their assigned task by calling `TaskUpdate(taskId, owner: "researcher-<NN>")` and marking it `in_progress`.
+- Tasks start unowned. When a Researcher is spawned and given their assignment, they claim their assigned task by calling `TaskUpdate(taskId, owner: "researcher-NN")` and marking it `in_progress`.
 - Researchers mark their task `completed` when their output file is written and the completion report has been sent.
 - The Manager blocks on all research tasks being `completed` before starting compilation. Use `TaskList` to check progress.
 
@@ -251,7 +251,7 @@ DIRECTOR NAME: {director_name}
 YOUR AGENT ID: {agent_id}
 
 CURRENT DATE: [INSERT today's date]
-YOUR NAME: researcher-<NN>
+YOUR NAME: researcher-NN
 YOUR ASSIGNMENT: [specific sub-topic and what to investigate]
 YOUR TASK ID: [INSERT the taskId the Manager created for this sub-topic]
 OUTPUT FILE: [INSERT <resolved-path>/NN-research-<subtopic>.md]
@@ -259,7 +259,7 @@ OUTPUT FILE: [INSERT <resolved-path>/NN-research-<subtopic>.md]
 COMMUNICATION PROTOCOL:
 - Report to Director: cafleet --session-id {session_id} message send --agent-id {agent_id} --to {director_agent_id} --text "..."
 - When you see cafleet message poll output with a message from the Director, capture the `id:` UUID from each entry as `[task-id]` and ack it via cafleet --session-id {session_id} message ack --agent-id {agent_id} --task-id [task-id], then act on the instructions.
-- On start, claim your task: TaskUpdate(taskId: YOUR TASK ID, owner: "researcher-<NN>", status: "in_progress").
+- On start, claim your task: TaskUpdate(taskId: YOUR TASK ID, owner: "researcher-NN", status: "in_progress").
 - On completion, mark your task completed: TaskUpdate(taskId: YOUR TASK ID, status: "completed").
 
 Write findings to the output file, then send the Director a completion summary. The Director will relay findings and any follow-up questions between you and the Manager.
@@ -269,7 +269,7 @@ Spawn with:
 
 ```bash
 cafleet --session-id [session-id] --json member create --agent-id [director-agent-id] \
-  --name "researcher-<NN>" \
+  --name "researcher-NN" \
   --description "Researcher for sub-topic <slug>" \
   -- "<Researcher spawn prompt>"
 ```
@@ -308,8 +308,8 @@ Follow the Shutdown Protocol in `Skill(cafleet)` § *Shutdown Protocol*. Order m
 1. **Cancel the `/loop` monitor** with `CronDelete <job-id>`. The cron must stop firing BEFORE any member is deleted; a cron that keeps polling a tearing-down session spams `Error: session is deleted` and races with member-delete.
 2. **Delete every member** in dependency order — Researchers first, then any active Scout, then the Manager:
    ```bash
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <researcher-agent-id>
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <scout-agent-id>
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [researcher-agent-id]
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [scout-agent-id]
    cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [manager-agent-id]
    ```
    Each call sends `/exit` to the pane and waits up to 15 s for it to close. On exit 2 (timeout), the pane buffer tail is printed on stderr — inspect with `cafleet member capture`, answer any prompt with `cafleet member send-input`, then re-run. As a last resort, rerun with `--force` to skip the wait and kill-pane immediately.

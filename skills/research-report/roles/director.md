@@ -26,7 +26,7 @@ cafleet --session-id [session-id] message send --agent-id [director-agent-id] \
   --text "<instructions, feedback, or relayed content>"
 ```
 
-**Polling and ack-ing inbound messages.** When a member sends you a message, the broker auto-fires `cafleet --session-id [session-id] message poll --agent-id [director-agent-id]` into your pane via tmux push notification, so the keystroke arrives as your next turn. Every entry in the poll output carries an `id:` line — that UUID is the cafleet message-task id (called `<task-id>` because cafleet internally models messages as tasks; **distinct from** the harness `taskId` you use with `TaskCreate / TaskUpdate`). After acting on the polled message, ack it via `cafleet --session-id [session-id] message ack --agent-id [director-agent-id] --task-id <task-id>` — un-acked messages stay in `INPUT_REQUIRED` and re-surface on every subsequent `message poll` cycle.
+**Polling and ack-ing inbound messages.** When a member sends you a message, the broker auto-fires `cafleet --session-id [session-id] message poll --agent-id [director-agent-id]` into your pane via tmux push notification, so the keystroke arrives as your next turn. Every entry in the poll output carries an `id:` line — that UUID is the cafleet message-task id (called `[task-id]` because cafleet internally models messages as tasks; **distinct from** the harness `taskId` you use with `TaskCreate / TaskUpdate`). After acting on the polled message, ack it via `cafleet --session-id [session-id] message ack --agent-id [director-agent-id] --task-id [task-id]` — un-acked messages stay in `INPUT_REQUIRED` and re-surface on every subsequent `message poll` cycle.
 
 **Pane silence is not a stall.** A member going quiet after sending a message is the expected between-turn state per `Skill(cafleet)`. Do not nudge a member simply because their pane is idle — only nudge when their inactivity blocks your next step.
 
@@ -129,9 +129,9 @@ Run the canonical teardown per `Skill(cafleet)` § *Shutdown Protocol*:
 1. Cancel every active `/loop` monitor via `CronDelete <job-id>` BEFORE deleting any member.
 2. Delete each member in dependency order — Researchers first, then any active Scout, then the Manager. The `--member-id` flag takes the target member's `agent_id` UUID (the value `cafleet member create` printed at spawn — the same identifier you use as `--to [member-agent-id]` in `cafleet message send`):
    ```bash
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <researcher-agent-id>
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <scout-agent-id>
-   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id <manager-agent-id>
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [researcher-agent-id]
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [scout-agent-id]
+   cafleet --session-id [session-id] member delete --agent-id [director-agent-id] --member-id [manager-agent-id]
    ```
    Each call sends `/exit` and waits 15 s. On exit 2 (timeout), inspect with `cafleet member capture`, answer prompts via `cafleet member send-input`, then re-run — or escalate to `--force` to skip the wait.
 3. Verify the roster is empty: `cafleet --session-id [session-id] member list --agent-id [director-agent-id]` must return zero members.
