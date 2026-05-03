@@ -161,7 +161,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/bin/validate_bash.py"
+            "command": "~/.claude/bin/validate_bash.py validate"
           }
         ]
       }
