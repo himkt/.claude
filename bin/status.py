@@ -26,18 +26,10 @@ def format_tokens(tokens: int) -> str:
     return str(tokens)
 
 
-def gradient(pct: float) -> str:
-    if pct < 50:
-        r = int(pct * 5.1)
-        return f"\x1b[38;2;{r};200;80m"
-    g = int(200 - (pct - 50) * 4)
-    return f"\x1b[38;2;255;{max(g, 0)};60m"
-
-
-def cost_threshold_color(cost: float) -> str:
-    if cost < 50:
+def threshold_color(value: float, warn: float, crit: float) -> str:
+    if value < warn:
         return GREEN
-    if cost < 100:
+    if value < crit:
         return YELLOW
     return RED
 
@@ -49,7 +41,7 @@ def ring(pct: float) -> str:
 
 def fmt_meter(pct: float, used: int, total: int) -> str:
     p = round(pct)
-    color = gradient(pct)
+    color = threshold_color(pct, 50, 80)
     size = f"{format_tokens(used)}/{format_tokens(total)}"
     return f"{color}{ring(pct)} {size} ({p}%){RESET}"
 
@@ -64,7 +56,7 @@ def main() -> None:
         f"{BOLD}{WHITE}{model}{RESET}",
         f"{ICON_FOLDER} {YELLOW}{cwd}{RESET}",
     ]
-    cost_color = cost_threshold_color(cost)
+    cost_color = threshold_color(cost, 50, 100)
     line2 = [f"{cost_color}$ {cost:.4f}{RESET}"]
 
     try:
