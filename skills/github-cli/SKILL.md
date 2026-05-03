@@ -5,83 +5,50 @@ description: Use this skill when the user shares a GitHub URL (issue or pull req
 
 # GitHub CLI Skill
 
-Fetch GitHub issue and pull request information using the `gh` command with `--json` for structured output.
+Fetch GitHub issues and pull requests with `gh` + `--json` + `--jq`.
 
-## Instructions
+## Workflow
 
-When a user provides a GitHub URL:
+1. Parse `{owner}`, `{repo}`, `{number}` from the URL. If only a number was given, run `gh repo view --json nameWithOwner -q .nameWithOwner`.
+2. Always pass `--jq` to project fields and, when relevant, drop out-of-scope rows. Unfiltered comment/review/file payloads run to thousands of lines; a focused filter shrinks input 10–100×.
 
-1. Identify whether it's an issue or pull request from the URL pattern
-2. **Determine the repository**: If the user provided a full GitHub URL, parse the owner, repository name, and issue/PR number directly from it. If no URL was provided (e.g., only a PR number), run `gh repo view --json nameWithOwner -q .nameWithOwner` to get the default repository.
-3. Fetch structured data using the `--json` flag as shown below
-4. For PRs, also fetch review comments and changed files as needed
+Use `gh --jq` directly — do not pipe to external `jq`. The local Bash validator rejects multi-command pipes.
 
-## Fetching Issue Information
+Common `select(...)` predicates:
 
-```bash
-gh issue view {url} --json title,author,body,state,labels,comments,assignees,createdAt,updatedAt
-```
+- Time window: `select((.created_at | fromdateiso8601) > (now - 10800))`
+- Author: `select(.user.login == "...")`
+- State: `select(.state == "OPEN")`
+- Unresolved threads: `select(.in_reply_to_id == null)`
 
-## Fetching Pull Request Information
-
-```bash
-gh pr view {url} --json title,author,body,state,labels,comments,reviews,files,additions,deletions,baseRefName,headRefName,reviewDecision,createdAt,updatedAt
-```
-
-### Diff content (line-by-line changes)
+## Fetch commands
 
 ```bash
-gh pr diff {url}
-```
+# Issue
+gh issue view {url} --json title,author,body,state,labels,comments --jq '...'
 
-Use `gh pr diff` to get the actual diff content. Do NOT use `gh api` for fetching diffs.
+# PR overview
+gh pr view {url} --json title,author,body,state,reviewDecision,baseRefName,headRefName,comments --jq '...'
 
-### Changed files only
+# Diff (do NOT use gh api for diffs)
+gh pr diff {url}              # full
+gh pr diff {url} --name-only  # files only
 
-```bash
-gh pr diff {url} --name-only
-```
+# Inline review comments
+gh api repos/{owner}/{repo}/pulls/{number}/comments --paginate --jq '[.[] | {user: .user.login, path, line, body, html_url, created_at}]'
 
-### Inline review comments (suggestions)
+# Review summaries
+gh api repos/{owner}/{repo}/pulls/{number}/reviews --paginate --jq '[.[] | {user: .user.login, state, body, submitted_at}]'
 
-`gh pr view --json reviews` does not include inline review comments. Use `gh api` to fetch them:
-
-```bash
-gh api repos/{owner}/{repo}/pulls/{number}/comments
-```
-
-### Request Copilot review
-
-```bash
-gh pr edit {number} --add-reviewer @copilot
-```
-
-The reviewer slug is `@copilot`. Verify with:
-
-```bash
-gh api repos/{owner}/{repo}/pulls/{number}/requested_reviewers
-```
-
-### CI check status
-
-```bash
+# CI checks
 gh pr checks {url}
 ```
 
-## Creating a Pull Request
-
-Use `--fill` to auto-populate title and body from the branch's commits:
+## Creating a PR
 
 ```bash
-gh pr create --fill
+gh pr create --fill                          # auto-populate title+body from commits
+gh pr edit {number} --add-reviewer @copilot  # always request Copilot review immediately after
 ```
 
-Supply `--title` / `--body-file` only when the user explicitly asks for a custom title or description.
-
-Immediately after `gh pr create` succeeds, request a Copilot review on the newly created PR without asking the user:
-
-```bash
-gh pr edit {number} --add-reviewer @copilot
-```
-
-This is automatic — it happens every time a PR is created.
+Use `--title` / `--body-file` only when the user explicitly asks for a custom title/body.
