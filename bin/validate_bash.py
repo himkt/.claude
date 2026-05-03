@@ -275,6 +275,20 @@ def _check_safe(result):
     return None
 
 
+# Optional remediation hints appended to BLOCKED: messages, keyed by the
+# reason string that _check_safe (or _scan_injection) returns. Add an entry
+# here when a rejection has a clear, single-line "do this instead" suggestion.
+_REASON_HINTS = {
+    "multiple commands are not allowed":
+        "Use separate Bash calls when chaining is needed.",
+}
+
+
+def _format_blocked_message(reason):
+    hint = _REASON_HINTS.get(reason)
+    return f"BLOCKED: {reason}. {hint}" if hint else f"BLOCKED: {reason}"
+
+
 def _run_tests():
     import unittest
 
@@ -464,6 +478,25 @@ def _run_tests():
                 with self.subTest(src=src):
                     self.assertEqual(_check_safe(parse(src)), reason)
 
+        def test_blocked_message(self):
+            """Reasons with a registered hint get an actionable suffix; others
+            fall back to bare 'BLOCKED: <reason>'."""
+            self.assertEqual(
+                _format_blocked_message("multiple commands are not allowed"),
+                "BLOCKED: multiple commands are not allowed. "
+                "Use separate Bash calls when chaining is needed.",
+            )
+            for reason in [
+                "redirects are not allowed",
+                "command substitution '$(...)'",
+                "variable expansion '$VAR'",
+                "stray '$'",
+            ]:
+                with self.subTest(reason=reason):
+                    self.assertEqual(
+                        _format_blocked_message(reason), f"BLOCKED: {reason}",
+                    )
+
         def test_check_safe(self):
             def seg(cmd="cmd", redir=()):
                 s = {"command": cmd, "positionals": [], "keywords": {},
@@ -525,5 +558,5 @@ if __name__ == "__main__":
     if subcmd == "parse":
         print(json.dumps(result))
     elif reason := _check_safe(result):
-        print(f"BLOCKED: {reason}", file=sys.stderr)
+        print(_format_blocked_message(reason), file=sys.stderr)
         sys.exit(2)
