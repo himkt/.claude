@@ -83,8 +83,6 @@
       "Read(/plugins/**)",
       "Read(//tmp/claude-code/**)",
       "Read(~/.agent-browser/tmp)",
-      "Skill(agent-team-monitoring)",
-      "Skill(agent-team-supervision)",
       "Skill(cafleet)",
       "Skill(cafleet-monitoring)",
       "Skill(create-figure)",
