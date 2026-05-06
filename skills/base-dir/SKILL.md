@@ -10,7 +10,7 @@ description: >
 ## Procedure
 
 1. If consuming skill's argument is an absolute path → skip this skill entirely.
-2. If `${CWD}` is `~/.claude` or under it → go to step 3.
+2. If `${CWD} == $HOME` or `${CWD}` is under `$HOME/.claude` (for example, `${CWD}` starts with `$HOME/.claude/`) → go to step 3.
    Otherwise → `${BASE} = ${CWD}`. Done.
 3. Ask via `AskUserQuestion` ("Select the base directory for output files:"):
    - `/tmp/claude-code (recommended)` → `${BASE} = /tmp/claude-code`

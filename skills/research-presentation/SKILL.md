@@ -17,16 +17,7 @@ Create a Slidev presentation and reading transcript from an existing research re
 
 ## Prerequisites
 
-This skill drives every inter-agent call through the `cafleet` CLI via the harness `Bash` tool. The repository's `~/.claude/settings.json` `permissions.allow` list MUST include patterns that match every literal `cafleet ...` invocation the Director will issue, otherwise every call triggers a per-invocation permission prompt that interrupts the agent loop. At minimum, allow:
-
-- `Bash(cafleet doctor)` — environment precheck
-- `Bash(cafleet --json session create *)` — bootstrap (Step 1a)
-- `Bash(cafleet --session-id * *)` — every session-scoped call (member create, message send/poll/ack, member list, member delete, member capture, member exec, member ping, member send-input)
-- `Bash(cafleet session delete *)` — teardown (no `--session-id` flag — positional arg)
-- `Bash(cafleet session list)` — final confirmation that the session is gone (no `--session-id` flag)
-- `Skill(cafleet)`, `Skill(cafleet-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt. These come from the `cafleet@cafleet` plugin, which must be declared under `enabledPlugins` in the project `settings.json` (this repository is the user's `~/.claude` directory, so `settings.json` at the repo root **is** the user-level config). The plugin is **not** enabled by default in the checked-in `settings.json` — operators must add it (and the cafleet `Bash(...)` allow patterns above) before invoking this skill, otherwise every cafleet call triggers an interactive permission prompt and skill loads will fail.
-
-The cafleet binary itself must be installed and on `PATH` (verify with `cafleet doctor`).
+The cafleet binary must be installed and on `PATH` (verify with `cafleet doctor`). The Director loads `Skill(cafleet)` and `Skill(cafleet:agent-team-monitoring)` and embeds them into every member's spawn prompt.
 
 ## Architecture
 
@@ -48,6 +39,8 @@ User
 Members cannot talk to the user directly — the Director always relays.
 
 > **Literal-UUID flag rule** — every `cafleet ...` invocation carries the literal `session_id` and `agent_id` UUIDs as flags (not shell variables). `--session-id` is global (before the subcommand); `--agent-id` is a per-subcommand option (after the subcommand name). See `Skill(cafleet)` for the full convention.
+
+> Never store IDs in shell variables — substitute the UUIDs printed by `cafleet session create` and `cafleet member create` directly into every `cafleet ...` call.
 
 ## Director Process
 
@@ -81,7 +74,7 @@ Step 5 (cleanup) is autonomous — no user prompt.
 
 ### Step 1: Bootstrap CAFleet Session, Start Monitor & Spawn Presentation + Transcript (Director)
 
-Load `Skill(cafleet)` and `Skill(cafleet-monitoring)` — this skill spawns parallel members (Presentation + Transcript, and later VR batches), so the `/loop` monitor is mandatory.
+Load `Skill(cafleet)` and `Skill(cafleet:agent-team-monitoring)` — this skill spawns parallel members (Presentation + Transcript, and later VR batches), so the `/loop` monitor is mandatory.
 
 #### 1a. Environment precheck and session bootstrap
 
@@ -92,21 +85,21 @@ cafleet --json session create --label "present-[topic-slug]"
 
 `cafleet doctor` confirms the Director is inside a tmux session (a hard requirement of `cafleet member create`). On non-zero exit, abort and surface the error to the user — do NOT attempt raw `tmux` probes as a workaround.
 
-`cafleet session create` atomically creates the session, registers a root Director bound to the current tmux pane, and seeds the built-in Administrator. Capture `session_id` and `director.agent_id` from the JSON response and substitute them as literal strings into every subsequent `cafleet ...` call (never shell variables — `permissions.allow` matches command strings literally).
+`cafleet session create` atomically creates the session, registers a root Director bound to the current tmux pane, and seeds the built-in Administrator. Capture `session_id` and `director.agent_id` from the JSON response and substitute them as literal strings into every subsequent `cafleet ...` call (never shell variables — the harness matches Bash invocations as literal command strings).
 
 #### 1b. Start the `/loop` monitor BEFORE the first `cafleet member create` call
 
-Per `Skill(cafleet-monitoring)`, start a 1-minute interval monitor before spawning so the first tick fires while spawning completes. Use the cafleet-monitoring template with literal `[session-id]` and `[director-agent-id]` substituted in. Expected deliverables: `${FOLDER}/slide.md`, `${FOLDER}/transcript.md`. Active members will include `presentation`, `transcript`, and later `vr-batch-*`.
+Per `Skill(cafleet:agent-team-monitoring)`, start a 1-minute interval monitor before spawning so the first tick fires while spawning completes. Use the agent-team-monitoring template with literal `[session-id]` and `[director-agent-id]` substituted in. Expected deliverables: `${FOLDER}/slide.md`, `${FOLDER}/transcript.md`. Active members will include `presentation`, `transcript`, and later `vr-batch-*`.
 
 #### 1c. Read role definitions
 
-Read the role files that will be embedded verbatim in spawn prompts:
+Read the role files that will be embedded verbatim in spawn prompts (paths are relative to this skill's directory):
 
-- `~/.claude/skills/research-presentation/roles/presentation.md`
-- `~/.claude/skills/research-presentation/roles/transcript.md`
-- `~/.claude/skills/research-presentation/roles/visual-reviewer.md`
+- `roles/presentation.md`
+- `roles/transcript.md`
+- `roles/visual-reviewer.md`
 
-> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. The role docs in this skill use `<...>` / `[...]` notation everywhere placeholders appear, so the embedded role content contains no literal `{` or `}` and no escaping is needed. The only single-brace tokens in the spawn prompt are the four kwargs cafleet itself substitutes: `{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`. If you ever add a `{` or `}` to a role doc (a JSON example, a format-string example), double it to `{{` / `}}` before embedding — `str.format()` raises `KeyError` at spawn time otherwise. Do NOT shell out to `sed` / `awk` — those are blocked by this repo's Bash validator and `permissions.deny`.
+> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. The role docs in this skill use `<...>` / `[...]` notation everywhere placeholders appear, so the embedded role content contains no literal `{` or `}` and no escaping is needed. The only single-brace tokens in the spawn prompt are the four kwargs cafleet itself substitutes: `{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`. If you ever add a `{` or `}` to a role doc (a JSON example, a format-string example), double it to `{{` / `}}` before embedding — `str.format()` raises `KeyError` at spawn time otherwise. Do NOT shell out to `sed` / `awk` — those are blocked by the harness Bash validator.
 
 #### 1d. Spawn Presentation + Transcript in parallel
 
@@ -118,7 +111,7 @@ Both work from `report.md` independently. After the slide deck is finalized (Ste
 You are the Presentation Specialist in a research presentation team (CAFleet-native).
 
 [ROLE DEFINITION]
-[Content of ~/.claude/skills/research-presentation/roles/presentation.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
+[Content of roles/presentation.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
 [/ROLE DEFINITION]
 
 Load these skills at startup:
@@ -218,7 +211,7 @@ Once Step 2 converges on an approved slide deck and transcript, the Director run
 
 **Server Startup (once):**
 
-**Working directory: project root** (the directory containing `node_modules/` and `skills/`). Do NOT cd to plugin source directories — they are source repos, not runnable installations.
+**Working directory: project root** (the directory containing `node_modules/` and `skills/`). Do NOT cd to dependency source directories — they are source repos, not runnable installations.
 
 1. From the project root, run `bun install --frozen-lockfile` to ensure dependencies.
 2. Start the Slidev dev server (`run_in_background: true`): `mise run slidev <folder>/slide.md`

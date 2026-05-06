@@ -84,7 +84,7 @@
       "Read(//tmp/claude-code/**)",
       "Read(~/.agent-browser/tmp)",
       "Skill(cafleet)",
-      "Skill(cafleet-monitoring)",
+      "Skill(cafleet:agent-team-monitoring)",
       "Skill(create-figure)",
       "Skill(cafleet:design-doc)",
       "Skill(github-cli)",
@@ -94,7 +94,7 @@
       "Skill(research-presentation)",
       "Skill(pathfinder-explain)",
       "Skill(research-report)",
-      "Skill(slidev)",
+      "Skill(slidev:slidev)",
       "Skill(my-slidev)",
       "Skill(review-claude-config)",
       "Skill(nixos-boot-troubleshoot)",
@@ -184,10 +184,17 @@
     "command": "~/.claude/bin/status.py"
   },
   "enabledPlugins": {
-    "external-skills@himkt-marketplace": true,
-    "cafleet@cafleet": true
+    "cafleet@cafleet": true,
+    "agent-browser@himkt-marketplace": true,
+    "slidev@himkt-marketplace": true
   },
   "extraKnownMarketplaces": {
+    "cafleet": {
+      "source": {
+        "source": "github",
+        "repo": "himkt/cafleet"
+      }
+    },
     "himkt-marketplace": {
       "source": {
         "source": "github",
@@ -197,7 +204,7 @@
   },
   "language": "Use professional English",
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "autoMemoryEnabled": false,
   "autoCompactEnabled": false,
   "teammateMode": "in-process",
