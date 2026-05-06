@@ -24,7 +24,7 @@ This skill drives every inter-agent call through the `cafleet` CLI via the harne
 - `Bash(cafleet --session-id * *)` — every session-scoped call (member create, message send/poll/ack, member list, member delete, member capture, member exec, member ping, member send-input)
 - `Bash(cafleet session delete *)` — teardown (no `--session-id` flag — positional arg)
 - `Bash(cafleet session list)` — final confirmation that the session is gone (no `--session-id` flag)
-- `Skill(cafleet)`, `Skill(cafleet-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt. These come from the `cafleet@cafleet` plugin, which must be declared under `enabledPlugins` in the project `settings.json` (this repository is the user's `~/.claude` directory, so `settings.json` at the repo root **is** the user-level config). The plugin is **not** enabled by default in the checked-in `settings.json` — operators must add it (and the cafleet `Bash(...)` allow patterns above) before invoking this skill, otherwise every cafleet call triggers an interactive permission prompt and skill loads will fail.
+- `Skill(cafleet)`, `Skill(cafleet:agent-team-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt. These come from the `cafleet@cafleet` plugin, which must be declared under `enabledPlugins` in the project `settings.json` (this repository is the user's `~/.claude` directory, so `settings.json` at the repo root **is** the user-level config). The plugin is **not** enabled by default in the checked-in `settings.json` — operators must add it (and the cafleet `Bash(...)` allow patterns above) before invoking this skill, otherwise every cafleet call triggers an interactive permission prompt and skill loads will fail.
 
 The cafleet binary itself must be installed and on `PATH` (verify with `cafleet doctor`).
 
@@ -81,7 +81,7 @@ Step 5 (cleanup) is autonomous — no user prompt.
 
 ### Step 1: Bootstrap CAFleet Session, Start Monitor & Spawn Presentation + Transcript (Director)
 
-Load `Skill(cafleet)` and `Skill(cafleet-monitoring)` — this skill spawns parallel members (Presentation + Transcript, and later VR batches), so the `/loop` monitor is mandatory.
+Load `Skill(cafleet)` and `Skill(cafleet:agent-team-monitoring)` — this skill spawns parallel members (Presentation + Transcript, and later VR batches), so the `/loop` monitor is mandatory.
 
 #### 1a. Environment precheck and session bootstrap
 
@@ -96,7 +96,7 @@ cafleet --json session create --label "present-[topic-slug]"
 
 #### 1b. Start the `/loop` monitor BEFORE the first `cafleet member create` call
 
-Per `Skill(cafleet-monitoring)`, start a 1-minute interval monitor before spawning so the first tick fires while spawning completes. Use the cafleet-monitoring template with literal `[session-id]` and `[director-agent-id]` substituted in. Expected deliverables: `${FOLDER}/slide.md`, `${FOLDER}/transcript.md`. Active members will include `presentation`, `transcript`, and later `vr-batch-*`.
+Per `Skill(cafleet:agent-team-monitoring)`, start a 1-minute interval monitor before spawning so the first tick fires while spawning completes. Use the agent-team-monitoring template with literal `[session-id]` and `[director-agent-id]` substituted in. Expected deliverables: `${FOLDER}/slide.md`, `${FOLDER}/transcript.md`. Active members will include `presentation`, `transcript`, and later `vr-batch-*`.
 
 #### 1c. Read role definitions
 

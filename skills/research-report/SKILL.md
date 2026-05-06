@@ -28,7 +28,7 @@ This skill drives every inter-agent call through the `cafleet` CLI via the harne
 - `Bash(cafleet --session-id * *)` — every session-scoped call (member create, message send/poll/ack, member list, member delete, member capture, member exec, member ping, member send-input)
 - `Bash(cafleet session delete *)` — teardown (no `--session-id` flag — positional arg)
 - `Bash(cafleet session list)` — final confirmation that the session is gone (no `--session-id` flag)
-- `Skill(cafleet)`, `Skill(cafleet-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt. These come from the `cafleet@cafleet` plugin, which must be declared under `enabledPlugins` in the project `settings.json` (this repository is the user's `~/.claude` directory, so `settings.json` at the repo root **is** the user-level config). The plugin is **not** enabled by default in the checked-in `settings.json` — operators must add it (and the cafleet `Bash(...)` allow patterns above) before invoking this skill, otherwise every cafleet call triggers an interactive permission prompt and skill loads will fail.
+- `Skill(cafleet)`, `Skill(cafleet:agent-team-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt. These come from the `cafleet@cafleet` plugin, which must be declared under `enabledPlugins` in the project `settings.json` (this repository is the user's `~/.claude` directory, so `settings.json` at the repo root **is** the user-level config). The plugin is **not** enabled by default in the checked-in `settings.json` — operators must add it (and the cafleet `Bash(...)` allow patterns above) before invoking this skill, otherwise every cafleet call triggers an interactive permission prompt and skill loads will fail.
 
 The cafleet binary itself must be installed and on `PATH` (verify with `cafleet doctor`).
 
@@ -80,7 +80,7 @@ Capture `session_id` and `director.agent_id` from the response. Treat `session_i
 
 ### Step 1: Start Progress Monitor (Director — MANDATORY)
 
-Load `Skill(cafleet)` and `Skill(cafleet-monitoring)`. Start a `/loop` monitor at a 1-minute interval BEFORE the first `cafleet member create` call so the first tick fires while the Manager is spawning. Use the cafleet-monitoring template with the literal `[session-id]` and `[director-agent-id]` UUIDs substituted in.
+Load `Skill(cafleet)` and `Skill(cafleet:agent-team-monitoring)`. Start a `/loop` monitor at a 1-minute interval BEFORE the first `cafleet member create` call so the first tick fires while the Manager is spawning. Use the agent-team-monitoring template with the literal `[session-id]` and `[director-agent-id]` UUIDs substituted in.
 
 The loop must check `${OUTPUT_DIR}` for these expected deliverables:
 
@@ -88,11 +88,11 @@ The loop must check `${OUTPUT_DIR}` for these expected deliverables:
 - `00-scout-*.md` — Scout landscape/discovery notes (one or more files may exist)
 - `NN-research-*.md` — Researcher findings files for delegated sub-topics (`NN` is the assigned number; one or more files may exist)
 
-Readiness/stall rules (apply per `Skill(cafleet-monitoring)`):
+Readiness/stall rules (apply per `Skill(cafleet:agent-team-monitoring)`):
 
 - After Scouts/Researchers have been spawned and tasks have been assigned, expect at least one `00-scout-*.md` or `NN-research-*.md` file to appear within a couple of ticks.
 - Do not consider the workflow ready for Step 5 until `report.md` exists.
-- If a member owns an `in_progress` task but their deliverable file is missing past the expected milestone, run the 2-stage health-check from `Skill(cafleet-monitoring)`: `cafleet message poll` → `cafleet member capture --lines 200` → directed `cafleet message send` nudge → user escalation.
+- If a member owns an `in_progress` task but their deliverable file is missing past the expected milestone, run the 2-stage health-check from `Skill(cafleet:agent-team-monitoring)`: `cafleet message poll` → `cafleet member capture --lines 200` → directed `cafleet message send` nudge → user escalation.
 - Keep the monitor running until Step 8.
 
 ### Step 2: Spawn Manager (Director)
