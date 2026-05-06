@@ -184,10 +184,17 @@
     "command": "~/.claude/bin/status.py"
   },
   "enabledPlugins": {
-    "external-skills@himkt-marketplace": true,
-    "cafleet@cafleet": true
+    "cafleet@cafleet": true,
+    "agent-browser@himkt-marketplace": true,
+    "slidev@himkt-marketplace": true
   },
   "extraKnownMarketplaces": {
+    "cafleet": {
+      "source": {
+        "source": "github",
+        "repo": "himkt/cafleet"
+      }
+    },
     "himkt-marketplace": {
       "source": {
         "source": "github",
