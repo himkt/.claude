@@ -204,7 +204,7 @@
   },
   "language": "Use professional English",
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "autoMemoryEnabled": false,
   "autoCompactEnabled": false,
   "teammateMode": "in-process",
