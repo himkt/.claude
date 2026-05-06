@@ -84,7 +84,7 @@
       "Read(//tmp/claude-code/**)",
       "Read(~/.agent-browser/tmp)",
       "Skill(cafleet)",
-      "Skill(cafleet-monitoring)",
+      "Skill(cafleet:agent-team-monitoring)",
       "Skill(create-figure)",
       "Skill(cafleet:design-doc)",
       "Skill(github-cli)",
