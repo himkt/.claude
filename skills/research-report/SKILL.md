@@ -12,8 +12,8 @@ Generate comprehensive research reports using a multi-layer CAFleet-orchestrated
 |:--|:--|:--|:--|:--|
 | **Director** | Main Claude | Bootstrap CAFleet session, spawn all members, relay Manager requests, review all deliverables, present to user | Write the report, decompose topics, conduct research | [roles/director.md](roles/director.md) |
 | **Manager** | claude pane (member) | Run orientation searches for landscape understanding and topic decomposition, request Scout/Researcher spawning from the Director, aggregate Scout and Researcher findings, compile report, revise | Conduct deep investigation — all substantive research MUST be delegated to Researchers | [roles/manager.md](roles/manager.md) |
-| **Scout** | claude pane (member, reads `~/.claude/agents/web-researcher.md` at startup) | Landscape mapping — broad discovery to expand knowledge before decomposition | Collect facts for the report, write report sections | [roles/scout.md](roles/scout.md) |
-| **Researcher** | claude pane (member, reads `~/.claude/agents/web-researcher.md` at startup) | Search exhaustively, collect facts with sources, filter misinformation, write findings to assigned file | Synthesize or write report sections | [roles/researcher.md](roles/researcher.md) |
+| **Scout** | claude pane (member) | Landscape mapping — broad discovery to expand knowledge before decomposition | Collect facts for the report, write report sections | [roles/scout.md](roles/scout.md) |
+| **Researcher** | claude pane (member) | Search exhaustively, collect facts with sources, filter misinformation, write findings to assigned file | Synthesize or write report sections | [roles/researcher.md](roles/researcher.md) |
 
 ## Additional resources
 
@@ -21,16 +21,7 @@ Generate comprehensive research reports using a multi-layer CAFleet-orchestrated
 
 ## Prerequisites
 
-This skill drives every inter-agent call through the `cafleet` CLI via the harness `Bash` tool. The repository's `~/.claude/settings.json` `permissions.allow` list MUST include patterns that match every literal `cafleet ...` invocation the Director will issue, otherwise every call triggers a per-invocation permission prompt that interrupts the agent loop. At minimum, allow:
-
-- `Bash(cafleet doctor)` — environment precheck
-- `Bash(cafleet --json session create *)` — bootstrap (Step 0b)
-- `Bash(cafleet --session-id * *)` — every session-scoped call (member create, message send/poll/ack, member list, member delete, member capture, member exec, member ping, member send-input)
-- `Bash(cafleet session delete *)` — teardown (no `--session-id` flag — positional arg)
-- `Bash(cafleet session list)` — final confirmation that the session is gone (no `--session-id` flag)
-- `Skill(cafleet)`, `Skill(cafleet:agent-team-monitoring)` — both skills loaded by the Director and embedded into every member's spawn prompt. These come from the `cafleet@cafleet` plugin, which must be declared under `enabledPlugins` in the project `settings.json` (this repository is the user's `~/.claude` directory, so `settings.json` at the repo root **is** the user-level config). The plugin is **not** enabled by default in the checked-in `settings.json` — operators must add it (and the cafleet `Bash(...)` allow patterns above) before invoking this skill, otherwise every cafleet call triggers an interactive permission prompt and skill loads will fail.
-
-The cafleet binary itself must be installed and on `PATH` (verify with `cafleet doctor`).
+The cafleet binary must be installed and on `PATH` (verify with `cafleet doctor`). The Director loads `Skill(cafleet)` and `Skill(cafleet:agent-team-monitoring)` and embeds them into every member's spawn prompt.
 
 ## Architecture
 
@@ -40,8 +31,8 @@ The Director is the root agent of a CAFleet session — bootstrapped automatical
 User
  +-- Director (main Claude — runs cafleet session create, cafleet member create, drives the loop)
       +-- manager (claude pane — compiles report, decomposes topic)
-      +-- scout-<NN> (claude pane — landscape mapping; reads ~/.claude/agents/web-researcher.md at startup)
-      +-- researcher-NN (claude pane — deep investigation; reads ~/.claude/agents/web-researcher.md at startup)
+      +-- scout-<NN> (claude pane — landscape mapping)
+      +-- researcher-NN (claude pane — deep investigation)
 ```
 
 - **Director ↔ User**: `AskUserQuestion` (final report presentation, feedback collection, language disambiguation when escalated by a member)
@@ -51,7 +42,7 @@ User
 
 Members cannot talk to the user directly — the Director always relays. Members cannot talk to each other directly either — Manager requests are always mediated by the Director (Manager → Director → Scout/Researcher, and Scout/Researcher → Director → Manager).
 
-> **Literal-UUID flag rule** — `permissions.allow` matches Bash invocations as literal command strings, so substitute the UUIDs printed by `cafleet session create` and `cafleet member create` directly into every `cafleet ...` call. Never store IDs in shell variables. `--session-id` is a global flag (placed BEFORE the subcommand); `--agent-id` is a per-subcommand option (placed AFTER the subcommand name). See `Skill(cafleet)` for the full convention.
+> **Literal-UUID flag rule** — substitute the UUIDs printed by `cafleet session create` and `cafleet member create` directly into every `cafleet ...` call (the harness matches Bash invocations as literal command strings). Never store IDs in shell variables. `--session-id` is a global flag (placed BEFORE the subcommand); `--agent-id` is a per-subcommand option (placed AFTER the subcommand name). See `Skill(cafleet)` for the full convention.
 
 ## Process
 
@@ -70,7 +61,7 @@ Run `cafleet doctor` to confirm the Director is inside a tmux session with valid
 
 ### Step 0b: Bootstrap CAFleet Session (Director — MANDATORY)
 
-`cafleet session create` atomically creates the session, registers a root Director bound to the current tmux pane, and seeds the built-in Administrator. Capture both UUIDs from the JSON response and substitute them as literal strings into every subsequent `cafleet ...` call (never shell variables — `permissions.allow` matches command strings literally).
+`cafleet session create` atomically creates the session, registers a root Director bound to the current tmux pane, and seeds the built-in Administrator. Capture both UUIDs from the JSON response and substitute them as literal strings into every subsequent `cafleet ...` call (never shell variables — the harness matches Bash invocations as literal command strings).
 
 ```bash
 cafleet --json session create --label "research-[topic-slug]"
@@ -101,17 +92,17 @@ Load `Skill(cafleet)` and follow its spawn protocol.
 
 #### 2a. Shared task list
 
-The harness task tools (`TaskCreate / TaskUpdate / TaskList / TaskGet`) are the work-coordination substrate. The on-disk task store at `~/.claude/tasks/research-[topic-slug]/` is created on the first `TaskCreate` call (typically by the Manager when decomposing the topic). No explicit team-bootstrap step is required.
+The harness task tools (`TaskCreate / TaskUpdate / TaskList / TaskGet`) are the work-coordination substrate. The on-disk task store is created on the first `TaskCreate` call (typically by the Manager when decomposing the topic). No explicit team-bootstrap step is required.
 
 #### 2b. Read role definitions
 
-Read the role files that will be embedded verbatim in spawn prompts:
+Read the role files that will be embedded verbatim in spawn prompts (paths are relative to this skill's directory):
 
-- `~/.claude/skills/research-report/roles/manager.md`
-- `~/.claude/skills/research-report/roles/scout.md`
-- `~/.claude/skills/research-report/roles/researcher.md`
+- `roles/manager.md`
+- `roles/scout.md`
+- `roles/researcher.md`
 
-> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. The role docs in this skill use `<...>` / `[...]` notation everywhere placeholders appear, so the embedded role content contains no literal `{` or `}` and no escaping is needed. The only single-brace tokens in the spawn prompt are the four kwargs cafleet itself substitutes: `{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`. If you ever add a `{` or `}` to a role doc (a JSON example, a format-string example), double it to `{{` / `}}` before embedding — `str.format()` raises `KeyError` at spawn time otherwise. Do NOT shell out to `sed` / `awk` — those are blocked by this repo's Bash validator and `permissions.deny`.
+> **Template safety**: cafleet `member create` runs `str.format()` on the entire spawn prompt with `session_id` / `agent_id` / `director_name` / `director_agent_id` as kwargs. The role docs in this skill use `<...>` / `[...]` notation everywhere placeholders appear, so the embedded role content contains no literal `{` or `}` and no escaping is needed. The only single-brace tokens in the spawn prompt are the four kwargs cafleet itself substitutes: `{session_id}`, `{agent_id}`, `{director_name}`, `{director_agent_id}`. If you ever add a `{` or `}` to a role doc (a JSON example, a format-string example), double it to `{{` / `}}` before embedding — `str.format()` raises `KeyError` at spawn time otherwise. Do NOT shell out to `sed` / `awk` — those are blocked by the harness Bash validator.
 
 #### 2c. Spawn the Manager
 
@@ -121,7 +112,7 @@ Read the role files that will be embedded verbatim in spawn prompts:
 You are the Manager in a research report team (CAFleet-native).
 
 [ROLE DEFINITION]
-[Content of ~/.claude/skills/research-report/roles/manager.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
+[Content of roles/manager.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
 [/ROLE DEFINITION]
 
 Load these skills at startup:
@@ -169,13 +160,11 @@ After assessing the topic, the Manager may send the Director one or more Scout s
 You are a Scout Researcher in a research team (CAFleet-native).
 
 [ROLE DEFINITION]
-[Content of ~/.claude/skills/research-report/roles/scout.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
+[Content of roles/scout.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
 [/ROLE DEFINITION]
 
 Load these skills at startup:
 - Skill(cafleet) — for the broker primitives and bash-via-Director routing
-- Also Read ~/.claude/agents/web-researcher.md for the detailed research methodology
-  (Discovery Phase, query formulation, synthesis, output format)
 
 SESSION ID: {session_id}
 DIRECTOR AGENT ID: {director_agent_id}
@@ -237,13 +226,11 @@ The Manager's `TaskCreate` calls also serve as the authoritative list of sub-top
 You are a Research Specialist in a research team (CAFleet-native).
 
 [ROLE DEFINITION]
-[Content of ~/.claude/skills/research-report/roles/researcher.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
+[Content of roles/researcher.md injected verbatim. Cafleet substitutes only the four format kwargs `{session_id}` / `{agent_id}` / `{director_name}` / `{director_agent_id}` — leave those single-braced. Any other literal `{` or `}` characters that appear inside the role doc itself must be doubled to `{{` / `}}` before embedding (per Template safety)]
 [/ROLE DEFINITION]
 
 Load these skills at startup:
 - Skill(cafleet) — for the broker primitives and bash-via-Director routing
-- Also Read ~/.claude/agents/web-researcher.md for the detailed research methodology
-  (Discovery Phase, query formulation, synthesis, output format)
 
 SESSION ID: {session_id}
 DIRECTOR AGENT ID: {director_agent_id}

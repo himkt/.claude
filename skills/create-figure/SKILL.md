@@ -9,7 +9,7 @@ description: >
 # Create Figure
 
 Generate matplotlib charts. Scripts, outputs, and data go in separate subdirectories under `figures/`.
-Only the execution borrows the uv environment from `~/.claude`.
+Only the execution borrows a uv environment that has matplotlib installed (referenced as `$CLAUDE_HOME` below; substitute the absolute path of the user's Claude config directory).
 
 **Before writing any script, read the Chart Type Selection and Color Rules sections.** All charts in a deck share the same `C_BAR` / `C_BAR_SEC` palette regardless of data topic.
 
@@ -24,7 +24,7 @@ Only the execution borrows the uv environment from `~/.claude`.
 **Resolve `${BASE}` in this order:**
 
 1. **Calling-context override**: If a parent skill's spawn prompt told you the figure base directory (e.g., `/research-presentation` passes its research folder as the figure base), use that path literally as `${BASE}`. Skip base-dir resolution.
-2. **Otherwise**: Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies). If the resolved `${BASE}` is `~/.claude`, override to `${BASE} = /tmp/claude-code`.
+2. **Otherwise**: Load `Skill(base-dir)` and follow its procedure (no path argument; CWD-based inference applies). If the resolved `${BASE}` is the user's Claude config directory (i.e., not a real project root), override to `${BASE} = /tmp/claude-code`.
 
 **Derive the subdirectories** (each is a literal path string you will embed in the script):
 
@@ -36,7 +36,7 @@ Example resolution: if the calling skill said "use `/tmp/claude-code/researches/
 
 If the directories do not exist yet, the Write tool auto-creates parent directories when you write the script file — do NOT call `mkdir`.
 
-All subsequent steps use `${SRC_DIR}`, `${OUTPUT_DIR}`, and `${DATA_DIR}` as literal resolved paths. Never create scripts or outputs in `~/.claude`.
+All subsequent steps use `${SRC_DIR}`, `${OUTPUT_DIR}`, and `${DATA_DIR}` as literal resolved paths. Never create scripts or outputs inside the user's Claude config directory.
 
 **Font:** No setup needed. The theme font `Noto Sans` is available as a system font. Scripts set `plt.rcParams['font.family'] = 'Noto Sans'` (see template below).
 
@@ -84,14 +84,14 @@ Key points:
 
 ### 2. Execute the script
 
-`~/.claude` has a `pyproject.toml` that manages matplotlib via uv.
+`$CLAUDE_HOME` (substitute with the absolute path of the user's Claude config directory) has a `pyproject.toml` that manages matplotlib via uv.
 Run a single Bash call with `--frozen` and `--project` to use this environment without changing CWD:
 
 ```
-uv run --frozen --project ~/.claude ${SRC_DIR}/script_name.py
+uv run --frozen --project $CLAUDE_HOME ${SRC_DIR}/script_name.py
 ```
 
-`--frozen` prevents lockfile updates. `--project ~/.claude` uses `~/.claude/.venv` without changing CWD.
+`--frozen` prevents lockfile updates. `--project $CLAUDE_HOME` uses the venv there without changing CWD.
 
 ### 3. Verify the result
 
@@ -174,7 +174,7 @@ ax_right = fig.add_subplot(gs[1, 2])  # bottom row, 1/3 width
 
 ### Allowed palette
 
-These approximate the Slidev theme's CSS tokens (defined in OKLCH in `skills/my-slidev/theme/styles/index.css`). When updating colors, keep both in sync.
+These approximate the Slidev theme's CSS tokens (defined in OKLCH inside the my-slidev skill's theme stylesheet). When updating colors, keep both in sync.
 
 ```python
 # Primary (use for most bars/lines)
