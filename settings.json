@@ -195,13 +195,15 @@
       "source": {
         "source": "github",
         "repo": "himkt/cafleet"
-      }
+      },
+      "autoUpdate": true
     },
     "himkt-marketplace": {
       "source": {
         "source": "github",
         "repo": "himkt/himkt-marketplace"
-      }
+      },
+      "autoUpdate": true
     }
   },
   "language": "Use professional English",
