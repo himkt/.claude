@@ -1,9 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "respectGitignore": false,
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
   "attribution": {
     "commit": ""
   },
@@ -64,6 +61,7 @@
       "Bash(git diff *)",
       "Bash(git grep *)",
       "Bash(git log *)",
+      "Bash(git ls-tree *)",
       "Bash(git ls-files *)",
       "Bash(git branch *)",
       "Bash(git status)",
@@ -157,7 +155,6 @@
     ]
   },
   "model": "opus[1m]",
-  "enableAllProjectMcpServers": true,
   "hooks": {
     "PreToolUse": [
       {
@@ -211,7 +208,6 @@
   "effortLevel": "xhigh",
   "autoMemoryEnabled": false,
   "autoCompactEnabled": false,
-  "teammateMode": "in-process",
   "agentPushNotifEnabled": true,
   "autoInstallIdeExtension": false
 }
