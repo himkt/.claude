@@ -61,6 +61,7 @@
       "Bash(git diff *)",
       "Bash(git grep *)",
       "Bash(git log *)",
+      "Bash(git ls-tree *)",
       "Bash(git ls-files *)",
       "Bash(git branch *)",
       "Bash(git status)",
