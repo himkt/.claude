@@ -95,7 +95,6 @@
       "Bash(git -C *)",
       "Bash(kill *)",
       "Bash(mkdir *)",
-      "Bash(touch *)",
       "Bash(python *)",
       "Bash(python3 *)",
       "Bash(touch *)",
